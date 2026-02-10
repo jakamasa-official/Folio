@@ -339,7 +339,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "elegant":
       return {
         bg: "bg-amber-50",
-        bgImage: "/images/bg-elegant.png",
+        bgImage: "/images/bg-elegant.jpg",
         text: "text-amber-950",
         subtext: "text-amber-800/70",
         ring: "ring-amber-300",
@@ -351,7 +351,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "neon":
       return {
         bg: "bg-gray-950",
-        bgImage: "/images/bg-dark-bokeh.png",
+        bgImage: "/images/bg-neon.jpg",
         text: "text-white",
         subtext: "text-gray-400",
         ring: "ring-cyan-500",
@@ -363,7 +363,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "japanese":
       return {
         bg: "bg-[#f5f0e8]",
-        bgImage: "/images/bg-japanese.png",
+        bgImage: "/images/bg-japanese.jpg",
         text: "text-[#3d3229]",
         subtext: "text-[#7d7067]",
         ring: "ring-[#c4a882]",
@@ -375,7 +375,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "photo-grid":
       return {
         bg: "bg-neutral-900",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-photo-grid.jpg",
         text: "text-white",
         subtext: "text-neutral-400",
         ring: "ring-white/30",
@@ -389,7 +389,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "ocean":
       return {
         bg: "bg-gradient-to-b from-sky-900 via-blue-800 to-cyan-900",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-ocean.jpg",
         text: "text-white",
         subtext: "text-sky-200",
         ring: "ring-cyan-400",
@@ -413,7 +413,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "aurora":
       return {
         bg: "bg-gradient-to-br from-indigo-950 via-emerald-900 to-purple-900",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-aurora.jpg",
         text: "text-white",
         subtext: "text-emerald-200",
         ring: "ring-emerald-400",
@@ -425,7 +425,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "forest":
       return {
         bg: "bg-gradient-to-b from-green-900 via-emerald-900 to-green-950",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-forest.jpg",
         text: "text-green-50",
         subtext: "text-green-300",
         ring: "ring-green-500",
@@ -437,7 +437,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "sakura":
       return {
         bg: "bg-gradient-to-b from-pink-100 via-pink-50 to-rose-100",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-sakura.jpg",
         text: "text-pink-900",
         subtext: "text-pink-600",
         ring: "ring-pink-300",
@@ -449,7 +449,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "desert":
       return {
         bg: "bg-gradient-to-b from-amber-100 via-orange-100 to-yellow-50",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-desert.jpg",
         text: "text-amber-950",
         subtext: "text-amber-700",
         ring: "ring-amber-400",
@@ -525,7 +525,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "midnight":
       return {
         bg: "bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-midnight.jpg",
         text: "text-white",
         subtext: "text-indigo-300",
         ring: "ring-indigo-500",
@@ -685,7 +685,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "synthwave":
       return {
         bg: "bg-gradient-to-b from-violet-950 via-fuchsia-950 to-slate-950",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-synthwave.jpg",
         text: "text-fuchsia-200",
         subtext: "text-fuchsia-400",
         ring: "ring-fuchsia-500",
@@ -697,7 +697,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "vaporwave":
       return {
         bg: "bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-vaporwave.jpg",
         text: "text-purple-900",
         subtext: "text-purple-700",
         ring: "ring-pink-400",
@@ -721,7 +721,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "pixel":
       return {
         bg: "bg-gray-900",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-circuit.jpg",
         text: "text-green-400",
         subtext: "text-green-600",
         ring: "ring-green-500",
@@ -821,7 +821,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "material-amber":
       return {
         bg: "bg-amber-50",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-gold.jpg",
         text: "text-amber-900",
         subtext: "text-amber-600",
         ring: "ring-amber-400",
@@ -897,7 +897,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "brutalist":
       return {
         bg: "bg-white",
-        bgImage: undefined as string | undefined,
+        bgImage: "/images/bg-concrete.jpg",
         text: "text-black",
         subtext: "text-gray-700",
         ring: "ring-black ring-4",
