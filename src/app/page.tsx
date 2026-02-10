@@ -1,65 +1,231 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { APP_NAME } from "@/lib/constants";
+import {
+  ArrowRight,
+  Smartphone,
+  BarChart3,
+  Link2,
+  Palette,
+  Zap,
+  Shield,
+} from "lucide-react";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen">
+      {/* Nav */}
+      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+          <Link href="/" className="text-xl font-bold tracking-tight">
+            {APP_NAME}
+          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/wallpaper">
+              <Button variant="ghost" size="sm">
+                壁紙名刺
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                ログイン
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button size="sm">
+                無料で始める
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="mx-auto max-w-5xl px-4 py-20 text-center">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+          あなたのビジネスを
+          <br />
+          <span className="text-primary">オンラインに。</span>
+        </h1>
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+          プロフィールページ、デジタル名刺、アナリティクス。
+          <br />
+          10分で、ひとつのツールで、無料で始められます。
+        </p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Link href="/signup">
+            <Button size="lg" className="gap-2">
+              無料でページを作る
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/wallpaper">
+            <Button size="lg" variant="outline" className="gap-2">
+              <Smartphone className="h-4 w-4" />
+              壁紙名刺を作る
+            </Button>
+          </Link>
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">
+          クレジットカード不要 ・ 無料プランあり
+        </p>
+      </section>
+
+      {/* Features */}
+      <section className="border-t bg-muted/30 py-20">
+        <div className="mx-auto max-w-5xl px-4">
+          <h2 className="text-center text-2xl font-bold">
+            必要なものが、すべてここに
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
+            フリーランサー、小規模ビジネス、クリエイター。
+            あなたのオンラインプレゼンスに必要なツールを一つにまとめました。
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard
+              icon={<Link2 className="h-6 w-6" />}
+              title="プロフィールページ"
+              description="プロフェッショナルなページを数分で作成。リンク、SNS、連絡先をまとめて共有。"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <FeatureCard
+              icon={<Smartphone className="h-6 w-6" />}
+              title="壁紙名刺"
+              description="スマホのロック画面がデジタル名刺に。QRコードで簡単に情報を共有。"
+            />
+            <FeatureCard
+              icon={<BarChart3 className="h-6 w-6" />}
+              title="アナリティクス"
+              description="誰がページを見ているか把握。ページビュー、リファラー、デバイス情報を確認。"
+            />
+            <FeatureCard
+              icon={<Palette className="h-6 w-6" />}
+              title="テンプレート"
+              description="4種類のプロフェッショナルテンプレートから選択。あなたのブランドに合わせてカスタマイズ。"
+            />
+            <FeatureCard
+              icon={<Zap className="h-6 w-6" />}
+              title="10分で完成"
+              description="複雑な設定は不要。情報を入力するだけで、すぐにページが完成します。"
+            />
+            <FeatureCard
+              icon={<Shield className="h-6 w-6" />}
+              title="無料で始められる"
+              description="基本機能はすべて無料。カスタムドメインや高度な機能は月額¥2,000から。"
+            />
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Use cases */}
+      <section className="py-20">
+        <div className="mx-auto max-w-5xl px-4">
+          <h2 className="text-center text-2xl font-bold">
+            こんな方におすすめ
+          </h2>
+          <div className="mt-12 grid gap-6 sm:grid-cols-3">
+            <UseCaseCard
+              title="フリーランサー"
+              items={[
+                "ポートフォリオとして共有",
+                "クライアントへの自己紹介",
+                "SNSとサービスをまとめる",
+              ]}
+            />
+            <UseCaseCard
+              title="小規模ビジネス"
+              items={[
+                "営業時間・場所を掲載",
+                "メニューやサービス一覧",
+                "Google口コミへ誘導",
+              ]}
+            />
+            <UseCaseCard
+              title="クリエイター"
+              items={[
+                "SNSリンクをまとめる",
+                "作品やプロジェクトを紹介",
+                "ファンとつながる",
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="border-t bg-primary py-16 text-primary-foreground">
+        <div className="mx-auto max-w-5xl px-4 text-center">
+          <h2 className="text-2xl font-bold">
+            今すぐ、あなたのページを作りましょう
+          </h2>
+          <p className="mt-3 opacity-90">
+            無料で始められます。クレジットカードは不要です。
+          </p>
+          <Link href="/signup">
+            <Button
+              size="lg"
+              variant="secondary"
+              className="mt-6 gap-2"
+            >
+              無料で始める
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-8">
+        <div className="mx-auto max-w-5xl px-4 text-center text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-4">
+            <Link href="/privacy" className="hover:text-foreground">
+              プライバシーポリシー
+            </Link>
+            <span aria-hidden="true">/</span>
+            <Link href="/terms" className="hover:text-foreground">
+              利用規約
+            </Link>
+            <span aria-hidden="true">/</span>
+            <Link href="/tokushoho" className="hover:text-foreground">
+              特定商取引法
+            </Link>
+          </div>
+          <p className="mt-3">&copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-lg border bg-background p-6">
+      <div className="mb-3 text-primary">{icon}</div>
+      <h3 className="font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function UseCaseCard({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-lg border p-6">
+      <h3 className="font-semibold">{title}</h3>
+      <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span className="mt-1 text-primary">•</span>
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
