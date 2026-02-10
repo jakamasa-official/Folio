@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { APP_NAME } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/server";
 import {
   ArrowRight,
   Smartphone,
@@ -15,9 +16,13 @@ import {
   Mail,
   QrCode,
   CheckCircle2,
+  LayoutDashboard,
 } from "lucide-react";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isLoggedIn = !!user;
   return (
     <div className="min-h-screen">
       {/* Nav */}
@@ -32,16 +37,27 @@ export default function HomePage() {
                 壁紙名刺
               </Button>
             </Link>
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                ログイン
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button size="sm">
-                無料で始める
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard">
+                <Button size="sm" className="gap-1.5">
+                  <LayoutDashboard className="h-4 w-4" />
+                  ダッシュボード
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    ログイン
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button size="sm">
+                    無料で始める
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -66,9 +82,9 @@ export default function HomePage() {
               プロフィールページを<strong className="text-foreground">無料で</strong>作れます。
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/signup">
+              <Link href={isLoggedIn ? "/dashboard" : "/signup"}>
                 <Button size="lg" className="gap-2 w-full sm:w-auto">
-                  無料でページを作る
+                  {isLoggedIn ? "ダッシュボードへ" : "無料でページを作る"}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
