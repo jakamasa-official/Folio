@@ -42,6 +42,84 @@ import { SOCIAL_PLATFORMS, FREE_TEMPLATES, PREMIUM_TEMPLATES, TEMPLATES } from "
 import { APP_URL, ALLOWED_IMAGE_TYPES, MAX_AVATAR_SIZE, MAX_BIO_LENGTH, MAX_LINKS } from "@/lib/constants";
 import { BusinessHoursEditor } from "./business-hours-editor";
 
+// Color preview swatches for template selector
+const TEMPLATE_PREVIEWS: Record<string, { bg: string; btn: string; text: string }> = {
+  // Free
+  professional: { bg: "bg-white", btn: "bg-gray-900", text: "bg-gray-400" },
+  minimal: { bg: "bg-stone-50", btn: "bg-stone-300", text: "bg-stone-200" },
+  business: { bg: "bg-slate-50", btn: "bg-blue-600", text: "bg-slate-300" },
+  creative: { bg: "bg-gradient-to-br from-violet-50 to-pink-50", btn: "bg-gradient-to-r from-violet-500 to-pink-500", text: "bg-violet-200" },
+  // Premium original
+  elegant: { bg: "bg-amber-50", btn: "bg-amber-300", text: "bg-amber-200" },
+  neon: { bg: "bg-gray-950", btn: "bg-cyan-500", text: "bg-gray-700" },
+  japanese: { bg: "bg-[#f5f0e8]", btn: "bg-[#c4a882]", text: "bg-[#d4c4ad]" },
+  "photo-grid": { bg: "bg-neutral-900", btn: "bg-neutral-600", text: "bg-neutral-700" },
+  // Nature
+  ocean: { bg: "bg-gradient-to-br from-blue-900 to-cyan-800", btn: "bg-cyan-400", text: "bg-blue-700" },
+  sunset: { bg: "bg-gradient-to-br from-orange-400 to-rose-500", btn: "bg-white", text: "bg-orange-300" },
+  aurora: { bg: "bg-gradient-to-br from-green-900 to-purple-900", btn: "bg-green-400", text: "bg-purple-700" },
+  forest: { bg: "bg-gradient-to-br from-green-900 to-emerald-800", btn: "bg-emerald-400", text: "bg-green-700" },
+  sakura: { bg: "bg-pink-50", btn: "bg-pink-400", text: "bg-pink-200" },
+  desert: { bg: "bg-gradient-to-br from-amber-100 to-orange-200", btn: "bg-amber-700", text: "bg-amber-300" },
+  // Pastel
+  "pastel-pink": { bg: "bg-pink-50", btn: "bg-pink-400", text: "bg-pink-100" },
+  "pastel-blue": { bg: "bg-sky-50", btn: "bg-sky-400", text: "bg-sky-100" },
+  "pastel-mint": { bg: "bg-emerald-50", btn: "bg-emerald-400", text: "bg-emerald-100" },
+  "pastel-lavender": { bg: "bg-violet-50", btn: "bg-violet-400", text: "bg-violet-100" },
+  "pastel-peach": { bg: "bg-orange-50", btn: "bg-orange-400", text: "bg-orange-100" },
+  // Dark
+  midnight: { bg: "bg-indigo-950", btn: "bg-indigo-400", text: "bg-indigo-800" },
+  charcoal: { bg: "bg-neutral-900", btn: "bg-neutral-400", text: "bg-neutral-700" },
+  "dark-purple": { bg: "bg-purple-950", btn: "bg-purple-400", text: "bg-purple-800" },
+  "dark-green": { bg: "bg-green-950", btn: "bg-green-400", text: "bg-green-800" },
+  "dark-red": { bg: "bg-red-950", btn: "bg-red-400", text: "bg-red-800" },
+  "slate-dark": { bg: "bg-slate-900", btn: "bg-slate-400", text: "bg-slate-700" },
+  // Gradient
+  "gradient-sunset": { bg: "bg-gradient-to-br from-orange-500 to-pink-600", btn: "bg-white/30", text: "bg-orange-300" },
+  "gradient-ocean": { bg: "bg-gradient-to-br from-blue-500 to-teal-400", btn: "bg-white/30", text: "bg-blue-300" },
+  "gradient-berry": { bg: "bg-gradient-to-br from-purple-600 to-pink-500", btn: "bg-white/30", text: "bg-purple-300" },
+  "gradient-fire": { bg: "bg-gradient-to-br from-red-600 to-amber-500", btn: "bg-white/30", text: "bg-red-300" },
+  "gradient-mint": { bg: "bg-gradient-to-br from-emerald-400 to-cyan-400", btn: "bg-white/30", text: "bg-emerald-200" },
+  "gradient-twilight": { bg: "bg-gradient-to-br from-indigo-600 to-purple-700", btn: "bg-white/30", text: "bg-indigo-300" },
+  // Retro/Pop
+  retro: { bg: "bg-amber-100", btn: "bg-orange-600", text: "bg-amber-300" },
+  synthwave: { bg: "bg-[#1a0533]", btn: "bg-fuchsia-500", text: "bg-purple-800" },
+  vaporwave: { bg: "bg-gradient-to-br from-pink-200 to-cyan-200", btn: "bg-purple-400", text: "bg-pink-100" },
+  "pop-art": { bg: "bg-yellow-400", btn: "bg-red-600", text: "bg-yellow-300" },
+  pixel: { bg: "bg-black", btn: "bg-green-500", text: "bg-gray-800" },
+  // Monochrome
+  "mono-black": { bg: "bg-black", btn: "bg-white", text: "bg-gray-800" },
+  "mono-white": { bg: "bg-white", btn: "bg-black", text: "bg-gray-200" },
+  "mono-gray": { bg: "bg-gray-200", btn: "bg-gray-600", text: "bg-gray-300" },
+  "mono-sepia": { bg: "bg-[#f5f0e0]", btn: "bg-[#8b7355]", text: "bg-[#d4c4a8]" },
+  // Material
+  "material-blue": { bg: "bg-gray-50", btn: "bg-blue-500", text: "bg-gray-200" },
+  "material-green": { bg: "bg-gray-50", btn: "bg-green-500", text: "bg-gray-200" },
+  "material-red": { bg: "bg-gray-50", btn: "bg-red-500", text: "bg-gray-200" },
+  "material-amber": { bg: "bg-gray-50", btn: "bg-amber-500", text: "bg-gray-200" },
+  // Seasonal
+  spring: { bg: "bg-gradient-to-br from-green-100 to-pink-100", btn: "bg-green-500", text: "bg-green-200" },
+  summer: { bg: "bg-gradient-to-br from-sky-400 to-cyan-300", btn: "bg-white", text: "bg-sky-200" },
+  autumn: { bg: "bg-gradient-to-br from-orange-100 to-red-100", btn: "bg-orange-600", text: "bg-orange-200" },
+  winter: { bg: "bg-gradient-to-br from-slate-200 to-blue-100", btn: "bg-slate-600", text: "bg-slate-300" },
+  // Special
+  glassmorphism: { bg: "bg-gradient-to-br from-violet-500 to-pink-500", btn: "bg-white/30", text: "bg-white/20" },
+  brutalist: { bg: "bg-white", btn: "bg-black", text: "bg-gray-300" },
+};
+
+function TemplateSwatch({ templateId }: { templateId: string }) {
+  const preview = TEMPLATE_PREVIEWS[templateId];
+  if (!preview) return null;
+  return (
+    <div className={`h-10 w-10 shrink-0 overflow-hidden rounded ${preview.bg} flex flex-col items-center justify-center gap-0.5 p-1 border`}>
+      <div className={`h-1.5 w-1.5 rounded-full ${preview.btn}`} />
+      <div className={`h-1 w-5 rounded-sm ${preview.text}`} />
+      <div className={`h-1.5 w-6 rounded-sm ${preview.btn}`} />
+      <div className={`h-1.5 w-6 rounded-sm ${preview.btn} opacity-60`} />
+    </div>
+  );
+}
+
 function SortableLinkItem({
   link,
   onUpdate,
@@ -282,14 +360,17 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
               <button
                 key={t.id}
                 onClick={() => handleTemplateSelect(t.id)}
-                className={`rounded-lg border-2 p-3 text-left transition-colors ${
+                className={`flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
                   profile.template === t.id
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-muted-foreground"
                 }`}
               >
-                <div className="font-medium">{t.label}</div>
-                <div className="text-xs text-muted-foreground">{t.description}</div>
+                <TemplateSwatch templateId={t.id} />
+                <div className="min-w-0">
+                  <div className="font-medium">{t.label}</div>
+                  <div className="text-xs text-muted-foreground">{t.description}</div>
+                </div>
               </button>
             ))}
           </div>
@@ -313,7 +394,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                     <button
                       key={t.id}
                       onClick={() => handleTemplateSelect(t.id)}
-                      className={`relative rounded-lg border-2 p-3 text-left transition-colors ${
+                      className={`relative flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
                         profile.template === t.id
                           ? "border-primary bg-primary/5"
                           : !profile.is_pro
@@ -322,8 +403,11 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                       }`}
                     >
                       {!profile.is_pro && <Lock className="absolute right-2 top-2 h-3 w-3 text-muted-foreground" />}
-                      <div className="font-medium">{t.label}</div>
-                      <div className="text-xs text-muted-foreground">{t.description}</div>
+                      <TemplateSwatch templateId={t.id} />
+                      <div className="min-w-0">
+                        <div className="font-medium">{t.label}</div>
+                        <div className="text-xs text-muted-foreground">{t.description}</div>
+                      </div>
                     </button>
                   ))}
                 </div>
