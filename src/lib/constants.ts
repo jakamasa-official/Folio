@@ -10,3 +10,7 @@ export const MAX_LINKS = 50;
 export const MAX_BIO_LENGTH = 500;
 export const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+export const MAX_PROFILES_FREE = 1;
+export const MAX_PROFILES_PRO = 5;
+export const PRO_PRICE_MONTHLY = 2000; // JPY

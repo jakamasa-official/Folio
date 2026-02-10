@@ -1,9 +1,14 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
-import type { Profile, SocialLinks } from "@/lib/types";
+import type { Profile } from "@/lib/types";
 import { APP_NAME, APP_URL } from "@/lib/constants";
 import { ProfilePage } from "@/components/profile/profile-page";
+import { PasswordGateWrapper } from "./password-gate-wrapper";
+import { TrackPageView } from "./track-page-view";
+import { verifyToken } from "@/app/api/profile/verify-password/route";
 
 interface Props {
   params: Promise<{ username: string }>;
@@ -48,20 +53,63 @@ export default async function PublicProfilePage({ params }: Props) {
   const { username } = await params;
   const supabase = await createClient();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .ilike("username", username)
-    .eq("is_published", true)
-    .maybeSingle();
+  // Try custom domain resolution first
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
+  let profile = null;
+
+  if (host && !host.includes("folio") && !host.includes("localhost") && !host.includes("vercel")) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("custom_domain", host)
+      .eq("custom_domain_verified", true)
+      .eq("is_published", true)
+      .maybeSingle();
+    profile = data;
+  }
+
+  // Fall back to username lookup
+  if (!profile) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .ilike("username", username)
+      .eq("is_published", true)
+      .maybeSingle();
+    profile = data;
+  }
 
   if (!profile) notFound();
 
-  // Record page view (fire and forget)
-  supabase
-    .from("page_views")
-    .insert({ profile_id: profile.id })
-    .then(() => {});
+  const typedProfile = profile as Profile;
 
-  return <ProfilePage profile={profile as Profile} />;
+  // Check password protection
+  if (typedProfile.page_password) {
+    const { page_password: _hash, ...safeForGate } = typedProfile;
+    const gateProfile = safeForGate as Profile;
+    const cookieStore = await cookies();
+    const accessCookie = cookieStore.get(`folio_access_${typedProfile.id}`);
+    if (!accessCookie?.value) {
+      return <PasswordGateWrapper profileId={typedProfile.id} profile={gateProfile} />;
+    }
+    // Validate HMAC-signed token
+    if (!verifyToken(accessCookie.value, typedProfile.id)) {
+      return <PasswordGateWrapper profileId={typedProfile.id} profile={gateProfile} />;
+    }
+  }
+
+  // Strip page_password hash before passing to client components
+  const { page_password: _pw, ...safeProfile } = typedProfile;
+  const clientProfile = safeProfile as Profile;
+
+  // Pro users don't show branding
+  const showBranding = !clientProfile.is_pro;
+
+  return (
+    <>
+      <TrackPageView profileId={clientProfile.id} />
+      <ProfilePage profile={clientProfile} showBranding={showBranding} />
+    </>
+  );
 }

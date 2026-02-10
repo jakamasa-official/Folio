@@ -6,7 +6,7 @@ import { AnalyticsDashboard } from "@/components/analytics/dashboard";
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<{
-    views: { viewed_at: string }[];
+    views: { viewed_at: string; referrer: string | null; device_type: string | null; country: string | null }[];
     totalViews: number;
     username: string;
   } | null>(null);
@@ -32,7 +32,7 @@ export default function AnalyticsPage() {
 
       const { data: views } = await supabase
         .from("page_views")
-        .select("viewed_at")
+        .select("viewed_at, referrer, device_type, country")
         .eq("profile_id", profile.id)
         .gte("viewed_at", thirtyDaysAgo.toISOString())
         .order("viewed_at", { ascending: true });

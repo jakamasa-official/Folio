@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,12 +15,20 @@ import {
   ExternalLink,
   Menu,
   Image,
+  Mail,
+  Calendar,
+  Users,
+  Globe,
 } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
   { href: "/dashboard", label: "マイページ", icon: User },
   { href: "/dashboard/analytics", label: "アナリティクス", icon: BarChart3 },
+  { href: "/dashboard/inbox", label: "受信トレイ", icon: Mail },
+  { href: "/dashboard/bookings", label: "予約管理", icon: Calendar },
+  { href: "/dashboard/subscribers", label: "メール購読", icon: Users },
+  { href: "/dashboard/domain", label: "ドメイン", icon: Globe },
   { href: "/dashboard/settings", label: "設定", icon: Settings },
 ];
 
@@ -90,14 +98,12 @@ function NavContent({
 }
 
 export function DashboardNav({ username }: { username?: string }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
+    window.location.href = "/";
   }
 
   return (

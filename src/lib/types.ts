@@ -1,3 +1,5 @@
+export type TemplateId = "professional" | "minimal" | "business" | "creative" | "elegant" | "neon" | "japanese" | "photo-grid";
+
 export interface Profile {
   id: string;
   user_id: string;
@@ -6,7 +8,7 @@ export interface Profile {
   title: string | null;
   bio: string | null;
   avatar_url: string | null;
-  template: "professional" | "minimal" | "business" | "creative";
+  template: TemplateId;
   links: ProfileLink[];
   social_links: SocialLinks;
   contact_email: string | null;
@@ -14,7 +16,17 @@ export interface Profile {
   location: string | null;
   business_hours: BusinessHours | null;
   is_published: boolean;
+  is_pro: boolean;
   settings: ProfileSettings;
+  contact_form_enabled: boolean;
+  booking_enabled: boolean;
+  email_collection_enabled: boolean;
+  booking_slots: BookingSlots | null;
+  page_password: string | null;
+  google_review_url: string | null;
+  line_friend_url: string | null;
+  custom_domain: string | null;
+  custom_domain_verified: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -46,6 +58,42 @@ export interface ProfileSettings {
   accent_color?: string;
   background_color?: string;
   text_color?: string;
+}
+
+export interface BookingSlots {
+  days: number[]; // 0=Sun, 1=Mon, ..., 6=Sat
+  start: string;  // "09:00"
+  end: string;    // "17:00"
+  duration: number; // minutes, e.g. 60
+}
+
+export interface Booking {
+  id: string;
+  profile_id: string;
+  booker_name: string;
+  booker_email: string;
+  booking_date: string;
+  time_slot: string;
+  note: string | null;
+  status: "pending" | "confirmed" | "canceled";
+  created_at: string;
+}
+
+export interface ContactSubmission {
+  id: string;
+  profile_id: string;
+  sender_name: string;
+  sender_email: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface EmailSubscriber {
+  id: string;
+  profile_id: string;
+  email: string;
+  subscribed_at: string;
 }
 
 export interface PageView {
@@ -87,9 +135,28 @@ export const SOCIAL_PLATFORMS = [
   { key: "website", label: "Website", placeholder: "https://example.com" },
 ] as const;
 
-export const TEMPLATES = [
-  { id: "professional", label: "プロフェッショナル", description: "クリーンでビジネス向き" },
-  { id: "minimal", label: "ミニマル", description: "シンプルでエレガント" },
-  { id: "business", label: "ビジネス", description: "店舗・サービス向け" },
-  { id: "creative", label: "クリエイティブ", description: "大胆で印象的" },
+export const FREE_TEMPLATES = [
+  { id: "professional" as const, label: "プロフェッショナル", description: "クリーンでビジネス向き" },
+  { id: "minimal" as const, label: "ミニマル", description: "シンプルでエレガント" },
+  { id: "business" as const, label: "ビジネス", description: "店舗・サービス向け" },
+  { id: "creative" as const, label: "クリエイティブ", description: "大胆で印象的" },
+];
+
+export const PREMIUM_TEMPLATES = [
+  { id: "elegant" as const, label: "エレガント", description: "セリフ体でクラシックな雰囲気" },
+  { id: "neon" as const, label: "ネオン", description: "ダークテーマにネオンの光" },
+  { id: "japanese" as const, label: "和風", description: "日本の伝統的な美しさ" },
+  { id: "photo-grid" as const, label: "フォトグリッド", description: "写真を際立たせるデザイン" },
+];
+
+export const TEMPLATES = [...FREE_TEMPLATES, ...PREMIUM_TEMPLATES];
+
+export const DAYS_OF_WEEK = [
+  { key: "mon", label: "月曜日", short: "月" },
+  { key: "tue", label: "火曜日", short: "火" },
+  { key: "wed", label: "水曜日", short: "水" },
+  { key: "thu", label: "木曜日", short: "木" },
+  { key: "fri", label: "金曜日", short: "金" },
+  { key: "sat", label: "土曜日", short: "土" },
+  { key: "sun", label: "日曜日", short: "日" },
 ] as const;

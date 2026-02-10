@@ -1,6 +1,9 @@
 import Link from "next/link";
-import type { Profile, SocialLinks } from "@/lib/types";
+import type { Profile, SocialLinks, TemplateId } from "@/lib/types";
 import { APP_NAME, APP_URL } from "@/lib/constants";
+import { ContactForm } from "./contact-form";
+import { BookingWidget } from "./booking-widget";
+import { EmailSubscribe } from "./email-subscribe";
 import {
   Twitter,
   Instagram,
@@ -14,7 +17,9 @@ import {
   Phone,
   ExternalLink,
   MessageCircle,
+  Star,
 } from "lucide-react";
+import { DAYS_OF_WEEK } from "@/lib/types";
 
 const socialIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   twitter: Twitter,
@@ -34,14 +39,30 @@ function SocialIcon({ platform }: { platform: string }) {
   return <Icon className="h-5 w-5" />;
 }
 
-export function ProfilePage({ profile }: { profile: Profile }) {
+interface ProfilePageProps {
+  profile: Profile;
+  showBranding?: boolean;
+}
+
+export function ProfilePage({ profile, showBranding = true }: ProfilePageProps) {
   const templateStyles = getTemplateStyles(profile.template);
   const socialEntries = Object.entries(profile.social_links || {}).filter(
     ([, url]) => url && url.trim() !== ""
   );
 
+  // Apply custom colors from settings if set
+  const customBg = profile.settings?.background_color
+    ? { backgroundColor: profile.settings.background_color }
+    : undefined;
+  const customText = profile.settings?.text_color
+    ? { color: profile.settings.text_color }
+    : undefined;
+
   return (
-    <div className={`min-h-screen ${templateStyles.bg}`}>
+    <div
+      className={`min-h-screen ${!customBg ? templateStyles.bg : ""}`}
+      style={customBg}
+    >
       <div className="mx-auto max-w-lg px-4 py-12">
         {/* Avatar */}
         <div className="flex flex-col items-center text-center">
@@ -59,7 +80,10 @@ export function ProfilePage({ profile }: { profile: Profile }) {
             </div>
           )}
 
-          <h1 className={`mt-4 text-2xl font-bold ${templateStyles.text}`}>
+          <h1
+            className={`mt-4 text-2xl font-bold ${!customText ? templateStyles.text : ""}`}
+            style={customText}
+          >
             {profile.display_name}
           </h1>
 
@@ -116,9 +140,24 @@ export function ProfilePage({ profile }: { profile: Profile }) {
           )}
         </div>
 
+        {/* LINE Friend Button */}
+        {profile.line_friend_url && (
+          <div className="mt-6">
+            <a
+              href={profile.line_friend_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#06C755] px-5 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            >
+              <MessageCircle className="h-5 w-5" />
+              LINEで友だち追加
+            </a>
+          </div>
+        )}
+
         {/* Links */}
         {profile.links.length > 0 && (
-          <div className="mt-8 space-y-3">
+          <div className="mt-6 space-y-3">
             {profile.links.map((link) => (
               <a
                 key={link.id}
@@ -134,6 +173,21 @@ export function ProfilePage({ profile }: { profile: Profile }) {
           </div>
         )}
 
+        {/* Google Review Button */}
+        {profile.google_review_url && (
+          <div className="mt-6">
+            <a
+              href={profile.google_review_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-3.5 text-sm font-medium transition-all hover:scale-[1.02] ${templateStyles.card} ${templateStyles.text}`}
+            >
+              <Star className="h-4 w-4 text-yellow-500" />
+              Google口コミを書く
+            </a>
+          </div>
+        )}
+
         {/* Business hours */}
         {profile.business_hours && Object.keys(profile.business_hours).length > 0 && (
           <div className={`mt-8 rounded-lg p-4 ${templateStyles.card}`}>
@@ -141,33 +195,60 @@ export function ProfilePage({ profile }: { profile: Profile }) {
               営業時間
             </h3>
             <div className="space-y-1">
-              {Object.entries(profile.business_hours).map(([day, hours]) => (
-                <div key={day} className={`flex justify-between text-xs ${templateStyles.subtext}`}>
-                  <span>{day}</span>
-                  <span>
-                    {hours.closed ? "定休日" : `${hours.open} - ${hours.close}`}
-                  </span>
-                </div>
-              ))}
+              {DAYS_OF_WEEK.map(({ key, label }) => {
+                const hours = profile.business_hours?.[key];
+                if (!hours) return null;
+                return (
+                  <div key={key} className={`flex justify-between text-xs ${templateStyles.subtext}`}>
+                    <span>{label}</span>
+                    <span>
+                      {hours.closed ? "定休日" : `${hours.open} - ${hours.close}`}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
 
+        {/* Booking Widget */}
+        {profile.booking_enabled && profile.booking_slots && (
+          <div className="mt-8">
+            <BookingWidget profileId={profile.id} slots={profile.booking_slots} />
+          </div>
+        )}
+
+        {/* Contact Form */}
+        {profile.contact_form_enabled && (
+          <div className="mt-8">
+            <ContactForm profileId={profile.id} />
+          </div>
+        )}
+
+        {/* Email Subscribe */}
+        {profile.email_collection_enabled && (
+          <div className="mt-8">
+            <EmailSubscribe profileId={profile.id} />
+          </div>
+        )}
+
         {/* Powered by */}
-        <div className="mt-12 text-center">
-          <Link
-            href={APP_URL}
-            className={`inline-flex items-center gap-1 text-xs ${templateStyles.subtext} opacity-60 hover:opacity-100 transition-opacity`}
-          >
-            Powered by {APP_NAME}
-          </Link>
-        </div>
+        {showBranding && (
+          <div className="mt-12 text-center">
+            <Link
+              href={APP_URL}
+              className={`inline-flex items-center gap-1 text-xs ${templateStyles.subtext} opacity-60 hover:opacity-100 transition-opacity`}
+            >
+              Powered by {APP_NAME}
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function getTemplateStyles(template: string) {
+function getTemplateStyles(template: TemplateId | string) {
   switch (template) {
     case "professional":
       return {
@@ -212,6 +293,51 @@ function getTemplateStyles(template: string) {
         linkBtn: "bg-gradient-to-r from-violet-500 to-pink-500 text-white hover:from-violet-600 hover:to-pink-600",
         socialBtn: "bg-violet-100 text-violet-600 hover:bg-violet-200",
         card: "bg-white/70 backdrop-blur-sm",
+      };
+    // Premium templates
+    case "elegant":
+      return {
+        bg: "bg-amber-50",
+        text: "text-amber-950",
+        subtext: "text-amber-800/70",
+        ring: "ring-amber-300",
+        avatarFallback: "bg-amber-200 text-amber-800",
+        linkBtn: "border border-amber-300 bg-white text-amber-900 hover:bg-amber-50",
+        socialBtn: "text-amber-700 hover:text-amber-900",
+        card: "bg-white border border-amber-200",
+      };
+    case "neon":
+      return {
+        bg: "bg-gray-950",
+        text: "text-white",
+        subtext: "text-gray-400",
+        ring: "ring-cyan-500",
+        avatarFallback: "bg-gray-800 text-cyan-400",
+        linkBtn: "border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]",
+        socialBtn: "text-cyan-400 hover:text-cyan-300",
+        card: "bg-gray-900 border border-gray-800",
+      };
+    case "japanese":
+      return {
+        bg: "bg-[#f5f0e8]",
+        text: "text-[#3d3229]",
+        subtext: "text-[#7d7067]",
+        ring: "ring-[#c4a882]",
+        avatarFallback: "bg-[#e8ddd0] text-[#7d6b56]",
+        linkBtn: "border border-[#c4a882] text-[#3d3229] hover:bg-[#ebe3d6]",
+        socialBtn: "text-[#7d6b56] hover:text-[#3d3229]",
+        card: "bg-white/60 border border-[#d4c4ad]",
+      };
+    case "photo-grid":
+      return {
+        bg: "bg-neutral-900",
+        text: "text-white",
+        subtext: "text-neutral-400",
+        ring: "ring-white/30",
+        avatarFallback: "bg-neutral-800 text-neutral-300",
+        linkBtn: "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm",
+        socialBtn: "text-neutral-400 hover:text-white",
+        card: "bg-white/5 border border-white/10",
       };
     default:
       return getTemplateStyles("professional");

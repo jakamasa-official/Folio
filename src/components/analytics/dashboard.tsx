@@ -3,12 +3,15 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_URL } from "@/lib/constants";
-import { BarChart3, Eye, TrendingUp, Copy } from "lucide-react";
+import { BarChart3, Eye, TrendingUp, Copy, Globe, Monitor, Smartphone, Tablet, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 interface ViewData {
   viewed_at: string;
+  referrer: string | null;
+  device_type: string | null;
+  country: string | null;
 }
 
 interface Props {
@@ -16,6 +19,39 @@ interface Props {
   totalViews: number;
   username: string;
 }
+
+function BreakdownBar({ label, count, max, icon }: { label: string; count: number; max: number; icon?: React.ReactNode }) {
+  const pct = max > 0 ? (count / max) * 100 : 0;
+  return (
+    <div className="flex items-center gap-3">
+      {icon && <div className="text-muted-foreground">{icon}</div>}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between text-sm">
+          <span className="truncate">{label}</span>
+          <span className="ml-2 text-muted-foreground">{count}</span>
+        </div>
+        <div className="mt-1 h-2 rounded-full bg-muted">
+          <div
+            className="h-2 rounded-full bg-primary/70"
+            style={{ width: `${Math.max(pct, 1)}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const DEVICE_ICONS: Record<string, React.ReactNode> = {
+  desktop: <Monitor className="h-4 w-4" />,
+  mobile: <Smartphone className="h-4 w-4" />,
+  tablet: <Tablet className="h-4 w-4" />,
+};
+
+const DEVICE_LABELS: Record<string, string> = {
+  desktop: "デスクトップ",
+  mobile: "モバイル",
+  tablet: "タブレット",
+};
 
 export function AnalyticsDashboard({ views, totalViews, username }: Props) {
   const chartData = useMemo(() => {
@@ -43,6 +79,48 @@ export function AnalyticsDashboard({ views, totalViews, username }: Props) {
       label: `${parseInt(date.split("-")[1])}/${parseInt(date.split("-")[2])}`,
       count,
     }));
+  }, [views]);
+
+  const deviceBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    views.forEach((v) => {
+      const device = v.device_type || "unknown";
+      counts[device] = (counts[device] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .map(([device, count]) => ({ device, count }));
+  }, [views]);
+
+  const referrerBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    views.forEach((v) => {
+      let source = "直接アクセス";
+      if (v.referrer) {
+        try {
+          source = new URL(v.referrer).hostname;
+        } catch {
+          source = v.referrer;
+        }
+      }
+      counts[source] = (counts[source] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 8)
+      .map(([source, count]) => ({ source, count }));
+  }, [views]);
+
+  const countryBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    views.forEach((v) => {
+      const country = v.country || "不明";
+      counts[country] = (counts[country] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 8)
+      .map(([country, count]) => ({ country, count }));
   }, [views]);
 
   const todayViews = chartData[chartData.length - 1]?.count || 0;
@@ -134,6 +212,82 @@ export function AnalyticsDashboard({ views, totalViews, username }: Props) {
             <span>{chartData[0]?.label}</span>
             <span>{chartData[chartData.length - 1]?.label}</span>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Breakdowns */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Device breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Monitor className="h-4 w-4" />
+              デバイス
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {deviceBreakdown.length === 0 ? (
+              <p className="text-sm text-muted-foreground">データがありません</p>
+            ) : (
+              deviceBreakdown.map((d) => (
+                <BreakdownBar
+                  key={d.device}
+                  label={DEVICE_LABELS[d.device] || d.device}
+                  count={d.count}
+                  max={deviceBreakdown[0].count}
+                  icon={DEVICE_ICONS[d.device]}
+                />
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Country breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Globe className="h-4 w-4" />
+              国 / 地域
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {countryBreakdown.length === 0 ? (
+              <p className="text-sm text-muted-foreground">データがありません</p>
+            ) : (
+              countryBreakdown.map((c) => (
+                <BreakdownBar
+                  key={c.country}
+                  label={c.country}
+                  count={c.count}
+                  max={countryBreakdown[0].count}
+                />
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Referrer breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ExternalLink className="h-4 w-4" />
+            流入元
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {referrerBreakdown.length === 0 ? (
+            <p className="text-sm text-muted-foreground">データがありません</p>
+          ) : (
+            referrerBreakdown.map((r) => (
+              <BreakdownBar
+                key={r.source}
+                label={r.source}
+                count={r.count}
+                max={referrerBreakdown[0].count}
+              />
+            ))
+          )}
         </CardContent>
       </Card>
     </div>
