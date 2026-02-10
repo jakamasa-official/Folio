@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ProfileEditor } from "@/components/editor/profile-editor";
 import type { Profile } from "@/lib/types";
@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APP_NAME, USERNAME_REGEX } from "@/lib/constants";
-import { Sparkles, Copy, Check, ExternalLink } from "lucide-react";
-import { APP_URL } from "@/lib/constants";
+import { APP_NAME, USERNAME_REGEX, APP_URL } from "@/lib/constants";
+import { Sparkles, Copy, Check, ExternalLink, QrCode, Download } from "lucide-react";
+import { SeoPreview } from "@/components/dashboard/seo-preview";
+import QRCode from "qrcode";
 
 function ShareBar({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
@@ -37,6 +38,109 @@ function ShareBar({ url }: { url: string }) {
         </a>
       </Button>
     </div>
+  );
+}
+
+type QrColorOption = "black" | "brand" | "white";
+
+const QR_COLOR_CONFIGS: Record<QrColorOption, { dark: string; light: string; label: string }> = {
+  black: { dark: "#000000", light: "#ffffff", label: "黒" },
+  brand: { dark: "#6366f1", light: "#ffffff", label: "ブランド" },
+  white: { dark: "#ffffff", light: "#1e1e1e", label: "白（暗い背景用）" },
+};
+
+function QRCodeCard({ url }: { url: string }) {
+  const [colorOption, setColorOption] = useState<QrColorOption>("black");
+  const [previewSrc, setPreviewSrc] = useState<string>("");
+  const downloadLinkRef = useRef<HTMLAnchorElement>(null);
+
+  const generateQR = useCallback(
+    async (size: number, option: QrColorOption): Promise<string> => {
+      const colors = QR_COLOR_CONFIGS[option];
+      return QRCode.toDataURL(url, {
+        width: size,
+        margin: 2,
+        color: { dark: colors.dark, light: colors.light },
+        errorCorrectionLevel: "M",
+      });
+    },
+    [url]
+  );
+
+  useEffect(() => {
+    generateQR(150, colorOption).then(setPreviewSrc);
+  }, [colorOption, generateQR]);
+
+  async function handleDownload() {
+    const dataUrl = await generateQR(400, colorOption);
+    const link = downloadLinkRef.current;
+    if (!link) return;
+    link.href = dataUrl;
+    link.download = "qrcode.png";
+    link.click();
+  }
+
+  return (
+    <Card className="mb-6">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <QrCode className="h-4 w-4" />
+          QRコード
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-start gap-5">
+          {/* QR preview */}
+          <div className="shrink-0 overflow-hidden rounded-lg border bg-white p-2">
+            {previewSrc ? (
+              <img src={previewSrc} alt="QR Code" width={150} height={150} className="block" />
+            ) : (
+              <div className="h-[150px] w-[150px] animate-pulse rounded bg-muted" />
+            )}
+          </div>
+
+          {/* Controls */}
+          <div className="flex flex-col gap-3">
+            {/* Color picker */}
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-muted-foreground">カラー</p>
+              <div className="flex flex-wrap gap-2">
+                {(Object.keys(QR_COLOR_CONFIGS) as QrColorOption[]).map((key) => {
+                  const cfg = QR_COLOR_CONFIGS[key];
+                  const isActive = key === colorOption;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setColorOption(key)}
+                      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors ${
+                        isActive
+                          ? "border-primary bg-primary/10 font-medium text-primary"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <span
+                        className="inline-block h-3 w-3 rounded-full border"
+                        style={{ backgroundColor: cfg.dark, borderColor: cfg.dark === "#ffffff" ? "#999" : cfg.dark }}
+                      />
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Download button */}
+            <Button variant="outline" size="sm" className="w-fit gap-1.5" onClick={handleDownload}>
+              <Download className="h-4 w-4" />
+              ダウンロード
+            </Button>
+            {/* Hidden download anchor */}
+            <a ref={downloadLinkRef} className="hidden" aria-hidden="true" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -269,6 +373,16 @@ export default function DashboardPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-6 text-2xl font-bold">マイページ編集</h1>
       <ShareBar url={profileUrl} />
+      <QRCodeCard url={profileUrl} />
+      <Card className="mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">SNSシェアプレビュー</CardTitle>
+          <CardDescription>SNSでシェアした時の表示イメージ</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SeoPreview profile={profile} appUrl={APP_URL} />
+        </CardContent>
+      </Card>
       <ProfileEditor profile={profile} />
     </div>
   );

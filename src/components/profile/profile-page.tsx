@@ -4,6 +4,7 @@ import { APP_NAME, APP_URL } from "@/lib/constants";
 import { ContactForm } from "./contact-form";
 import { BookingWidget } from "./booking-widget";
 import { EmailSubscribe } from "./email-subscribe";
+import { VCardButton } from "./vcard-button";
 import {
   Globe,
   MapPin,
@@ -11,6 +12,7 @@ import {
   Phone,
   ExternalLink,
   Star,
+  Eye,
 } from "lucide-react";
 import {
   SiX,
@@ -45,9 +47,10 @@ function SocialIcon({ platform }: { platform: string }) {
 interface ProfilePageProps {
   profile: Profile;
   showBranding?: boolean;
+  viewCount?: number;
 }
 
-export function ProfilePage({ profile, showBranding = true }: ProfilePageProps) {
+export function ProfilePage({ profile, showBranding = true, viewCount }: ProfilePageProps) {
   const templateStyles = getTemplateStyles(profile.template);
   const socialEntries = Object.entries(profile.social_links || {}).filter(
     ([, url]) => url && url.trim() !== ""
@@ -135,6 +138,14 @@ export function ProfilePage({ profile, showBranding = true }: ProfilePageProps) 
             )}
           </div>
 
+          {/* View count */}
+          {viewCount != null && viewCount > 0 && (
+            <div className={`mt-2 flex items-center justify-center gap-1 text-xs ${templateStyles.subtext} opacity-60`}>
+              <Eye className="h-3 w-3" />
+              <span>{viewCount.toLocaleString()} views</span>
+            </div>
+          )}
+
           {/* Social icons */}
           {socialEntries.length > 0 && (
             <div className="mt-4 flex gap-3">
@@ -152,6 +163,18 @@ export function ProfilePage({ profile, showBranding = true }: ProfilePageProps) 
               ))}
             </div>
           )}
+        </div>
+
+        {/* vCard Download */}
+        <div className="mt-6">
+          <VCardButton
+            displayName={profile.display_name}
+            title={profile.title}
+            email={profile.contact_email}
+            phone={profile.contact_phone}
+            location={profile.location}
+            profileUrl={APP_URL + "/" + profile.username}
+          />
         </div>
 
         {/* LINE Friend Button */}

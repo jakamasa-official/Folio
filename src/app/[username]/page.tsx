@@ -103,13 +103,19 @@ export default async function PublicProfilePage({ params }: Props) {
   const { page_password: _pw, ...safeProfile } = typedProfile;
   const clientProfile = safeProfile as Profile;
 
+  // Fetch total page view count
+  const { count: viewCount } = await supabase
+    .from("page_views")
+    .select("*", { count: "exact", head: true })
+    .eq("profile_id", clientProfile.id);
+
   // Pro users don't show branding
   const showBranding = !clientProfile.is_pro;
 
   return (
     <>
       <TrackPageView profileId={clientProfile.id} />
-      <ProfilePage profile={clientProfile} showBranding={showBranding} />
+      <ProfilePage profile={clientProfile} showBranding={showBranding} viewCount={viewCount ?? undefined} />
     </>
   );
 }
