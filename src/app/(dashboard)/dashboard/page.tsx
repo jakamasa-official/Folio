@@ -39,14 +39,26 @@ function OnboardingForm({ userId, defaultUsername, defaultDisplayName, onComplet
     setSaving(true);
     const supabase = createClient();
 
+    // Check if user already has a profile (prevent duplicates)
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existingProfile) {
+      onComplete(existingProfile as Profile);
+      return;
+    }
+
     // Check username availability
-    const { data: existing } = await supabase
+    const { data: existingUsername } = await supabase
       .from("profiles")
       .select("id")
       .ilike("username", username)
       .maybeSingle();
 
-    if (existing) {
+    if (existingUsername) {
       setError("このユーザー名は既に使用されています");
       setSaving(false);
       return;
