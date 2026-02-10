@@ -18,7 +18,6 @@ import {
   Mail,
   Calendar,
   Users,
-  Globe,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -28,7 +27,6 @@ const navItems = [
   { href: "/dashboard/inbox", label: "受信トレイ", icon: Mail },
   { href: "/dashboard/bookings", label: "予約管理", icon: Calendar },
   { href: "/dashboard/subscribers", label: "メール購読", icon: Users },
-  { href: "/dashboard/domain", label: "ドメイン", icon: Globe },
   { href: "/dashboard/settings", label: "設定", icon: Settings },
 ];
 
