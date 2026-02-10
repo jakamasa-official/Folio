@@ -5,32 +5,35 @@ import { ContactForm } from "./contact-form";
 import { BookingWidget } from "./booking-widget";
 import { EmailSubscribe } from "./email-subscribe";
 import {
-  Twitter,
-  Instagram,
-  Youtube,
-  Github,
-  Linkedin,
-  Facebook,
   Globe,
   MapPin,
   Mail,
   Phone,
   ExternalLink,
-  MessageCircle,
   Star,
 } from "lucide-react";
+import {
+  SiX,
+  SiInstagram,
+  SiYoutube,
+  SiGithub,
+  SiLinkedin,
+  SiFacebook,
+  SiLine,
+  SiTiktok,
+} from "react-icons/si";
 import { DAYS_OF_WEEK } from "@/lib/types";
 
 const socialIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  twitter: Twitter,
-  instagram: Instagram,
-  youtube: Youtube,
-  github: Github,
-  linkedin: Linkedin,
-  facebook: Facebook,
+  twitter: SiX,
+  instagram: SiInstagram,
+  youtube: SiYoutube,
+  github: SiGithub,
+  linkedin: SiLinkedin,
+  facebook: SiFacebook,
   website: Globe,
-  line: MessageCircle,
-  tiktok: Globe,
+  line: SiLine,
+  tiktok: SiTiktok,
 };
 
 function SocialIcon({ platform }: { platform: string }) {
@@ -58,10 +61,21 @@ export function ProfilePage({ profile, showBranding = true }: ProfilePageProps) 
     ? { color: profile.settings.text_color }
     : undefined;
 
+  const bgStyle: React.CSSProperties = customBg
+    ? customBg
+    : templateStyles.bgImage
+      ? {
+          backgroundImage: `url(${templateStyles.bgImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+        }
+      : {};
+
   return (
     <div
-      className={`min-h-screen ${!customBg ? templateStyles.bg : ""}`}
-      style={customBg}
+      className={`min-h-screen ${!customBg && !templateStyles.bgImage ? templateStyles.bg : ""}`}
+      style={bgStyle}
     >
       <div className="mx-auto max-w-lg px-4 py-12">
         {/* Avatar */}
@@ -149,7 +163,7 @@ export function ProfilePage({ profile, showBranding = true }: ProfilePageProps) 
               rel="noopener noreferrer"
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#06C755] px-5 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
-              <MessageCircle className="h-5 w-5" />
+              <SiLine className="h-5 w-5" />
               LINEで友だち追加
             </a>
           </div>
@@ -253,6 +267,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "professional":
       return {
         bg: "bg-white",
+        bgImage: undefined as string | undefined,
         text: "text-gray-900",
         subtext: "text-gray-600",
         ring: "ring-gray-200",
@@ -264,6 +279,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "minimal":
       return {
         bg: "bg-stone-50",
+        bgImage: undefined as string | undefined,
         text: "text-stone-900",
         subtext: "text-stone-500",
         ring: "ring-stone-200",
@@ -275,6 +291,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "business":
       return {
         bg: "bg-slate-50",
+        bgImage: undefined as string | undefined,
         text: "text-slate-900",
         subtext: "text-slate-600",
         ring: "ring-blue-200",
@@ -286,6 +303,7 @@ function getTemplateStyles(template: TemplateId | string) {
     case "creative":
       return {
         bg: "bg-gradient-to-br from-violet-50 to-pink-50",
+        bgImage: undefined as string | undefined,
         text: "text-gray-900",
         subtext: "text-gray-600",
         ring: "ring-violet-200",
@@ -298,39 +316,43 @@ function getTemplateStyles(template: TemplateId | string) {
     case "elegant":
       return {
         bg: "bg-amber-50",
+        bgImage: "/images/bg-elegant.png",
         text: "text-amber-950",
         subtext: "text-amber-800/70",
         ring: "ring-amber-300",
         avatarFallback: "bg-amber-200 text-amber-800",
-        linkBtn: "border border-amber-300 bg-white text-amber-900 hover:bg-amber-50",
+        linkBtn: "border border-amber-300 bg-white/80 backdrop-blur-sm text-amber-900 hover:bg-white",
         socialBtn: "text-amber-700 hover:text-amber-900",
-        card: "bg-white border border-amber-200",
+        card: "bg-white/70 backdrop-blur-sm border border-amber-200",
       };
     case "neon":
       return {
         bg: "bg-gray-950",
+        bgImage: "/images/bg-dark-bokeh.png",
         text: "text-white",
         subtext: "text-gray-400",
         ring: "ring-cyan-500",
         avatarFallback: "bg-gray-800 text-cyan-400",
-        linkBtn: "border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]",
+        linkBtn: "border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] backdrop-blur-sm",
         socialBtn: "text-cyan-400 hover:text-cyan-300",
-        card: "bg-gray-900 border border-gray-800",
+        card: "bg-gray-900/80 backdrop-blur-sm border border-gray-800",
       };
     case "japanese":
       return {
         bg: "bg-[#f5f0e8]",
+        bgImage: "/images/bg-japanese.png",
         text: "text-[#3d3229]",
         subtext: "text-[#7d7067]",
         ring: "ring-[#c4a882]",
         avatarFallback: "bg-[#e8ddd0] text-[#7d6b56]",
-        linkBtn: "border border-[#c4a882] text-[#3d3229] hover:bg-[#ebe3d6]",
+        linkBtn: "border border-[#c4a882] text-[#3d3229] hover:bg-[#ebe3d6] bg-white/50 backdrop-blur-sm",
         socialBtn: "text-[#7d6b56] hover:text-[#3d3229]",
-        card: "bg-white/60 border border-[#d4c4ad]",
+        card: "bg-white/50 backdrop-blur-sm border border-[#d4c4ad]",
       };
     case "photo-grid":
       return {
         bg: "bg-neutral-900",
+        bgImage: undefined as string | undefined,
         text: "text-white",
         subtext: "text-neutral-400",
         ring: "ring-white/30",
