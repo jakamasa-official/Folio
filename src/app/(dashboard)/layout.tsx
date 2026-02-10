@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { DashboardNav } from "@/components/dashboard/nav";
 import type { User } from "@supabase/supabase-js";
@@ -14,16 +13,16 @@ export default function DashboardLayout({
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
+    let initialLoadDone = false;
 
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        router.replace("/login");
+        window.location.href = "/login";
         return;
       }
 
@@ -71,18 +70,22 @@ export default function DashboardLayout({
 
       setUsername(profile?.username);
       setLoading(false);
+      initialLoadDone = true;
     }
 
     init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session?.user) {
-        router.replace("/login");
+    // Only redirect on sign-out AFTER the initial load is done.
+    // This prevents a race condition where onAuthStateChange fires
+    // before getUser() completes and incorrectly redirects to login.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || (initialLoadDone && !session?.user)) {
+        window.location.href = "/login";
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (
