@@ -52,13 +52,14 @@ function OnboardingForm({ userId, defaultUsername, defaultDisplayName, onComplet
       return;
     }
 
-    // Create profile
+    // Create profile (published by default so public page works immediately)
     const { data: newProfile, error: insertError } = await supabase
       .from("profiles")
       .insert({
         user_id: userId,
         username: username.toLowerCase(),
         display_name: displayName.trim(),
+        is_published: true,
       })
       .select("*")
       .single();

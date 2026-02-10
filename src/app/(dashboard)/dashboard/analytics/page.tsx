@@ -17,7 +17,7 @@ export default function AnalyticsPage() {
 
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) { setLoading(false); return; }
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (!profile) return;
+      if (!profile) { setLoading(false); return; }
 
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -64,7 +64,14 @@ export default function AnalyticsPage() {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="mx-auto max-w-2xl">
+        <h1 className="mb-6 text-2xl font-bold">アナリティクス</h1>
+        <p className="text-sm text-muted-foreground">プロフィールを作成してからアナリティクスが表示されます。</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl">

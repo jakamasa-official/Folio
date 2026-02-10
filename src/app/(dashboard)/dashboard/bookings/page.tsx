@@ -49,7 +49,7 @@ export default function BookingsPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
 
     const { data: profileData } = await supabase
       .from("profiles")
@@ -57,7 +57,7 @@ export default function BookingsPage() {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (!profileData) return;
+    if (!profileData) { setLoading(false); return; }
     const p = profileData as Profile;
     setProfile(p);
     setBookingEnabled(p.booking_enabled);

@@ -27,7 +27,7 @@ export default function DomainPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
 
     const { data: profileData } = await supabase
       .from("profiles")
@@ -35,7 +35,7 @@ export default function DomainPage() {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (!profileData) return;
+    if (!profileData) { setLoading(false); return; }
     const p = profileData as Profile;
     setProfile(p);
     setDomain(p.custom_domain || "");

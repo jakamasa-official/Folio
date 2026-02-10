@@ -33,7 +33,7 @@ export default function InboxPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
 
     const { data: profileData } = await supabase
       .from("profiles")
@@ -41,7 +41,7 @@ export default function InboxPage() {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (!profileData) return;
+    if (!profileData) { setLoading(false); return; }
     setProfile(profileData as Profile);
 
     const { data: submissionsData } = await supabase
