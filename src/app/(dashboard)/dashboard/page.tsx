@@ -9,7 +9,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_NAME, USERNAME_REGEX } from "@/lib/constants";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Copy, Check, ExternalLink } from "lucide-react";
+import { APP_URL } from "@/lib/constants";
+
+function ShareBar({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="mb-6 flex items-center gap-2 rounded-lg border bg-muted/30 p-3">
+      <div className="min-w-0 flex-1 truncate rounded-md bg-background px-3 py-2 text-sm font-mono text-muted-foreground">
+        {url}
+      </div>
+      <Button variant="outline" size="sm" onClick={handleCopy} className="shrink-0 gap-1.5">
+        {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+        {copied ? "コピー済み" : "コピー"}
+      </Button>
+      <Button variant="outline" size="sm" asChild className="shrink-0 gap-1.5">
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          <ExternalLink className="h-4 w-4" />
+          プレビュー
+        </a>
+      </Button>
+    </div>
+  );
+}
 
 function OnboardingForm({ userId, defaultUsername, defaultDisplayName, onComplete }: {
   userId: string;
@@ -234,9 +263,12 @@ export default function DashboardPage() {
     );
   }
 
+  const profileUrl = `${APP_URL}/${profile.username}`;
+
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-6 text-2xl font-bold">マイページ編集</h1>
+      <ShareBar url={profileUrl} />
       <ProfileEditor profile={profile} />
     </div>
   );

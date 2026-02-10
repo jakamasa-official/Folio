@@ -298,25 +298,38 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
             プレミアムテンプレート
             {!profile.is_pro && <span className="text-amber-600">（Proプラン）</span>}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {PREMIUM_TEMPLATES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => handleTemplateSelect(t.id)}
-                className={`relative rounded-lg border-2 p-3 text-left transition-colors ${
-                  profile.template === t.id
-                    ? "border-primary bg-primary/5"
-                    : !profile.is_pro
-                    ? "border-border opacity-60"
-                    : "border-border hover:border-muted-foreground"
-                }`}
-              >
-                {!profile.is_pro && <Lock className="absolute right-2 top-2 h-3 w-3 text-muted-foreground" />}
-                <div className="font-medium">{t.label}</div>
-                <div className="text-xs text-muted-foreground">{t.description}</div>
-              </button>
-            ))}
-          </div>
+          {(() => {
+            const categories = PREMIUM_TEMPLATES.reduce<Record<string, typeof PREMIUM_TEMPLATES>>((acc, t) => {
+              const cat = (t as { category?: string }).category || "その他";
+              if (!acc[cat]) acc[cat] = [];
+              acc[cat].push(t);
+              return acc;
+            }, {});
+            return Object.entries(categories).map(([category, templates]) => (
+              <div key={category} className="mb-4">
+                <div className="mb-2 text-xs font-semibold text-muted-foreground">{category}</div>
+                <div className="grid grid-cols-2 gap-3">
+                  {templates.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => handleTemplateSelect(t.id)}
+                      className={`relative rounded-lg border-2 p-3 text-left transition-colors ${
+                        profile.template === t.id
+                          ? "border-primary bg-primary/5"
+                          : !profile.is_pro
+                          ? "border-border opacity-60"
+                          : "border-border hover:border-muted-foreground"
+                      }`}
+                    >
+                      {!profile.is_pro && <Lock className="absolute right-2 top-2 h-3 w-3 text-muted-foreground" />}
+                      <div className="font-medium">{t.label}</div>
+                      <div className="text-xs text-muted-foreground">{t.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ));
+          })()}
         </CardContent>
       </Card>
 

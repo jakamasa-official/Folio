@@ -1,6 +1,11 @@
 export const APP_NAME = "Folio";
 export const APP_DESCRIPTION = "あなたのビジネスをオンラインに。10分で、ひとつのツールで。";
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+function resolveAppUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  return `https://${raw}`;
+}
+export const APP_URL = resolveAppUrl();
 
 export const USERNAME_REGEX = /^[a-zA-Z0-9_-]{3,30}$/;
 export const USERNAME_MIN_LENGTH = 3;

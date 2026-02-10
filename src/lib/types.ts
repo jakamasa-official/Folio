@@ -1,4 +1,26 @@
-export type TemplateId = "professional" | "minimal" | "business" | "creative" | "elegant" | "neon" | "japanese" | "photo-grid";
+export type TemplateId =
+  // Free
+  | "professional" | "minimal" | "business" | "creative"
+  // Premium (original)
+  | "elegant" | "neon" | "japanese" | "photo-grid"
+  // Nature
+  | "ocean" | "sunset" | "aurora" | "forest" | "sakura" | "desert"
+  // Pastel
+  | "pastel-pink" | "pastel-blue" | "pastel-mint" | "pastel-lavender" | "pastel-peach"
+  // Dark
+  | "midnight" | "charcoal" | "dark-purple" | "dark-green" | "dark-red" | "slate-dark"
+  // Gradient
+  | "gradient-sunset" | "gradient-ocean" | "gradient-berry" | "gradient-fire" | "gradient-mint" | "gradient-twilight"
+  // Retro/Pop
+  | "retro" | "synthwave" | "vaporwave" | "pop-art" | "pixel"
+  // Monochrome
+  | "mono-black" | "mono-white" | "mono-gray" | "mono-sepia"
+  // Material
+  | "material-blue" | "material-green" | "material-red" | "material-amber"
+  // Seasonal
+  | "spring" | "summer" | "autumn" | "winter"
+  // Special
+  | "glassmorphism" | "brutalist";
 
 export interface Profile {
   id: string;
@@ -111,7 +133,24 @@ export interface WallpaperConfig {
   company?: string;
   email?: string;
   phone?: string;
-  style: "dark" | "light" | "gradient" | "minimal" | "bold";
+  style:
+    | "dark" | "light" | "gradient" | "minimal" | "bold"
+    // Nature
+    | "ocean" | "sunset" | "aurora" | "sakura" | "forest" | "lavender" | "desert" | "arctic"
+    // Urban
+    | "midnight" | "concrete" | "neon-city" | "chrome" | "industrial"
+    // Retro/Gaming
+    | "pixel" | "retro-game" | "synthwave" | "vaporwave" | "arcade" | "8bit" | "gameboy" | "commodore"
+    // Elegant
+    | "marble" | "gold" | "rose-gold" | "platinum" | "ivory"
+    // Japanese
+    | "washi" | "indigo" | "matcha" | "zen" | "ukiyo"
+    // Tech
+    | "matrix" | "circuit" | "cyber" | "hologram" | "terminal"
+    // Gradients
+    | "fire" | "ice" | "peach" | "berry" | "twilight"
+    // Bold/Pop
+    | "monochrome" | "crimson" | "electric-blue" | "neon-green";
   phone_model: string;
   qr_url: string;
 }
@@ -143,10 +182,62 @@ export const FREE_TEMPLATES = [
 ];
 
 export const PREMIUM_TEMPLATES = [
-  { id: "elegant" as const, label: "エレガント", description: "セリフ体でクラシックな雰囲気" },
-  { id: "neon" as const, label: "ネオン", description: "ダークテーマにネオンの光" },
-  { id: "japanese" as const, label: "和風", description: "日本の伝統的な美しさ" },
-  { id: "photo-grid" as const, label: "フォトグリッド", description: "写真を際立たせるデザイン" },
+  // Original premium
+  { id: "elegant" as const, label: "エレガント", description: "セリフ体でクラシックな雰囲気", category: "オリジナル" },
+  { id: "neon" as const, label: "ネオン", description: "ダークテーマにネオンの光", category: "オリジナル" },
+  { id: "japanese" as const, label: "和風", description: "日本の伝統的な美しさ", category: "オリジナル" },
+  { id: "photo-grid" as const, label: "フォトグリッド", description: "写真を際立たせるデザイン", category: "オリジナル" },
+  // Nature
+  { id: "ocean" as const, label: "オーシャン", description: "深い海のブルーグラデーション", category: "自然" },
+  { id: "sunset" as const, label: "サンセット", description: "夕焼けのオレンジとピンク", category: "自然" },
+  { id: "aurora" as const, label: "オーロラ", description: "北極光の幻想的な色彩", category: "自然" },
+  { id: "forest" as const, label: "フォレスト", description: "深い森の緑と大地の色", category: "自然" },
+  { id: "sakura" as const, label: "桜", description: "春の桜をイメージしたピンク", category: "自然" },
+  { id: "desert" as const, label: "デザート", description: "砂漠の暖かいサンドカラー", category: "自然" },
+  // Pastel
+  { id: "pastel-pink" as const, label: "パステルピンク", description: "やさしいピンクの世界", category: "パステル" },
+  { id: "pastel-blue" as const, label: "パステルブルー", description: "空のような淡いブルー", category: "パステル" },
+  { id: "pastel-mint" as const, label: "パステルミント", description: "爽やかなミントグリーン", category: "パステル" },
+  { id: "pastel-lavender" as const, label: "パステルラベンダー", description: "癒しのラベンダーカラー", category: "パステル" },
+  { id: "pastel-peach" as const, label: "パステルピーチ", description: "温かみのあるピーチカラー", category: "パステル" },
+  // Dark
+  { id: "midnight" as const, label: "ミッドナイト", description: "深夜の静けさを感じるダーク", category: "ダーク" },
+  { id: "charcoal" as const, label: "チャコール", description: "洗練されたチャコールグレー", category: "ダーク" },
+  { id: "dark-purple" as const, label: "ダークパープル", description: "神秘的な深紫のテーマ", category: "ダーク" },
+  { id: "dark-green" as const, label: "ダークグリーン", description: "深い森のようなダークグリーン", category: "ダーク" },
+  { id: "dark-red" as const, label: "ダークレッド", description: "情熱的なダークレッド", category: "ダーク" },
+  { id: "slate-dark" as const, label: "スレートダーク", description: "モダンなスレートカラー", category: "ダーク" },
+  // Gradient
+  { id: "gradient-sunset" as const, label: "グラデーション・サンセット", description: "オレンジからピンクへの移り変わり", category: "グラデーション" },
+  { id: "gradient-ocean" as const, label: "グラデーション・オーシャン", description: "ティールからブルーへの海色", category: "グラデーション" },
+  { id: "gradient-berry" as const, label: "グラデーション・ベリー", description: "パープルからマゼンタの華やかさ", category: "グラデーション" },
+  { id: "gradient-fire" as const, label: "グラデーション・ファイア", description: "レッドからイエローの炎", category: "グラデーション" },
+  { id: "gradient-mint" as const, label: "グラデーション・ミント", description: "エメラルドからティールの清涼感", category: "グラデーション" },
+  { id: "gradient-twilight" as const, label: "グラデーション・トワイライト", description: "インディゴからパープルの黄昏", category: "グラデーション" },
+  // Retro/Pop
+  { id: "retro" as const, label: "レトロ", description: "70年代風のレトロカラー", category: "レトロ・ポップ" },
+  { id: "synthwave" as const, label: "シンセウェーブ", description: "80年代ネオンのレトロフューチャー", category: "レトロ・ポップ" },
+  { id: "vaporwave" as const, label: "ヴェイパーウェーブ", description: "ピンクとシアンの幻想世界", category: "レトロ・ポップ" },
+  { id: "pop-art" as const, label: "ポップアート", description: "大胆でカラフルなポップスタイル", category: "レトロ・ポップ" },
+  { id: "pixel" as const, label: "ピクセル", description: "レトロゲーム風のドット調", category: "レトロ・ポップ" },
+  // Monochrome
+  { id: "mono-black" as const, label: "モノブラック", description: "ピュアブラックのミニマルデザイン", category: "モノクローム" },
+  { id: "mono-white" as const, label: "モノホワイト", description: "真っ白でクリーンなデザイン", category: "モノクローム" },
+  { id: "mono-gray" as const, label: "モノグレー", description: "グレースケールの落ち着いた印象", category: "モノクローム" },
+  { id: "mono-sepia" as const, label: "モノセピア", description: "セピア調のノスタルジック", category: "モノクローム" },
+  // Material
+  { id: "material-blue" as const, label: "マテリアルブルー", description: "マテリアルデザインのブルー", category: "マテリアル" },
+  { id: "material-green" as const, label: "マテリアルグリーン", description: "マテリアルデザインのグリーン", category: "マテリアル" },
+  { id: "material-red" as const, label: "マテリアルレッド", description: "マテリアルデザインのレッド", category: "マテリアル" },
+  { id: "material-amber" as const, label: "マテリアルアンバー", description: "マテリアルデザインのアンバー", category: "マテリアル" },
+  // Seasonal
+  { id: "spring" as const, label: "スプリング", description: "春の花々のような明るさ", category: "季節" },
+  { id: "summer" as const, label: "サマー", description: "夏の青空と海を感じるデザイン", category: "季節" },
+  { id: "autumn" as const, label: "オータム", description: "秋の紅葉のような温かみ", category: "季節" },
+  { id: "winter" as const, label: "ウィンター", description: "冬の雪景色のようなクールさ", category: "季節" },
+  // Special
+  { id: "glassmorphism" as const, label: "グラスモーフィズム", description: "すりガラス風の透明感", category: "スペシャル" },
+  { id: "brutalist" as const, label: "ブルータリスト", description: "大胆で荒削りなデザイン", category: "スペシャル" },
 ];
 
 export const TEMPLATES = [...FREE_TEMPLATES, ...PREMIUM_TEMPLATES];
