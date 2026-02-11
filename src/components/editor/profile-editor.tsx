@@ -38,6 +38,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { toast } from "sonner";
 import type { Profile, ProfileLink, ProfileSlide, TemplateId } from "@/lib/types";
 import { SOCIAL_PLATFORMS, FREE_TEMPLATES, PREMIUM_TEMPLATES, TEMPLATES } from "@/lib/types";
 import { APP_URL, ALLOWED_IMAGE_TYPES, MAX_AVATAR_SIZE, MAX_BIO_LENGTH, MAX_LINKS } from "@/lib/constants";
@@ -457,11 +458,11 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
 
       if (updateError) throw new Error(updateError.message);
 
-      setMessage("保存しました");
+      toast.success("保存しました");
       setAvatarFile(null);
       setPagePasswordInput("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "保存に失敗しました");
+      toast.error(err instanceof Error ? err.message : "保存に失敗しました");
     } finally {
       setSaving(false);
     }
