@@ -7,6 +7,7 @@ import { EmailSubscribe } from "./email-subscribe";
 import { VCardButton } from "./vcard-button";
 import { StampCardWidget } from "./stamp-card-widget";
 import { ReviewsSection } from "./reviews-section";
+import { ProfileSlides } from "./profile-slides";
 import type { StampCard } from "@/lib/types";
 import {
   Globe,
@@ -79,49 +80,79 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
         }
       : {};
 
+  const fontFamily = profile.settings?.font_family;
+  const fontUrl = fontFamily
+    ? `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;700&display=swap`
+    : null;
+
   return (
     <div
       className={`min-h-screen ${!customBg && !templateStyles.bgImage ? templateStyles.bg : ""}`}
-      style={bgStyle}
+      style={{ ...bgStyle, ...(fontFamily ? { fontFamily: `'${fontFamily}', sans-serif` } : {}) }}
     >
-      <div className="mx-auto max-w-lg px-4 py-12">
+      {/* Google Font */}
+      {fontUrl && (
+        // eslint-disable-next-line @next/next/no-page-custom-font
+        <link rel="stylesheet" href={fontUrl} />
+      )}
+
+      {/* Video Background */}
+      {profile.settings?.video_url && (
+        <video
+          src={profile.settings.video_url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="fixed inset-0 h-full w-full object-cover -z-10"
+        />
+      )}
+      <div className="mx-auto max-w-lg px-4 py-12 md:max-w-xl">
         {/* Avatar */}
         <div className="flex flex-col items-center text-center">
           {profile.avatar_url ? (
             <img
               src={profile.avatar_url}
               alt={profile.display_name}
-              className={`h-24 w-24 rounded-full object-cover ring-2 ${templateStyles.ring}`}
+              className={`h-28 w-28 rounded-full object-cover ring-2 md:h-32 md:w-32 ${templateStyles.ring}`}
+              loading="eager"
+              crossOrigin="anonymous"
             />
           ) : (
             <div
-              className={`flex h-24 w-24 items-center justify-center rounded-full text-2xl font-bold ${templateStyles.avatarFallback}`}
+              className={`flex h-28 w-28 items-center justify-center rounded-full text-3xl font-bold md:h-32 md:w-32 ${templateStyles.avatarFallback}`}
             >
               {profile.display_name.charAt(0).toUpperCase()}
             </div>
           )}
 
           <h1
-            className={`mt-4 text-2xl font-bold ${!customText ? templateStyles.text : ""}`}
+            className={`mt-4 text-2xl font-bold md:text-3xl ${!customText ? templateStyles.text : ""}`}
             style={customText}
           >
-            {profile.display_name}
+            <span className="rounded-md px-2 py-0.5" style={templateStyles.bgImage ? { backgroundColor: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)" } : undefined}>
+              {profile.display_name}
+            </span>
           </h1>
 
           {profile.title && (
-            <p className={`mt-1 text-sm ${templateStyles.subtext}`}>
-              {profile.title}
+            <p className={`mt-1 text-sm md:text-base ${templateStyles.subtext}`}>
+              <span className="rounded-md px-2 py-0.5" style={templateStyles.bgImage ? { backgroundColor: "rgba(0,0,0,0.25)", backdropFilter: "blur(4px)" } : undefined}>
+                {profile.title}
+              </span>
             </p>
           )}
 
           {profile.bio && (
-            <p className={`mt-3 text-sm leading-relaxed ${templateStyles.subtext}`}>
-              {profile.bio}
+            <p className={`mt-3 text-sm leading-relaxed md:text-base ${templateStyles.subtext}`}>
+              <span className="inline rounded-md px-2 py-0.5 leading-7" style={templateStyles.bgImage ? { backgroundColor: "rgba(0,0,0,0.25)", backdropFilter: "blur(4px)", boxDecorationBreak: "clone" as const } : undefined}>
+                {profile.bio}
+              </span>
             </p>
           )}
 
           {/* Contact & Location */}
-          <div className={`mt-3 flex flex-wrap items-center justify-center gap-3 text-xs ${templateStyles.subtext}`}>
+          <div className={`mt-3 flex flex-wrap items-center justify-center gap-3 text-xs md:text-sm ${templateStyles.subtext}`}>
             {profile.location && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
@@ -169,6 +200,32 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
           )}
         </div>
 
+        {/* Rich Text Content */}
+        {profile.rich_content && (
+          <div
+            className={`mt-6 text-sm leading-relaxed md:text-base ${templateStyles.subtext}`}
+            dangerouslySetInnerHTML={{ __html: profile.rich_content }}
+            style={{
+              ...(templateStyles.bgImage ? { backgroundColor: "rgba(0,0,0,0.25)", backdropFilter: "blur(4px)", borderRadius: "0.5rem", padding: "1rem" } : {}),
+            }}
+          />
+        )}
+
+        {/* Slides */}
+        {profile.slides && profile.slides.length > 0 && (
+          <div className="mt-6">
+            <ProfileSlides
+              slides={profile.slides}
+              templateStyles={{
+                card: templateStyles.card,
+                text: templateStyles.text,
+                subtext: templateStyles.subtext,
+                linkBtn: templateStyles.linkBtn,
+              }}
+            />
+          </div>
+        )}
+
         {/* vCard Download */}
         <div className="mt-6">
           <VCardButton
@@ -205,7 +262,7 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center justify-between rounded-lg px-5 py-3.5 text-sm font-medium transition-all hover:scale-[1.02] ${templateStyles.linkBtn}`}
+                className={`flex items-center justify-between rounded-lg px-5 py-3.5 text-sm font-medium transition-all hover:scale-[1.02] md:text-base ${templateStyles.linkBtn}`}
               >
                 <span>{link.label}</span>
                 <ExternalLink className="h-4 w-4 opacity-50" />

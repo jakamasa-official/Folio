@@ -59,8 +59,19 @@ export interface Profile {
   line_channel_id: string | null;
   line_channel_secret: string | null;
   line_channel_access_token: string | null;
+  rich_content: string | null;
+  slides: ProfileSlide[] | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProfileSlide {
+  id: string;
+  type: "image" | "content";
+  image_url?: string;
+  title?: string;
+  body?: string;
+  order: number;
 }
 
 export interface ProfileLink {
@@ -90,6 +101,11 @@ export interface ProfileSettings {
   accent_color?: string;
   background_color?: string;
   text_color?: string;
+  video_url?: string;
+  font_family?: string;
+  og_image_url?: string;
+  og_title?: string;
+  og_description?: string;
 }
 
 export interface BookingSlots {

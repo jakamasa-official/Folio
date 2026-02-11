@@ -20,31 +20,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, title, bio, avatar_url")
+    .select("display_name, title, bio, avatar_url, settings")
     .ilike("username", username)
     .eq("is_published", true)
     .maybeSingle();
 
   if (!profile) return { title: "Not Found" };
 
-  const title = profile.title
-    ? `${profile.display_name} - ${profile.title}`
-    : profile.display_name;
+  const settings = (profile.settings || {}) as { og_title?: string; og_description?: string; og_image_url?: string };
+
+  const title = settings.og_title
+    ? settings.og_title
+    : profile.title
+      ? `${profile.display_name} - ${profile.title}`
+      : profile.display_name;
+
+  const description = settings.og_description || profile.bio || `${profile.display_name}のプロフィール`;
+
+  const ogImage = settings.og_image_url || profile.avatar_url;
 
   return {
     title,
-    description: profile.bio || `${profile.display_name}のプロフィール`,
+    description,
     openGraph: {
       title,
-      description: profile.bio || `${profile.display_name}のプロフィール`,
+      description,
       url: `${APP_URL}/${username}`,
       type: "profile",
-      ...(profile.avatar_url && { images: [{ url: profile.avatar_url }] }),
+      ...(ogImage && { images: [{ url: ogImage }] }),
     },
     twitter: {
-      card: "summary",
+      card: settings.og_image_url ? "summary_large_image" : "summary",
       title,
-      description: profile.bio || `${profile.display_name}のプロフィール`,
+      description,
     },
   };
 }

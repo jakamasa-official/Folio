@@ -19,6 +19,7 @@ import {
   User,
   Crown,
   Lock,
+  ChevronDown,
 } from "lucide-react";
 import {
   DndContext,
@@ -37,10 +38,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Profile, ProfileLink, TemplateId } from "@/lib/types";
+import type { Profile, ProfileLink, ProfileSlide, TemplateId } from "@/lib/types";
 import { SOCIAL_PLATFORMS, FREE_TEMPLATES, PREMIUM_TEMPLATES, TEMPLATES } from "@/lib/types";
 import { APP_URL, ALLOWED_IMAGE_TYPES, MAX_AVATAR_SIZE, MAX_BIO_LENGTH, MAX_LINKS } from "@/lib/constants";
 import { BusinessHoursEditor } from "./business-hours-editor";
+import { RichTextEditor } from "./rich-text-editor";
+import { SlidesEditor } from "./slides-editor";
+import { Video, Image, Type } from "lucide-react";
 
 // Color preview swatches for template selector
 const TEMPLATE_PREVIEWS: Record<string, { bg: string; btn: string; text: string }> = {
@@ -107,15 +111,154 @@ const TEMPLATE_PREVIEWS: Record<string, { bg: string; btn: string; text: string 
   brutalist: { bg: "bg-white", btn: "bg-black", text: "bg-gray-300" },
 };
 
+const FONT_OPTIONS = [
+  { value: "", label: "デフォルト", family: "inherit" },
+  { value: "Noto Sans JP", label: "Noto Sans JP", family: "'Noto Sans JP', sans-serif" },
+  { value: "Noto Serif JP", label: "Noto Serif JP", family: "'Noto Serif JP', serif" },
+  { value: "M PLUS Rounded 1c", label: "M PLUS Rounded 1c", family: "'M PLUS Rounded 1c', sans-serif" },
+  { value: "Sawarabi Gothic", label: "サワラビゴシック", family: "'Sawarabi Gothic', sans-serif" },
+  { value: "Kosugi Maru", label: "小杉丸ゴシック", family: "'Kosugi Maru', sans-serif" },
+  { value: "Zen Maru Gothic", label: "Zen丸ゴシック", family: "'Zen Maru Gothic', sans-serif" },
+];
+
+const MAX_VIDEO_SIZE = 20 * 1024 * 1024; // 20MB
+
 function TemplateSwatch({ templateId }: { templateId: string }) {
   const preview = TEMPLATE_PREVIEWS[templateId];
   if (!preview) return null;
   return (
-    <div className={`h-10 w-10 shrink-0 overflow-hidden rounded ${preview.bg} flex flex-col items-center justify-center gap-0.5 p-1 border`}>
-      <div className={`h-1.5 w-1.5 rounded-full ${preview.btn}`} />
-      <div className={`h-1 w-5 rounded-sm ${preview.text}`} />
-      <div className={`h-1.5 w-6 rounded-sm ${preview.btn}`} />
-      <div className={`h-1.5 w-6 rounded-sm ${preview.btn} opacity-60`} />
+    <div className={`h-16 w-12 shrink-0 overflow-hidden rounded-md ${preview.bg} flex flex-col items-center justify-center gap-[3px] p-1.5 border shadow-sm`}>
+      {/* Avatar circle */}
+      <div className={`h-3 w-3 rounded-full ${preview.btn} opacity-80`} />
+      {/* Name text */}
+      <div className={`h-[3px] w-7 rounded-full ${preview.text}`} />
+      {/* Bio text */}
+      <div className={`h-[2px] w-5 rounded-full ${preview.text} opacity-60`} />
+      {/* Button 1 */}
+      <div className={`h-[4px] w-8 rounded-sm ${preview.btn}`} />
+      {/* Button 2 */}
+      <div className={`h-[4px] w-8 rounded-sm ${preview.btn} opacity-60`} />
+      {/* Button 3 */}
+      <div className={`h-[4px] w-8 rounded-sm ${preview.btn} opacity-40`} />
+    </div>
+  );
+}
+
+// --- Collapsible template category ---
+function TemplateCategorySection({
+  title,
+  icon,
+  templates,
+  profile,
+  onSelect,
+  defaultOpen = false,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  templates: { id: string; label: string; description: string }[];
+  profile: Profile;
+  onSelect: (id: TemplateId) => void;
+  defaultOpen?: boolean;
+}) {
+  const hasSelected = templates.some((t) => t.id === profile.template);
+  const [open, setOpen] = useState(defaultOpen || hasSelected);
+
+  return (
+    <div className="mb-2">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors"
+      >
+        <ChevronDown
+          className={`h-3.5 w-3.5 transition-transform duration-200 ${!open ? "-rotate-90" : ""}`}
+        />
+        {icon}
+        {title}
+        <span className="ml-auto text-[10px] font-normal opacity-60">{templates.length}</span>
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-200 ease-in-out ${
+          open ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="grid grid-cols-2 gap-2 px-1 pt-1.5 pb-1">
+          {templates.map((t) => {
+            const isPremium = PREMIUM_TEMPLATES.some((p) => p.id === t.id);
+            const locked = isPremium && !profile.is_pro;
+            return (
+              <button
+                key={t.id}
+                onClick={() => onSelect(t.id as TemplateId)}
+                className={`relative flex items-center gap-2.5 rounded-lg border-2 p-2 text-left transition-colors ${
+                  profile.template === t.id
+                    ? "border-primary bg-primary/5"
+                    : locked
+                    ? "border-border opacity-60"
+                    : "border-border hover:border-muted-foreground"
+                }`}
+              >
+                {locked && (
+                  <Lock className="absolute right-1.5 top-1.5 h-3 w-3 text-muted-foreground" />
+                )}
+                <TemplateSwatch templateId={t.id} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium leading-tight">{t.label}</div>
+                  <div className="text-[11px] leading-tight text-muted-foreground">{t.description}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Full template selector with collapsible groups ---
+function TemplateCategories({
+  profile,
+  onSelect,
+}: {
+  profile: Profile;
+  onSelect: (id: TemplateId) => void;
+}) {
+  const premiumCategories = PREMIUM_TEMPLATES.reduce<
+    Record<string, typeof PREMIUM_TEMPLATES>
+  >((acc, t) => {
+    const cat = (t as { category?: string }).category || "その他";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(t);
+    return acc;
+  }, {});
+
+  return (
+    <div>
+      {/* Free templates - open by default */}
+      <TemplateCategorySection
+        title="無料テンプレート"
+        templates={FREE_TEMPLATES}
+        profile={profile}
+        onSelect={onSelect}
+        defaultOpen
+      />
+
+      {/* Premium header */}
+      <div className="mb-1 mt-3 flex items-center gap-1.5 px-2 text-xs text-muted-foreground">
+        <Crown className="h-3 w-3 text-amber-500" />
+        <span className="font-semibold">プレミアム</span>
+        {!profile.is_pro && <span className="text-amber-600">（Proプラン）</span>}
+      </div>
+
+      {/* Premium categories - collapsed by default (unless selected template is in them) */}
+      {Object.entries(premiumCategories).map(([category, templates]) => (
+        <TemplateCategorySection
+          key={category}
+          title={category}
+          templates={templates}
+          profile={profile}
+          onSelect={onSelect}
+        />
+      ))}
     </div>
   );
 }
@@ -354,66 +497,10 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
           <CardTitle className="text-lg">テンプレート</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-2 text-xs text-muted-foreground">無料テンプレート</div>
-          <div className="grid grid-cols-2 gap-3">
-            {FREE_TEMPLATES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => handleTemplateSelect(t.id)}
-                className={`flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
-                  profile.template === t.id
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-muted-foreground"
-                }`}
-              >
-                <TemplateSwatch templateId={t.id} />
-                <div className="min-w-0">
-                  <div className="font-medium">{t.label}</div>
-                  <div className="text-xs text-muted-foreground">{t.description}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-          <div className="mb-2 mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-            <Crown className="h-3 w-3 text-amber-500" />
-            プレミアムテンプレート
-            {!profile.is_pro && <span className="text-amber-600">（Proプラン）</span>}
-          </div>
-          {(() => {
-            const categories = PREMIUM_TEMPLATES.reduce<Record<string, typeof PREMIUM_TEMPLATES>>((acc, t) => {
-              const cat = (t as { category?: string }).category || "その他";
-              if (!acc[cat]) acc[cat] = [];
-              acc[cat].push(t);
-              return acc;
-            }, {});
-            return Object.entries(categories).map(([category, templates]) => (
-              <div key={category} className="mb-4">
-                <div className="mb-2 text-xs font-semibold text-muted-foreground">{category}</div>
-                <div className="grid grid-cols-2 gap-3">
-                  {templates.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => handleTemplateSelect(t.id)}
-                      className={`relative flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
-                        profile.template === t.id
-                          ? "border-primary bg-primary/5"
-                          : !profile.is_pro
-                          ? "border-border opacity-60"
-                          : "border-border hover:border-muted-foreground"
-                      }`}
-                    >
-                      {!profile.is_pro && <Lock className="absolute right-2 top-2 h-3 w-3 text-muted-foreground" />}
-                      <TemplateSwatch templateId={t.id} />
-                      <div className="min-w-0">
-                        <div className="font-medium">{t.label}</div>
-                        <div className="text-xs text-muted-foreground">{t.description}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ));
-          })()}
+          <TemplateCategories
+            profile={profile}
+            onSelect={handleTemplateSelect}
+          />
         </CardContent>
       </Card>
 
@@ -498,6 +585,107 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
         </CardContent>
       </Card>
 
+      {/* Font Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Type className="h-4 w-4" />
+            フォント
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-2">
+            {FONT_OPTIONS.map((font) => (
+              <button
+                key={font.value}
+                onClick={() =>
+                  updateField("settings", { ...profile.settings, font_family: font.value || undefined })
+                }
+                className={`rounded-lg border-2 px-4 py-3 text-left transition-colors ${
+                  (profile.settings?.font_family || "") === font.value
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-muted-foreground"
+                }`}
+                style={{ fontFamily: font.family }}
+              >
+                <div className="text-sm font-medium">{font.label}</div>
+                <div className="text-xs text-muted-foreground" style={{ fontFamily: font.family }}>
+                  あいうえお ABCDabcd 12345
+                </div>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Video Background */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Video className="h-4 w-4" />
+            動画背景
+            {!profile.is_pro && <Badge variant="outline" className="text-xs text-amber-600">Pro</Badge>}
+          </CardTitle>
+          <CardDescription>プロフィールの背景に動画を設定できます</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {profile.settings?.video_url ? (
+            <div className="space-y-2">
+              <video
+                src={profile.settings.video_url}
+                className="h-32 w-full rounded-lg object-cover"
+                muted
+                autoPlay
+                loop
+                playsInline
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  updateField("settings", { ...profile.settings, video_url: undefined })
+                }
+              >
+                <Trash2 className="mr-1 h-3 w-3" />
+                削除
+              </Button>
+            </div>
+          ) : (
+            <label className={`cursor-pointer ${!profile.is_pro ? "opacity-50 pointer-events-none" : ""}`}>
+              <div className="flex items-center gap-2 rounded-md border border-dashed px-4 py-6 text-sm text-muted-foreground hover:bg-muted justify-center">
+                <Upload className="h-4 w-4" />
+                動画をアップロード（MP4/WebM, 最大20MB）
+              </div>
+              <input
+                type="file"
+                accept="video/mp4,video/webm"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > MAX_VIDEO_SIZE) {
+                    setError("動画は20MB以下にしてください");
+                    return;
+                  }
+                  const supabase = createClient();
+                  const ext = file.name.split(".").pop() || "mp4";
+                  const path = `${profile.user_id}/${Date.now()}.${ext}`;
+                  const { error: uploadErr } = await supabase.storage
+                    .from("videos")
+                    .upload(path, file, { upsert: true });
+                  if (uploadErr) {
+                    setError("動画のアップロードに失敗しました");
+                    return;
+                  }
+                  const { data: { publicUrl } } = supabase.storage.from("videos").getPublicUrl(path);
+                  updateField("settings", { ...profile.settings, video_url: publicUrl });
+                }}
+              />
+            </label>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Basic info */}
       <Card>
         <CardHeader>
@@ -567,6 +755,150 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
               onChange={(e) => updateField("location", e.target.value)}
               placeholder="東京都渋谷区"
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Free Text (Rich Text) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">フリーテキスト</CardTitle>
+          <CardDescription>自由にフォーマットしたテキストを追加できます</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RichTextEditor
+            value={profile.rich_content || ""}
+            onChange={(html) => updateField("rich_content", html)}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Slides */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            スライド
+          </CardTitle>
+          <CardDescription>画像カルーセルまたはコンテンツセクションを追加</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SlidesEditor
+            slides={profile.slides}
+            onChange={(slides) => updateField("slides", slides)}
+            userId={profile.user_id}
+          />
+        </CardContent>
+      </Card>
+
+      {/* OG Share Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">SNSシェア設定</CardTitle>
+          <CardDescription>SNSでシェアした時に表示される画像やタイトルをカスタマイズ</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>シェア画像（推奨: 1200×630px）</Label>
+            {profile.settings?.og_image_url ? (
+              <div className="space-y-2">
+                <img
+                  src={profile.settings.og_image_url}
+                  alt="OG Image"
+                  className="h-32 w-full rounded-lg object-cover border"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    updateField("settings", { ...profile.settings, og_image_url: undefined })
+                  }
+                >
+                  <Trash2 className="mr-1 h-3 w-3" />
+                  削除
+                </Button>
+              </div>
+            ) : (
+              <label className="cursor-pointer">
+                <div className="flex items-center gap-2 rounded-md border border-dashed px-4 py-6 text-sm text-muted-foreground hover:bg-muted justify-center">
+                  <Upload className="h-4 w-4" />
+                  画像を選択
+                </div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > MAX_AVATAR_SIZE) {
+                      setError("画像は5MB以下にしてください");
+                      return;
+                    }
+                    const supabase = createClient();
+                    const ext = file.name.split(".").pop() || "jpg";
+                    const path = `${profile.user_id}/og_${Date.now()}.${ext}`;
+                    const { error: uploadErr } = await supabase.storage
+                      .from("og-images")
+                      .upload(path, file, { upsert: true });
+                    if (uploadErr) {
+                      setError("画像のアップロードに失敗しました");
+                      return;
+                    }
+                    const { data: { publicUrl } } = supabase.storage.from("og-images").getPublicUrl(path);
+                    updateField("settings", { ...profile.settings, og_image_url: publicUrl });
+                  }}
+                />
+              </label>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ogTitle">カスタムタイトル</Label>
+            <Input
+              id="ogTitle"
+              value={profile.settings?.og_title || ""}
+              onChange={(e) =>
+                updateField("settings", { ...profile.settings, og_title: e.target.value || undefined })
+              }
+              placeholder={profile.display_name}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ogDescription">カスタム説明文</Label>
+            <Textarea
+              id="ogDescription"
+              value={profile.settings?.og_description || ""}
+              onChange={(e) =>
+                updateField("settings", { ...profile.settings, og_description: e.target.value || undefined })
+              }
+              placeholder={profile.bio || "プロフィールの説明"}
+              rows={2}
+            />
+          </div>
+          {/* Preview */}
+          <div className="rounded-lg border bg-muted/30 p-3">
+            <div className="text-xs text-muted-foreground mb-2">プレビュー</div>
+            <div className="flex gap-3 rounded-md border bg-background p-2">
+              <div className="h-16 w-24 shrink-0 rounded bg-muted flex items-center justify-center overflow-hidden">
+                {(profile.settings?.og_image_url || profile.avatar_url) ? (
+                  <img
+                    src={profile.settings?.og_image_url || profile.avatar_url || ""}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Image className="h-6 w-6 text-muted-foreground" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium truncate">
+                  {profile.settings?.og_title || profile.display_name}
+                </div>
+                <div className="text-xs text-muted-foreground line-clamp-2">
+                  {profile.settings?.og_description || profile.bio || `${profile.display_name}のプロフィール`}
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
