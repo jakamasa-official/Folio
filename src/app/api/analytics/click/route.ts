@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const UAParser = require("ua-parser-js");
 
-// Rate limit: max 1 view per profile per IP per 10 minutes
+// Rate limit: 1 click per profile+link+IP per 5 minutes
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(
@@ -25,13 +25,19 @@ function checkRateLimit(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { profile_id, utm_source, utm_medium, utm_campaign } = body;
+    const {
+      profile_id,
+      link_id,
+      link_url,
+      link_label,
+      utm_source,
+      utm_medium,
+      utm_campaign,
+    } = body;
 
-    if (!profile_id) {
-      return NextResponse.json(
-        { error: "profile_id は必須です" },
-        { status: 400 }
-      );
+    if (!profile_id || !link_id || !link_url) {
+      // Always return success to avoid leaking info
+      return NextResponse.json({ success: true }, { status: 200 });
     }
 
     // Get request metadata from headers
@@ -46,57 +52,32 @@ export async function POST(request: NextRequest) {
     const parsed = UAParser(userAgent);
     const browser = parsed.browser.name || null;
     const os = parsed.os.name || null;
-    const deviceType = parsed.device.type || "desktop"; // undefined means desktop
+    const device_type = parsed.device.type || "desktop";
 
-    // Rate limit: 1 view per profile per IP per 10 minutes
-    const rateLimitKey = `analytics:${profile_id}:${ip}`;
-    if (!checkRateLimit(rateLimitKey, 1, 10 * 60 * 1000)) {
-      return NextResponse.json(
-        { error: "リクエストが多すぎます。しばらくしてからお試しください" },
-        { status: 429 }
-      );
+    // Rate limit: 1 click per profile+link+IP per 5 minutes
+    const rateLimitKey = `click:${profile_id}:${link_id}:${ip}`;
+    if (!checkRateLimit(rateLimitKey, 1, 5 * 60 * 1000)) {
+      return NextResponse.json({ success: true }, { status: 200 });
     }
 
-    // Validate that profile exists
-    const { data: profileExists } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
-      .eq("id", profile_id)
-      .maybeSingle();
-
-    if (!profileExists) {
-      return NextResponse.json(
-        { error: "プロフィールが見つかりません" },
-        { status: 404 }
-      );
-    }
-
-    const { error } = await supabaseAdmin.from("page_views").insert({
+    await supabaseAdmin.from("link_clicks").insert({
       profile_id,
-      viewed_at: new Date().toISOString(),
+      link_id,
+      link_url,
+      link_label: link_label || null,
+      clicked_at: new Date().toISOString(),
       referrer,
-      device_type: deviceType,
-      country,
+      device_type,
       browser,
       os,
+      country,
       utm_source: utm_source || null,
       utm_medium: utm_medium || null,
       utm_campaign: utm_campaign || null,
     });
 
-    if (error) {
-      console.error("ページビュー記録エラー:", error);
-      return NextResponse.json(
-        { error: "ページビューの記録に失敗しました" },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json({ success: true }, { status: 200 });
   } catch {
-    return NextResponse.json(
-      { error: "リクエストの処理に失敗しました" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true }, { status: 200 });
   }
 }

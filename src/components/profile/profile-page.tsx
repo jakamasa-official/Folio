@@ -14,7 +14,6 @@ import {
   MapPin,
   Mail,
   Phone,
-  ExternalLink,
   Star,
   Eye,
 } from "lucide-react";
@@ -29,6 +28,7 @@ import {
   SiTiktok,
 } from "react-icons/si";
 import { DAYS_OF_WEEK } from "@/lib/types";
+import { TrackedLinks } from "./tracked-links";
 
 const socialIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   twitter: SiX,
@@ -255,20 +255,11 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
 
         {/* Links */}
         {profile.links.length > 0 && (
-          <div className="mt-6 space-y-3">
-            {profile.links.map((link) => (
-              <a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`flex items-center justify-between rounded-lg px-5 py-3.5 text-sm font-medium transition-all hover:scale-[1.02] md:text-base ${templateStyles.linkBtn}`}
-              >
-                <span>{link.label}</span>
-                <ExternalLink className="h-4 w-4 opacity-50" />
-              </a>
-            ))}
-          </div>
+          <TrackedLinks
+            profileId={profile.id}
+            links={profile.links}
+            linkBtnClass={templateStyles.linkBtn}
+          />
         )}
 
         {/* Google Review Button */}

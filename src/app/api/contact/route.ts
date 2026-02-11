@@ -89,6 +89,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fire-and-forget conversion event
+    void supabaseAdmin.from("conversion_events").insert({
+      profile_id,
+      event_type: "contact_submit",
+      metadata: { sender_name, sender_email },
+    });
+
     // Auto-create or update customer from contact submission
     try {
       const email = sender_email?.toLowerCase().trim();

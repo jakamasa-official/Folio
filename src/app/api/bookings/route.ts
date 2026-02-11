@@ -113,6 +113,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fire-and-forget conversion event
+    void supabaseAdmin.from("conversion_events").insert({
+      profile_id,
+      event_type: "booking_submit",
+      metadata: { booker_name, booker_email, booking_date, time_slot },
+    });
+
     // Auto-create or update customer from booking
     try {
       const email = booker_email?.toLowerCase().trim();

@@ -1,57 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useEffect, useCallback } from "react";
+import { apiFetch } from "@/lib/api-client";
 import { AnalyticsDashboard } from "@/components/analytics/dashboard";
+import type { AnalyticsData } from "@/components/analytics/types";
 
 export default function AnalyticsPage() {
-  const [data, setData] = useState<{
-    views: { viewed_at: string; referrer: string | null; device_type: string | null; country: string | null }[];
-    totalViews: number;
-    username: string;
-  } | null>(null);
+  const [data, setData] = useState<{ analytics: AnalyticsData; username: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [range, setRange] = useState("30d");
 
-  useEffect(() => {
-    const supabase = createClient();
+  const fetchData = useCallback(async (r: string) => {
+    setLoading(true);
+    setError(null);
 
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); return; }
+    try {
+      const res = await apiFetch(`/api/analytics/dashboard?range=${r}`);
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, username")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "データの取得に失敗しました");
+      }
 
-      if (!profile) { setLoading(false); return; }
-
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      const { data: views } = await supabase
-        .from("page_views")
-        .select("viewed_at, referrer, device_type, country")
-        .eq("profile_id", profile.id)
-        .gte("viewed_at", thirtyDaysAgo.toISOString())
-        .order("viewed_at", { ascending: true });
-
-      const { count: totalViews } = await supabase
-        .from("page_views")
-        .select("*", { count: "exact", head: true })
-        .eq("profile_id", profile.id);
-
-      setData({
-        views: views || [],
-        totalViews: totalViews || 0,
-        username: profile.username,
-      });
+      const json = await res.json();
+      setData(json);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "不明なエラーが発生しました");
+    } finally {
       setLoading(false);
     }
-
-    load();
   }, []);
+
+  useEffect(() => {
+    fetchData(range);
+  }, [range, fetchData]);
+
+  function handleRangeChange(newRange: string) {
+    setRange(newRange);
+  }
 
   if (loading) {
     return (
@@ -64,11 +51,22 @@ export default function AnalyticsPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="mx-auto max-w-2xl">
+        <h1 className="mb-6 text-2xl font-bold">アナリティクス</h1>
+        <p className="text-sm text-destructive">{error}</p>
+      </div>
+    );
+  }
+
   if (!data) {
     return (
       <div className="mx-auto max-w-2xl">
         <h1 className="mb-6 text-2xl font-bold">アナリティクス</h1>
-        <p className="text-sm text-muted-foreground">プロフィールを作成してからアナリティクスが表示されます。</p>
+        <p className="text-sm text-muted-foreground">
+          プロフィールを作成してからアナリティクスが表示されます。
+        </p>
       </div>
     );
   }
@@ -77,9 +75,10 @@ export default function AnalyticsPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-6 text-2xl font-bold">アナリティクス</h1>
       <AnalyticsDashboard
-        views={data.views}
-        totalViews={data.totalViews}
+        data={data.analytics}
         username={data.username}
+        range={range}
+        onRangeChange={handleRangeChange}
       />
     </div>
   );

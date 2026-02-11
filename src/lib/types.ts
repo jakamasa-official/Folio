@@ -152,6 +152,36 @@ export interface PageView {
   referrer: string | null;
   country: string | null;
   device_type: string | null;
+  browser: string | null;
+  os: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+}
+
+export interface LinkClick {
+  id: number;
+  profile_id: string;
+  link_id: string;
+  link_url: string;
+  link_label: string | null;
+  clicked_at: string;
+  referrer: string | null;
+  device_type: string | null;
+  browser: string | null;
+  os: string | null;
+  country: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+}
+
+export interface ConversionEvent {
+  id: number;
+  profile_id: string;
+  event_type: "contact_submit" | "booking_submit" | "email_subscribe";
+  converted_at: string;
+  metadata: Record<string, unknown>;
 }
 
 // === Marketing Suite Types ===

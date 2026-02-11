@@ -74,6 +74,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "登録に失敗しました" }, { status: 500 });
     }
 
+    // Fire-and-forget conversion event
+    void supabaseAdmin.from("conversion_events").insert({
+      profile_id,
+      event_type: "email_subscribe",
+      metadata: { email },
+    });
+
     // Auto-create customer from new subscriber (if not already exists)
     try {
       const normalizedEmail = email.toLowerCase().trim();
