@@ -123,22 +123,37 @@ const FONT_OPTIONS = [
 
 const MAX_VIDEO_SIZE = 20 * 1024 * 1024; // 20MB
 
+const TEMPLATE_IMAGES: Record<string, string> = {
+  professional: "/images/template-professional.png",
+  minimal: "/images/template-minimal.png",
+  business: "/images/template-business.png",
+  creative: "/images/template-creative.png",
+  elegant: "/images/template-elegant.png",
+  neon: "/images/template-neon.png",
+  japanese: "/images/template-japanese.png",
+  "photo-grid": "/images/template-photo-grid.png",
+};
+
 function TemplateSwatch({ templateId }: { templateId: string }) {
+  const imageSrc = TEMPLATE_IMAGES[templateId];
   const preview = TEMPLATE_PREVIEWS[templateId];
+
+  if (imageSrc) {
+    return (
+      <div className="h-16 w-12 shrink-0 overflow-hidden rounded-md border shadow-sm">
+        <img src={imageSrc} alt={templateId} className="h-full w-full object-cover object-top" />
+      </div>
+    );
+  }
+
   if (!preview) return null;
   return (
     <div className={`h-16 w-12 shrink-0 overflow-hidden rounded-md ${preview.bg} flex flex-col items-center justify-center gap-[3px] p-1.5 border shadow-sm`}>
-      {/* Avatar circle */}
       <div className={`h-3 w-3 rounded-full ${preview.btn} opacity-80`} />
-      {/* Name text */}
       <div className={`h-[3px] w-7 rounded-full ${preview.text}`} />
-      {/* Bio text */}
       <div className={`h-[2px] w-5 rounded-full ${preview.text} opacity-60`} />
-      {/* Button 1 */}
       <div className={`h-[4px] w-8 rounded-sm ${preview.btn}`} />
-      {/* Button 2 */}
       <div className={`h-[4px] w-8 rounded-sm ${preview.btn} opacity-60`} />
-      {/* Button 3 */}
       <div className={`h-[4px] w-8 rounded-sm ${preview.btn} opacity-40`} />
     </div>
   );
