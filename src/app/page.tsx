@@ -37,6 +37,11 @@ export default async function HomePage() {
                 壁紙名刺
               </Button>
             </Link>
+            <Link href="/pricing">
+              <Button variant="ghost" size="sm">
+                料金
+              </Button>
+            </Link>
             <Link href="/about">
               <Button variant="ghost" size="sm">
                 About
@@ -363,6 +368,9 @@ export default async function HomePage() {
       <footer className="border-t py-8">
         <div className="mx-auto max-w-5xl px-4 text-center text-sm text-muted-foreground">
           <div className="flex items-center justify-center gap-4">
+            <Link href="/pricing" className="hover:text-foreground">
+              料金
+            </Link>
             <Link href="/about" className="hover:text-foreground">
               About
             </Link>

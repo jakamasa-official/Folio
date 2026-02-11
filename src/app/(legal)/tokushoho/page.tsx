@@ -70,7 +70,8 @@ export default function TokushohoPage() {
                 <td className="border-b px-4 py-4">
                   <ul className="list-disc space-y-1 pl-4">
                     <li>無料プラン: ¥0</li>
-                    <li>プロプラン: 月額 ¥2,000（税込）</li>
+                    <li>Proプラン: 月額 ¥480（税込）/ 年額 ¥3,980（税込）</li>
+                    <li>Pro+プラン: 月額 ¥1,480（税込）/ 年額 ¥11,800（税込）</li>
                   </ul>
                 </td>
               </tr>

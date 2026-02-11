@@ -18,4 +18,7 @@ export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "im
 
 export const MAX_PROFILES_FREE = 1;
 export const MAX_PROFILES_PRO = 5;
-export const PRO_PRICE_MONTHLY = 2000; // JPY
+export const PRO_PRICE_MONTHLY = 480; // JPY
+export const PRO_PRICE_YEARLY = 3980; // JPY
+export const PRO_PLUS_PRICE_MONTHLY = 1480; // JPY
+export const PRO_PLUS_PRICE_YEARLY = 11800; // JPY
