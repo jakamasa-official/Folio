@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api-client";
 import { APP_URL } from "@/lib/constants";
 import type { Profile, LineContact, Customer } from "@/lib/types";
 import {
@@ -131,7 +132,7 @@ export default function LinePage() {
   async function loadContacts() {
     setLoadingContacts(true);
     try {
-      const res = await fetch("/api/line/contacts");
+      const res = await apiFetch("/api/line/contacts");
       if (res.ok) {
         const data = await res.json();
         setContacts(data.contacts || []);
@@ -149,9 +150,8 @@ export default function LinePage() {
     setSaveMessage("");
 
     try {
-      const res = await fetch("/api/line/settings", {
+      const res = await apiFetch("/api/line/settings", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           line_channel_id: channelId || null,
           line_channel_secret: channelSecret || null,
@@ -187,9 +187,8 @@ export default function LinePage() {
     setSendSuccess(false);
 
     try {
-      const res = await fetch("/api/line/send", {
+      const res = await apiFetch("/api/line/send", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           line_user_id: sendTarget.line_user_id,
           message: sendMessage.trim(),

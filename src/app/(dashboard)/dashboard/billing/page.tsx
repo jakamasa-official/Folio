@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api-client";
 import { PLANS } from "@/lib/stripe";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -372,9 +373,8 @@ export default function BillingPage() {
   async function handleUpgrade(tier: "pro" | "pro_plus", period: "monthly" | "yearly") {
     setActionLoading(true);
     try {
-      const res = await fetch("/api/stripe/checkout", {
+      const res = await apiFetch("/api/stripe/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tier, period }),
       });
 
@@ -402,9 +402,8 @@ export default function BillingPage() {
   async function handleManage() {
     setActionLoading(true);
     try {
-      const res = await fetch("/api/stripe/portal", {
+      const res = await apiFetch("/api/stripe/portal", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
       });
 
       const data = await res.json();

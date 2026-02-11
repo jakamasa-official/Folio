@@ -30,6 +30,7 @@ import {
   XCircle,
   Sparkles,
 } from "lucide-react";
+import { apiFetch } from "@/lib/api-client";
 
 // === Constants ===
 
@@ -197,7 +198,7 @@ export default function AutomationsPage() {
     setProfile(p);
 
     // Fetch rules via API
-    const rulesRes = await fetch("/api/automations");
+    const rulesRes = await apiFetch("/api/automations");
     if (rulesRes.ok) {
       const rulesData = await rulesRes.json();
       setRules(rulesData.rules || []);
@@ -300,7 +301,7 @@ export default function AutomationsPage() {
 
     try {
       if (isEditing && form.id) {
-        const res = await fetch("/api/automations", {
+        const res = await apiFetch("/api/automations", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: form.id, ...payload }),
@@ -315,7 +316,7 @@ export default function AutomationsPage() {
         await loadData();
         toast.success("ルールを更新しました");
       } else {
-        const res = await fetch("/api/automations", {
+        const res = await apiFetch("/api/automations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -340,7 +341,7 @@ export default function AutomationsPage() {
 
   async function deleteRule(id: string) {
     try {
-      const res = await fetch(`/api/automations?id=${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/automations?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setRules((prev) => prev.filter((r) => r.id !== id));
         toast.success("ルールを削除しました");
@@ -354,7 +355,7 @@ export default function AutomationsPage() {
 
   async function toggleActive(rule: AutomationRule) {
     try {
-      const res = await fetch("/api/automations", {
+      const res = await apiFetch("/api/automations", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: rule.id, is_active: !rule.is_active }),
@@ -377,7 +378,7 @@ export default function AutomationsPage() {
   async function enableQuickTemplate(template: QuickTemplate) {
     setSaving(true);
     try {
-      const res = await fetch("/api/automations", {
+      const res = await apiFetch("/api/automations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

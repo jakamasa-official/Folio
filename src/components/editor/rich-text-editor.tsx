@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
@@ -25,6 +26,8 @@ export function RichTextEditor({
   value: string;
   onChange: (html: string) => void;
 }) {
+  const isInternalUpdate = useRef(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -33,9 +36,22 @@ export function RichTextEditor({
     ],
     content: value,
     onUpdate: ({ editor }) => {
+      isInternalUpdate.current = true;
       onChange(editor.getHTML());
     },
   });
+
+  // Sync editor content when value prop changes externally (e.g. profile load)
+  useEffect(() => {
+    if (!editor) return;
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false;
+      return;
+    }
+    if (value !== editor.getHTML()) {
+      editor.commands.setContent(value || "");
+    }
+  }, [editor, value]);
 
   if (!editor) return null;
 

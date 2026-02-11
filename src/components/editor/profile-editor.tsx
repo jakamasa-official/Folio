@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -419,9 +420,8 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       // Hash password server-side if set
       let pagePassword = profile.page_password;
       if (pagePasswordInput) {
-        const hashRes = await fetch("/api/profile/hash-password", {
+        const hashRes = await apiFetch("/api/profile/hash-password", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ password: pagePasswordInput }),
         });
         if (!hashRes.ok) throw new Error("パスワードの設定に失敗しました");

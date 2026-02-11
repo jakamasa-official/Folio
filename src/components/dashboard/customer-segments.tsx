@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { apiFetch } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,7 +79,7 @@ export default function CustomerSegments({
   // ──── Fetch segments ────
   const fetchSegments = useCallback(async () => {
     try {
-      const res = await fetch("/api/segments");
+      const res = await apiFetch("/api/segments");
       const data = await res.json();
       if (res.ok) {
         setSegments(data.segments || []);
@@ -93,7 +94,7 @@ export default function CustomerSegments({
   // ──── Initialize system segments on first load ────
   const initSegments = useCallback(async () => {
     try {
-      const res = await fetch("/api/segments/init", { method: "POST" });
+      const res = await apiFetch("/api/segments/init", { method: "POST" });
       if (res.ok) {
         await fetchSegments();
       }
@@ -105,7 +106,7 @@ export default function CustomerSegments({
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const res = await fetch("/api/segments");
+      const res = await apiFetch("/api/segments");
       const data = await res.json();
       if (res.ok && data.segments && data.segments.length > 0) {
         setSegments(data.segments);
@@ -123,7 +124,7 @@ export default function CustomerSegments({
   async function handleRefresh() {
     setRefreshing(true);
     try {
-      const res = await fetch("/api/segments/refresh", { method: "POST" });
+      const res = await apiFetch("/api/segments/refresh", { method: "POST" });
       if (res.ok) {
         toast.success("セグメントを更新しました");
         await fetchSegments();
@@ -140,7 +141,7 @@ export default function CustomerSegments({
   // ──── Delete custom segment ────
   async function handleDelete(segmentId: string) {
     try {
-      const res = await fetch(`/api/segments?id=${segmentId}`, {
+      const res = await apiFetch(`/api/segments?id=${segmentId}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -348,9 +349,8 @@ function SegmentDetailDialog({
   async function saveAutoActions() {
     setSaving(true);
     try {
-      const res = await fetch("/api/segments", {
+      const res = await apiFetch("/api/segments", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: segment.id,
           auto_actions: autoActions,
@@ -664,9 +664,8 @@ function CreateSegmentDialog({
       // Create temporarily to get count, then delete — or just compute via the create preview
       const criteria: SegmentCriteria = { match: matchType, rules };
       // Use the segments GET with criteria evaluation by temporarily creating
-      const res = await fetch("/api/segments", {
+      const res = await apiFetch("/api/segments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: "__preview__",
           criteria,
@@ -679,7 +678,7 @@ function CreateSegmentDialog({
         setPreviewCount(data.segment?.customer_count ?? 0);
         // Delete the preview segment
         if (data.segment?.id) {
-          await fetch(`/api/segments?id=${data.segment.id}`, {
+          await apiFetch(`/api/segments?id=${data.segment.id}`, {
             method: "DELETE",
           });
         }
@@ -697,9 +696,8 @@ function CreateSegmentDialog({
     try {
       const criteria: SegmentCriteria = { match: matchType, rules };
 
-      const res = await fetch("/api/segments", {
+      const res = await apiFetch("/api/segments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           description: description.trim() || null,

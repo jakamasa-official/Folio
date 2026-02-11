@@ -38,6 +38,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { ProGate } from "@/components/dashboard/pro-gate";
 
@@ -145,7 +146,7 @@ function ReferralsTab({
     setReferralEnabled(newValue);
 
     try {
-      const res = await fetch("/api/referrals", {
+      const res = await apiFetch("/api/referrals", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ referral_enabled: newValue }),
@@ -165,7 +166,7 @@ function ReferralsTab({
     setCreating(true);
 
     try {
-      const res = await fetch("/api/referrals", {
+      const res = await apiFetch("/api/referrals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -192,7 +193,7 @@ function ReferralsTab({
 
   async function deleteReferralCode(id: string) {
     try {
-      const res = await fetch(`/api/referrals?id=${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/referrals?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setReferralCodes((prev) => prev.filter((c) => c.id !== id));
         if (expandedCodeId === id) setExpandedCodeId(null);
@@ -214,7 +215,7 @@ function ReferralsTab({
     setExpandedCodeId(codeId);
 
     try {
-      const res = await fetch(`/api/referrals?code_id=${codeId}`);
+      const res = await apiFetch(`/api/referrals?code_id=${codeId}`);
       if (res.ok) {
         const data = await res.json();
         setReferrals((prev) => ({ ...prev, [codeId]: (data.referrals as Referral[]) || [] }));
@@ -575,7 +576,7 @@ function CampaignsTab({
 
     try {
       if (isEditing && form.id) {
-        const res = await fetch("/api/campaigns", {
+        const res = await apiFetch("/api/campaigns", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: form.id, ...payload }),
@@ -592,7 +593,7 @@ function CampaignsTab({
           prev.map((c) => (c.id === form.id ? data.campaign : c))
         );
       } else {
-        const res = await fetch("/api/campaigns", {
+        const res = await apiFetch("/api/campaigns", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -619,7 +620,7 @@ function CampaignsTab({
 
   async function deleteCampaign(id: string) {
     try {
-      const res = await fetch(`/api/campaigns?id=${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/campaigns?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setCampaigns((prev) => prev.filter((c) => c.id !== id));
       } else {
@@ -632,7 +633,7 @@ function CampaignsTab({
 
   async function togglePublished(campaign: CampaignPage) {
     try {
-      const res = await fetch("/api/campaigns", {
+      const res = await apiFetch("/api/campaigns", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -993,20 +994,20 @@ export default function ReferralsAndCampaignsPage() {
 
   const loadData = useCallback(async () => {
     // --- Referrals data ---
-    const codesRes = await fetch("/api/referrals");
+    const codesRes = await apiFetch("/api/referrals");
     if (codesRes.ok) {
       const codesData = await codesRes.json();
       setReferralCodes(codesData.referral_codes || []);
       setReferralEnabled(codesData.referral_enabled ?? false);
     }
 
-    const custRes = await fetch("/api/customers");
+    const custRes = await apiFetch("/api/customers");
     if (custRes.ok) {
       const custData = await custRes.json();
       setCustomers(custData.customers || []);
     }
 
-    const couponsRes = await fetch("/api/coupons");
+    const couponsRes = await apiFetch("/api/coupons");
     if (couponsRes.ok) {
       const couponsData = await couponsRes.json();
       setReferralCoupons((couponsData.coupons as Coupon[]) || []);
@@ -1028,7 +1029,7 @@ export default function ReferralsAndCampaignsPage() {
       if (profileData) {
         const p = profileData as Profile;
 
-        const camRes = await fetch("/api/campaigns");
+        const camRes = await apiFetch("/api/campaigns");
         if (camRes.ok) {
           const camData = await camRes.json();
           setCampaigns(camData.campaigns || []);

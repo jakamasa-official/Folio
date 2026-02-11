@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api-client";
 import type { Profile, EmailSubscriber } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -75,13 +76,7 @@ export default function SubscribersPage() {
   }
 
   async function exportCsv() {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
-    const response = await fetch("/api/subscribers/export", {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    });
+    const response = await apiFetch("/api/subscribers/export");
     if (!response.ok) return;
 
     const blob = await response.blob();

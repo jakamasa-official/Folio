@@ -39,6 +39,7 @@ import {
   XCircle,
   Users,
 } from "lucide-react";
+import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { ProGate } from "@/components/dashboard/pro-gate";
 
@@ -267,7 +268,7 @@ export default function MessagesPage() {
 
   async function loadTemplates() {
     try {
-      const res = await fetch("/api/messages/templates");
+      const res = await apiFetch("/api/messages/templates");
       const data = await res.json();
       if (data.templates) {
         setTemplates(data.templates);
@@ -285,7 +286,7 @@ export default function MessagesPage() {
       const s = statusOverride !== undefined ? statusOverride : statusFilter;
       if (s) params.set("status", s);
 
-      const res = await fetch(`/api/messages/history?${params.toString()}`);
+      const res = await apiFetch(`/api/messages/history?${params.toString()}`);
       const data = await res.json();
       if (data.messages) {
         setSentMessages(data.messages);
@@ -357,7 +358,7 @@ export default function MessagesPage() {
     try {
       if (editingTemplate) {
         // Update
-        const res = await fetch("/api/messages/templates", {
+        const res = await apiFetch("/api/messages/templates", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -374,7 +375,7 @@ export default function MessagesPage() {
         }
       } else {
         // Create
-        const res = await fetch("/api/messages/templates", {
+        const res = await apiFetch("/api/messages/templates", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(editorForm),
@@ -395,7 +396,7 @@ export default function MessagesPage() {
   async function deleteTemplate() {
     if (!deleteTarget) return;
     try {
-      await fetch(`/api/messages/templates?id=${deleteTarget.id}`, {
+      await apiFetch(`/api/messages/templates?id=${deleteTarget.id}`, {
         method: "DELETE",
       });
       setTemplates((prev) => prev.filter((t) => t.id !== deleteTarget.id));
@@ -408,7 +409,7 @@ export default function MessagesPage() {
 
   async function toggleTemplateActive(t: MessageTemplate) {
     try {
-      const res = await fetch("/api/messages/templates", {
+      const res = await apiFetch("/api/messages/templates", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: t.id, is_active: !t.is_active }),
@@ -486,7 +487,7 @@ export default function MessagesPage() {
     setSending(true);
     try {
       const recipients = getRecipients();
-      const res = await fetch("/api/messages/send", {
+      const res = await apiFetch("/api/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

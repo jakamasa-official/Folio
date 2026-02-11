@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import QRCode from "qrcode";
 import { APP_URL } from "@/lib/constants";
+import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { LimitBanner } from "@/components/dashboard/pro-gate";
 import { FREE_LIMITS } from "@/lib/pro-gate";
@@ -140,7 +141,7 @@ export default function StampsPage() {
 
   async function loadStampCards() {
     try {
-      const res = await fetch("/api/stamp-cards");
+      const res = await apiFetch("/api/stamp-cards");
       if (res.ok) {
         const data = await res.json();
         setStampCards(data.cards || []);
@@ -152,7 +153,7 @@ export default function StampsPage() {
 
   async function loadCoupons() {
     try {
-      const res = await fetch("/api/coupons");
+      const res = await apiFetch("/api/coupons");
       if (res.ok) {
         const data = await res.json();
         setCoupons(data.coupons || []);
@@ -186,7 +187,7 @@ export default function StampsPage() {
 
   async function deleteStampCard(id: string) {
     if (!confirm("このスタンプカードを削除しますか？")) return;
-    const res = await fetch(`/api/stamp-cards?id=${id}`, { method: "DELETE" });
+    const res = await apiFetch(`/api/stamp-cards?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       setStampCards((prev) => prev.filter((c) => c.id !== id));
       if (selectedCard?.id === id) setSelectedCard(null);
@@ -195,14 +196,14 @@ export default function StampsPage() {
 
   async function deleteCoupon(id: string) {
     if (!confirm("このクーポンを削除しますか？")) return;
-    const res = await fetch(`/api/coupons?id=${id}`, { method: "DELETE" });
+    const res = await apiFetch(`/api/coupons?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       setCoupons((prev) => prev.filter((c) => c.id !== id));
     }
   }
 
   async function toggleCouponActive(coupon: Coupon) {
-    const res = await fetch("/api/coupons", {
+    const res = await apiFetch("/api/coupons", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: coupon.id, is_active: !coupon.is_active }),
@@ -589,7 +590,7 @@ function CreateStampCardDialog({
     setError("");
 
     try {
-      const res = await fetch("/api/stamp-cards", {
+      const res = await apiFetch("/api/stamp-cards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -877,7 +878,7 @@ function CreateCouponDialog({
     setError("");
 
     try {
-      const res = await fetch("/api/coupons", {
+      const res = await apiFetch("/api/coupons", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1078,7 +1079,7 @@ function StampCardDetail({
   async function loadStamps() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/stamp-cards/stamp?stamp_card_id=${card.id}`);
+      const res = await apiFetch(`/api/stamp-cards/stamp?stamp_card_id=${card.id}`);
       if (res.ok) {
         const data = await res.json();
         setStamps(data.stamps || []);
@@ -1129,7 +1130,7 @@ function StampCardDetail({
     setStampResult(null);
 
     try {
-      const res = await fetch("/api/stamp-cards/stamp", {
+      const res = await apiFetch("/api/stamp-cards/stamp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

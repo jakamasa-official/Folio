@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import CustomerSegments from "@/components/dashboard/customer-segments";
 import SegmentBadges from "@/components/dashboard/segment-badges";
+import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { LimitBanner } from "@/components/dashboard/pro-gate";
 import { FREE_LIMITS } from "@/lib/pro-gate";
@@ -78,7 +79,7 @@ export default function CustomersPage() {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
 
-      const res = await fetch(`/api/customers?${params.toString()}`);
+      const res = await apiFetch(`/api/customers?${params.toString()}`);
       const data = await res.json();
       if (res.ok) {
         setCustomers(data.customers);
@@ -105,7 +106,7 @@ export default function CustomersPage() {
   async function handleSync() {
     setSyncing(true);
     try {
-      const res = await fetch("/api/customers/sync", {
+      const res = await apiFetch("/api/customers/sync", {
         method: "POST",
       });
 
@@ -124,7 +125,7 @@ export default function CustomersPage() {
     if (!createName.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch("/api/customers", {
+      const res = await apiFetch("/api/customers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -164,7 +165,7 @@ export default function CustomersPage() {
     if (!selectedCustomer) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/customers", {
+      const res = await apiFetch("/api/customers", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -195,7 +196,7 @@ export default function CustomersPage() {
   async function handleDelete(customer: Customer) {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/customers?id=${customer.id}`, {
+      const res = await apiFetch(`/api/customers?id=${customer.id}`, {
         method: "DELETE",
       });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { apiFetch } from "@/lib/api-client";
 
 // ──────────────────────────────────────────────────────────────
 // Types
@@ -33,7 +34,7 @@ export default function SegmentFilter({
 
   const fetchSegments = useCallback(async () => {
     try {
-      const res = await fetch("/api/segments");
+      const res = await apiFetch("/api/segments");
       const data = await res.json();
       if (res.ok && data.segments) {
         setSegments(

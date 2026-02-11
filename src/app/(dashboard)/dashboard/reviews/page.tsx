@@ -34,6 +34,7 @@ import {
 import QRCode from "qrcode";
 import { APP_URL } from "@/lib/constants";
 import { SocialProofEmbed } from "@/components/dashboard/social-proof-embed";
+import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { ProGate } from "@/components/dashboard/pro-gate";
 
@@ -144,7 +145,7 @@ export default function ReviewsPage() {
 
   const fetchReviews = useCallback(async () => {
     try {
-      const res = await fetch("/api/reviews");
+      const res = await apiFetch("/api/reviews");
       const data = await res.json();
       if (res.ok) {
         // Filter out placeholder request reviews (body === "pending_request")
@@ -166,7 +167,7 @@ export default function ReviewsPage() {
 
   const fetchSettings = useCallback(async () => {
     try {
-      const res = await fetch("/api/reviews/settings");
+      const res = await apiFetch("/api/reviews/settings");
       const data = await res.json();
       if (res.ok) {
         setSettings(data.settings);
@@ -397,7 +398,7 @@ function ManageTab({
   async function updateReview(id: string, updates: Record<string, unknown>) {
     setSaving(true);
     try {
-      const res = await fetch("/api/reviews", {
+      const res = await apiFetch("/api/reviews", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, ...updates }),
@@ -427,7 +428,7 @@ function ManageTab({
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/reviews?id=${deleteTarget.id}`, {
+      const res = await apiFetch(`/api/reviews?id=${deleteTarget.id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -741,7 +742,7 @@ function RequestTab({
   useEffect(() => {
     async function fetchCustomers() {
       try {
-        const res = await fetch("/api/customers");
+        const res = await apiFetch("/api/customers");
         const data = await res.json();
         if (res.ok) {
           setCustomers(data.customers || []);
@@ -779,7 +780,7 @@ function RequestTab({
     }
     setSending(customer.id);
     try {
-      const res = await fetch("/api/reviews/request", {
+      const res = await apiFetch("/api/reviews/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ customer_id: customer.id }),
@@ -980,7 +981,7 @@ function SettingsTab({
   async function handleSave() {
     setSaving(true);
     try {
-      const res = await fetch("/api/reviews/settings", {
+      const res = await apiFetch("/api/reviews/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

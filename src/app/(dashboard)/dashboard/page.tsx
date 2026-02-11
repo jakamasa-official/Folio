@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api-client";
 import { ProfileEditor } from "@/components/editor/profile-editor";
 import type { Profile } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -152,7 +153,7 @@ function CustomerStatsBar() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const res = await fetch("/api/customers");
+        const res = await apiFetch("/api/customers");
         if (!res.ok) return;
         const data = await res.json();
         const customers = data.customers || [];
