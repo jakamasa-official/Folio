@@ -15,11 +15,11 @@ import {
   Sparkles,
   AlertTriangle,
   ChevronDown,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Profile } from "@/lib/types";
 
-// Toggle switch component
 function BillingToggle({
   isYearly,
   onToggle,
@@ -29,9 +29,7 @@ function BillingToggle({
 }) {
   return (
     <div className="flex items-center justify-center gap-3">
-      <span
-        className={`text-sm font-medium ${!isYearly ? "text-foreground" : "text-muted-foreground"}`}
-      >
+      <span className={`text-sm font-medium ${!isYearly ? "text-foreground" : "text-muted-foreground"}`}>
         月額
       </span>
       <button
@@ -39,7 +37,7 @@ function BillingToggle({
         role="switch"
         aria-checked={isYearly}
         onClick={onToggle}
-        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
           isYearly ? "bg-primary" : "bg-muted"
         }`}
       >
@@ -49,19 +47,14 @@ function BillingToggle({
           }`}
         />
       </button>
-      <span
-        className={`text-sm font-medium ${isYearly ? "text-foreground" : "text-muted-foreground"}`}
-      >
+      <span className={`text-sm font-medium ${isYearly ? "text-foreground" : "text-muted-foreground"}`}>
         年額
-        <Badge variant="secondary" className="ml-1.5 text-[10px]">
-          2ヶ月分お得
-        </Badge>
+        <Badge variant="secondary" className="ml-1.5 text-[10px]">お得</Badge>
       </span>
     </div>
   );
 }
 
-// Feature list item
 function FeatureItem({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-2 text-sm">
@@ -71,14 +64,7 @@ function FeatureItem({ children }: { children: React.ReactNode }) {
   );
 }
 
-// FAQ item
-function FAQItem({
-  question,
-  answer,
-}: {
-  question: string;
-  answer: string;
-}) {
+function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b last:border-b-0">
@@ -87,18 +73,14 @@ function FAQItem({
         className="flex w-full items-center justify-between py-4 text-left text-sm font-medium hover:text-foreground/80"
       >
         {question}
-        <ChevronDown
-          className={`h-4 w-4 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
+        <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && (
-        <p className="pb-4 text-sm text-muted-foreground">{answer}</p>
-      )}
+      {open && <p className="pb-4 text-sm text-muted-foreground">{answer}</p>}
     </div>
   );
 }
 
-// --- Upgrade View (not Pro) ---
+// --- Upgrade View ---
 function UpgradeView({
   profile,
   loading,
@@ -106,30 +88,29 @@ function UpgradeView({
 }: {
   profile: Profile;
   loading: boolean;
-  onUpgrade: (plan: "monthly" | "yearly") => void;
+  onUpgrade: (tier: "pro" | "pro_plus", period: "monthly" | "yearly") => void;
 }) {
   const [isYearly, setIsYearly] = useState(false);
+  const currentTier = profile.plan_tier || "free";
 
   return (
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-2xl font-bold">プランをアップグレード</h1>
         <p className="mt-2 text-muted-foreground">
-          プロプランで全ての機能をお使いいただけます
+          ビジネスに合ったプランをお選びください
         </p>
       </div>
 
-      {/* Billing toggle */}
       <BillingToggle isYearly={isYearly} onToggle={() => setIsYearly(!isYearly)} />
 
-      {/* Plan cards */}
-      <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
-        {/* Free Plan */}
+      <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+        {/* Free */}
         <Card className="relative">
           <CardHeader>
             <div className="flex items-center gap-2">
               <CardTitle>{PLANS.free.name}</CardTitle>
-              <Badge variant="secondary">現在のプラン</Badge>
+              {currentTier === "free" && <Badge variant="secondary">現在</Badge>}
             </div>
             <CardDescription>
               <span className="text-2xl font-bold text-foreground">¥0</span>
@@ -138,42 +119,36 @@ function UpgradeView({
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {PLANS.free.features.map((feature) => (
-                <FeatureItem key={feature}>{feature}</FeatureItem>
-              ))}
+              {PLANS.free.features.map((f) => <FeatureItem key={f}>{f}</FeatureItem>)}
             </ul>
           </CardContent>
         </Card>
 
-        {/* Pro Plan */}
-        <Card className="relative border-primary shadow-lg">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-            <Badge className="bg-primary px-3 py-1 text-xs">
-              <Sparkles className="mr-1 h-3 w-3" />
-              おすすめ
-            </Badge>
-          </div>
+        {/* Pro */}
+        <Card className={`relative ${currentTier === "free" ? "border-primary shadow-lg" : ""}`}>
+          {currentTier === "free" && (
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <Badge className="bg-primary px-3 py-1 text-xs">
+                <Sparkles className="mr-1 h-3 w-3" />おすすめ
+              </Badge>
+            </div>
+          )}
           <CardHeader>
             <div className="flex items-center gap-2">
               <CardTitle>{PLANS.pro.name}</CardTitle>
               <Crown className="h-5 w-5 text-yellow-500" />
+              {currentTier === "pro" && <Badge variant="secondary">現在</Badge>}
             </div>
             <CardDescription>
               {isYearly ? (
                 <>
-                  <span className="text-2xl font-bold text-foreground">
-                    ¥{PLANS.pro.priceYearly.toLocaleString()}
-                  </span>
+                  <span className="text-2xl font-bold text-foreground">¥{PLANS.pro.priceYearly.toLocaleString()}</span>
                   <span className="text-muted-foreground">/年</span>
-                  <span className="ml-2 text-xs text-muted-foreground line-through">
-                    ¥{(PLANS.pro.priceMonthly * 12).toLocaleString()}
-                  </span>
+                  <span className="ml-2 text-xs text-muted-foreground line-through">¥{(PLANS.pro.priceMonthly * 12).toLocaleString()}</span>
                 </>
               ) : (
                 <>
-                  <span className="text-2xl font-bold text-foreground">
-                    ¥{PLANS.pro.priceMonthly.toLocaleString()}
-                  </span>
+                  <span className="text-2xl font-bold text-foreground">¥{PLANS.pro.priceMonthly.toLocaleString()}</span>
                   <span className="text-muted-foreground">/月</span>
                 </>
               )}
@@ -181,28 +156,66 @@ function UpgradeView({
           </CardHeader>
           <CardContent className="space-y-6">
             <ul className="space-y-3">
-              {PLANS.pro.features.map((feature) => (
-                <FeatureItem key={feature}>{feature}</FeatureItem>
-              ))}
+              {PLANS.pro.features.map((f) => <FeatureItem key={f}>{f}</FeatureItem>)}
             </ul>
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={() => onUpgrade(isYearly ? "yearly" : "monthly")}
-              disabled={loading}
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  処理中...
-                </span>
+            {currentTier === "free" && (
+              <Button
+                className="w-full"
+                onClick={() => onUpgrade("pro", isYearly ? "yearly" : "monthly")}
+                disabled={loading}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                {loading ? "処理中..." : "Proにアップグレード"}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Pro+ */}
+        <Card className={`relative ${currentTier === "pro" ? "border-primary shadow-lg" : ""}`}>
+          {currentTier === "pro" && (
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <Badge className="bg-amber-500 px-3 py-1 text-xs text-white">
+                <Zap className="mr-1 h-3 w-3" />アップグレード
+              </Badge>
+            </div>
+          )}
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <CardTitle>{PLANS.pro_plus.name}</CardTitle>
+              <Zap className="h-5 w-5 text-amber-500" />
+              {currentTier === "pro_plus" && <Badge variant="secondary">現在</Badge>}
+            </div>
+            <CardDescription>
+              {isYearly ? (
+                <>
+                  <span className="text-2xl font-bold text-foreground">¥{PLANS.pro_plus.priceYearly.toLocaleString()}</span>
+                  <span className="text-muted-foreground">/年</span>
+                  <span className="ml-2 text-xs text-muted-foreground line-through">¥{(PLANS.pro_plus.priceMonthly * 12).toLocaleString()}</span>
+                </>
               ) : (
                 <>
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  アップグレード
+                  <span className="text-2xl font-bold text-foreground">¥{PLANS.pro_plus.priceMonthly.toLocaleString()}</span>
+                  <span className="text-muted-foreground">/月</span>
                 </>
               )}
-            </Button>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <ul className="space-y-3">
+              {PLANS.pro_plus.features.map((f) => <FeatureItem key={f}>{f}</FeatureItem>)}
+            </ul>
+            {(currentTier === "free" || currentTier === "pro") && (
+              <Button
+                className="w-full"
+                variant={currentTier === "pro" ? "default" : "outline"}
+                onClick={() => onUpgrade("pro_plus", isYearly ? "yearly" : "monthly")}
+                disabled={loading}
+              >
+                <Zap className="mr-2 h-4 w-4" />
+                {loading ? "処理中..." : "Pro+にアップグレード"}
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -210,81 +223,67 @@ function UpgradeView({
       {/* FAQ */}
       <div className="mx-auto max-w-2xl">
         <h2 className="mb-4 text-lg font-semibold">よくある質問</h2>
-        <div className="rounded-lg border">
-          <div className="px-4">
-            <FAQItem
-              question="いつでもキャンセルできますか？"
-              answer="はい、いつでもキャンセル可能です。キャンセル後も現在の請求期間が終了するまでプロプランをご利用いただけます。"
-            />
-            <FAQItem
-              question="支払い方法は何に対応していますか？"
-              answer="クレジットカード（Visa、Mastercard、JCB、American Express）に対応しています。決済はStripeを通じて安全に処理されます。"
-            />
-            <FAQItem
-              question="年額プランから月額プランに変更できますか？"
-              answer="はい、カスタマーポータルからいつでもプランの変更が可能です。差額は自動的に調整されます。"
-            />
-            <FAQItem
-              question="無料プランに制限はありますか？"
-              answer="無料プランでは基本的なプロフィール機能、4つのテンプレート、50件までの顧客管理、基本アナリティクスをご利用いただけます。"
-            />
-          </div>
+        <div className="rounded-lg border px-4">
+          <FAQItem
+            question="いつでもキャンセルできますか？"
+            answer="はい、いつでもキャンセル可能です。キャンセル後も現在の請求期間が終了するまでご利用いただけます。"
+          />
+          <FAQItem
+            question="プランのアップグレード・ダウングレードはできますか？"
+            answer="はい、カスタマーポータルからいつでもプランの変更が可能です。差額は自動的に日割り調整されます。"
+          />
+          <FAQItem
+            question="支払い方法は？"
+            answer="クレジットカード（Visa、Mastercard、JCB、AMEX）に対応。決済はStripeで安全に処理されます。"
+          />
         </div>
       </div>
     </div>
   );
 }
 
-// --- Pro Management View ---
-function ProView({ loading, onManage }: { loading: boolean; onManage: () => void }) {
+// --- Active Subscription View ---
+function ActivePlanView({
+  profile,
+  loading,
+  onManage,
+}: {
+  profile: Profile;
+  loading: boolean;
+  onManage: () => void;
+}) {
+  const tier = profile.plan_tier || "pro";
+  const planInfo = tier === "pro_plus" ? PLANS.pro_plus : PLANS.pro;
+  const Icon = tier === "pro_plus" ? Zap : Crown;
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold">プランと請求</h1>
 
-      {/* Current plan card */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <CardTitle className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-yellow-500" />
-              プロプラン
+              <Icon className="h-5 w-5 text-yellow-500" />
+              {planInfo.name}プラン
             </CardTitle>
             <Badge className="bg-green-100 text-green-800">有効</Badge>
           </div>
-          <CardDescription>
-            全てのプレミアム機能をご利用いただけます
-          </CardDescription>
+          <CardDescription>全てのプレミアム機能をご利用いただけます</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Feature list */}
           <div>
-            <p className="mb-3 text-sm font-medium text-muted-foreground">
-              ご利用中の機能
-            </p>
+            <p className="mb-3 text-sm font-medium text-muted-foreground">ご利用中の機能</p>
             <ul className="grid gap-2 sm:grid-cols-2">
-              {PLANS.pro.features.map((feature) => (
-                <FeatureItem key={feature}>{feature}</FeatureItem>
-              ))}
+              {planInfo.features.map((f) => <FeatureItem key={f}>{f}</FeatureItem>)}
             </ul>
           </div>
 
-          {/* Actions */}
           <div className="flex flex-wrap gap-3">
             <Button onClick={onManage} disabled={loading}>
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  読み込み中...
-                </span>
-              ) : (
-                <>
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  プランを管理
-                </>
+              {loading ? "読み込み中..." : (
+                <><ExternalLink className="mr-2 h-4 w-4" />プランを管理</>
               )}
-            </Button>
-            <Button variant="outline" onClick={onManage} disabled={loading}>
-              プランをキャンセル
             </Button>
           </div>
 
@@ -297,7 +296,6 @@ function ProView({ loading, onManage }: { loading: boolean; onManage: () => void
   );
 }
 
-// --- Stripe Not Configured View ---
 function StripeNotConfiguredView() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -306,16 +304,13 @@ function StripeNotConfiguredView() {
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
           <AlertTriangle className="mb-4 h-12 w-12 text-yellow-500" />
           <h2 className="mb-2 text-lg font-semibold">設定が必要です</h2>
-          <p className="text-muted-foreground">
-            Stripe の設定が完了していません。管理者に連絡してください。
-          </p>
+          <p className="text-muted-foreground">Stripe の設定が完了していません。管理者に連絡してください。</p>
         </CardContent>
       </Card>
     </div>
   );
 }
 
-// --- Main Billing Page ---
 export default function BillingPage() {
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -323,38 +318,27 @@ export default function BillingPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [stripeConfigured, setStripeConfigured] = useState(true);
 
-  // Show toasts for success/canceled
   useEffect(() => {
     const success = searchParams.get("success");
     const canceled = searchParams.get("canceled");
 
     if (success === "true") {
-      toast.success("プロプランへのアップグレードが完了しました！", {
-        description: "全てのプレミアム機能をお使いいただけます。",
+      toast.success("アップグレードが完了しました！", {
+        description: "プレミアム機能をお使いいただけます。",
         duration: 5000,
       });
-      // Remove query params from URL without reload
       window.history.replaceState({}, "", "/dashboard/billing");
     } else if (canceled === "true") {
-      toast.info("アップグレードがキャンセルされました。", {
-        description: "いつでも再度お試しいただけます。",
-        duration: 5000,
-      });
+      toast.info("アップグレードがキャンセルされました。");
       window.history.replaceState({}, "", "/dashboard/billing");
     }
   }, [searchParams]);
 
-  // Load profile
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
 
       const { data } = await supabase
         .from("profiles")
@@ -365,39 +349,33 @@ export default function BillingPage() {
       if (data) setProfile(data as Profile);
       setLoading(false);
     }
-
     load();
   }, []);
 
-  // Refresh profile after success redirect (may have just upgraded)
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       const timer = setTimeout(async () => {
         const supabase = createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-
         const { data } = await supabase
           .from("profiles")
           .select("*")
           .eq("user_id", user.id)
           .maybeSingle();
-
         if (data) setProfile(data as Profile);
       }, 1000);
       return () => clearTimeout(timer);
     }
   }, [searchParams]);
 
-  async function handleUpgrade(plan: "monthly" | "yearly") {
+  async function handleUpgrade(tier: "pro" | "pro_plus", period: "monthly" | "yearly") {
     setActionLoading(true);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ tier, period }),
       });
 
       const data = await res.json();
@@ -414,9 +392,7 @@ export default function BillingPage() {
         return;
       }
 
-      if (data.url) {
-        window.location.href = data.url;
-      }
+      if (data.url) window.location.href = data.url;
     } catch {
       toast.error("ネットワークエラーが発生しました");
       setActionLoading(false);
@@ -445,9 +421,7 @@ export default function BillingPage() {
         return;
       }
 
-      if (data.url) {
-        window.location.href = data.url;
-      }
+      if (data.url) window.location.href = data.url;
     } catch {
       toast.error("ネットワークエラーが発生しました");
       setActionLoading(false);
@@ -456,7 +430,7 @@ export default function BillingPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-4xl">
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -464,21 +438,12 @@ export default function BillingPage() {
     );
   }
 
-  if (!stripeConfigured) {
-    return <StripeNotConfiguredView />;
-  }
-
+  if (!stripeConfigured) return <StripeNotConfiguredView />;
   if (!profile) return null;
 
   if (profile.is_pro) {
-    return <ProView loading={actionLoading} onManage={handleManage} />;
+    return <ActivePlanView profile={profile} loading={actionLoading} onManage={handleManage} />;
   }
 
-  return (
-    <UpgradeView
-      profile={profile}
-      loading={actionLoading}
-      onUpgrade={handleUpgrade}
-    />
-  );
+  return <UpgradeView profile={profile} loading={actionLoading} onUpgrade={handleUpgrade} />;
 }

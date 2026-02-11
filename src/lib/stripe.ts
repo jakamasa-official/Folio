@@ -7,31 +7,69 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export const PLANS = {
   free: {
     name: "フリー",
+    nameEn: "Free",
     price: 0,
     features: [
-      "基本プロフィール（4テンプレート）",
-      "お問い合わせフォーム・予約",
-      "顧客管理（50件まで）",
-      "基本アナリティクス",
-      "スタンプカード1枚・クーポン3枚",
+      "4種類のテンプレート",
+      "リンク5個まで",
+      "お問い合わせフォーム",
+      "QRコード・vCard",
+      "基本ページビュー",
     ],
   },
   pro: {
     name: "プロ",
-    priceMonthly: 1980,
-    priceYearly: 19800,
+    nameEn: "Pro",
+    priceMonthly: 480,
+    priceYearly: 3980,
     features: [
-      "全50+プレミアムテンプレート",
-      "カスタムドメイン",
-      "顧客管理・セグメント無制限",
-      "スタンプカード・クーポン無制限",
-      "メール配信（3,000通/月）",
-      "レビュー収集・表示",
-      "紹介プログラム・キャンペーン",
-      "LINE連携",
-      "メッセージテンプレート",
+      "全56テンプレート",
+      "リンク無制限",
+      "カスタムフォント・カラー",
+      "リッチテキスト・画像スライド",
+      "カスタムOG画像",
+      "予約カレンダー",
+      "レビュー収集",
+      "スタンプカード・クーポン",
+      "メール購読フォーム",
       "詳細アナリティクス",
+      "ブランディング非表示",
+    ],
+  },
+  pro_plus: {
+    name: "プロプラス",
+    nameEn: "Pro+",
+    priceMonthly: 1480,
+    priceYearly: 11800,
+    features: [
+      "Proの全機能",
+      "動画背景",
+      "顧客管理（CRM）",
+      "メッセージ配信",
+      "自動フォローアップ",
+      "顧客セグメント",
+      "キャンペーン・紹介",
+      "LINE連携",
+      "カスタムドメイン",
       "優先サポート",
     ],
   },
 } as const;
+
+// Map Stripe Price IDs to plan tiers
+export function getTierFromPriceId(priceId: string): "pro" | "pro_plus" {
+  const proPriceIds = [
+    process.env.STRIPE_PRICE_ID_PRO_MONTHLY,
+    process.env.STRIPE_PRICE_ID_PRO_YEARLY,
+  ];
+  const proPlusPriceIds = [
+    process.env.STRIPE_PRICE_ID_PRO_PLUS_MONTHLY,
+    process.env.STRIPE_PRICE_ID_PRO_PLUS_YEARLY,
+  ];
+
+  if (proPlusPriceIds.includes(priceId)) return "pro_plus";
+  if (proPriceIds.includes(priceId)) return "pro";
+
+  // Default to pro if unknown
+  return "pro";
+}

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { stripe, getTierFromPriceId } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import Stripe from "stripe";
 
@@ -36,18 +36,20 @@ export async function POST(request: Request) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const profileId = session.metadata?.profile_id;
+        const tier = (session.metadata?.tier as "pro" | "pro_plus") || "pro";
 
         if (profileId) {
           await supabaseAdmin
             .from("profiles")
             .update({
               is_pro: true,
+              plan_tier: tier,
               stripe_customer_id: session.customer as string,
               stripe_subscription_id: session.subscription as string,
             })
             .eq("id", profileId);
 
-          console.log(`[Stripe] Profile ${profileId} upgraded to Pro`);
+          console.log(`[Stripe] Profile ${profileId} upgraded to ${tier}`);
         }
         break;
       }
@@ -56,6 +58,10 @@ export async function POST(request: Request) {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
         const isActive = subscription.status === "active" || subscription.status === "trialing";
+
+        // Determine tier from the subscription's price
+        const priceId = subscription.items.data[0]?.price?.id;
+        const tier = priceId ? getTierFromPriceId(priceId) : "pro";
 
         const { data: profile } = await supabaseAdmin
           .from("profiles")
@@ -68,11 +74,12 @@ export async function POST(request: Request) {
             .from("profiles")
             .update({
               is_pro: isActive,
+              plan_tier: isActive ? tier : "free",
               stripe_subscription_id: subscription.id,
             })
             .eq("id", profile.id);
 
-          console.log(`[Stripe] Profile ${profile.id} subscription updated: is_pro=${isActive}`);
+          console.log(`[Stripe] Profile ${profile.id} subscription updated: tier=${isActive ? tier : "free"}`);
         }
         break;
       }
@@ -92,6 +99,7 @@ export async function POST(request: Request) {
             .from("profiles")
             .update({
               is_pro: false,
+              plan_tier: "free",
               stripe_subscription_id: null,
             })
             .eq("id", profile.id);
@@ -109,12 +117,10 @@ export async function POST(request: Request) {
       }
 
       default:
-        // Unhandled event type — acknowledge receipt
         break;
     }
   } catch (error) {
     console.error(`[Stripe] Error processing webhook event ${event.type}:`, error);
-    // Return 200 anyway to prevent Stripe from retrying
   }
 
   return NextResponse.json({ received: true }, { status: 200 });

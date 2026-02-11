@@ -59,6 +59,7 @@ export interface Profile {
   line_channel_id: string | null;
   line_channel_secret: string | null;
   line_channel_access_token: string | null;
+  plan_tier: "free" | "pro" | "pro_plus";
   rich_content: string | null;
   slides: ProfileSlide[] | null;
   created_at: string;
