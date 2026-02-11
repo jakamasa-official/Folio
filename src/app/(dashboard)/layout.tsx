@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { DashboardNav } from "@/components/dashboard/nav";
+import { OnboardingWizard, shouldShowOnboarding } from "@/components/dashboard/onboarding-wizard";
+import { TutorialTour, isTourCompleted, resetTourCompletion } from "@/components/dashboard/tutorial-tour";
+import { HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
+import type { Profile } from "@/lib/types";
 
 export default function DashboardLayout({
   children,
@@ -12,7 +17,10 @@ export default function DashboardLayout({
 }) {
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState<string | undefined>();
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -29,13 +37,13 @@ export default function DashboardLayout({
       setUser(user);
 
       // Fetch or create profile
-      let { data: profile } = await supabase
+      let { data: profileData } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (!profile) {
+      if (!profileData) {
         const metadata = user.user_metadata || {};
         const fallbackUsername = user.email?.split("@")[0]?.replace(/[^a-z0-9_-]/gi, "-")?.slice(0, 30) || `user-${user.id.slice(0, 8)}`;
         const uname = (metadata.username || fallbackUsername).toLowerCase();
@@ -62,13 +70,21 @@ export default function DashboardLayout({
             })
             .select()
             .single();
-          profile = retryProfile;
+          profileData = retryProfile;
         } else {
-          profile = newProfile;
+          profileData = newProfile;
         }
       }
 
-      setUsername(profile?.username);
+      const typedProfile = profileData as Profile | null;
+      setProfile(typedProfile);
+      setUsername(typedProfile?.username);
+
+      // Check if onboarding should show
+      if (typedProfile && shouldShowOnboarding(typedProfile)) {
+        setShowOnboarding(true);
+      }
+
       setLoading(false);
       initialLoadDone = true;
     }
@@ -76,8 +92,6 @@ export default function DashboardLayout({
     init();
 
     // Only redirect on sign-out AFTER the initial load is done.
-    // This prevents a race condition where onAuthStateChange fires
-    // before getUser() completes and incorrectly redirects to login.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || (initialLoadDone && !session?.user)) {
         window.location.href = "/login";
@@ -86,6 +100,19 @@ export default function DashboardLayout({
 
     return () => subscription.unsubscribe();
   }, []);
+
+  function handleOnboardingComplete() {
+    setShowOnboarding(false);
+  }
+
+  function handleStartTour() {
+    resetTourCompletion();
+    setShowTour(true);
+  }
+
+  function handleTourComplete() {
+    setShowTour(false);
+  }
 
   if (loading) {
     return (
@@ -97,10 +124,49 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen">
-      <DashboardNav username={username} />
+      <DashboardNav username={username} isPro={profile?.is_pro} />
+
+      {/* Help button in top-right (desktop) */}
+      <div className="fixed top-4 right-4 z-40 hidden md:block">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full"
+          onClick={handleStartTour}
+          title="チュートリアルを見る"
+        >
+          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+        </Button>
+      </div>
+
+      {/* Help button in mobile header area */}
+      <div className="fixed top-3 right-4 z-50 md:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full"
+          onClick={handleStartTour}
+          title="チュートリアルを見る"
+        >
+          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+        </Button>
+      </div>
+
       <main className="flex-1 p-6 md:p-8 ml-0 md:ml-64">
         {children}
       </main>
+
+      {/* Onboarding Wizard */}
+      {showOnboarding && profile && (
+        <OnboardingWizard
+          profile={profile}
+          onComplete={handleOnboardingComplete}
+          onStartTour={handleStartTour}
+        />
+      )}
+
+      {/* Tutorial Tour */}
+      <TutorialTour active={showTour} onComplete={handleTourComplete} />
     </div>
   );
 }

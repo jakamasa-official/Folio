@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
-import type { Profile } from "@/lib/types";
+import type { Profile, StampCard } from "@/lib/types";
 import { APP_NAME, APP_URL } from "@/lib/constants";
 import { ProfilePage } from "@/components/profile/profile-page";
 import { PasswordGateWrapper } from "./password-gate-wrapper";
@@ -109,13 +109,30 @@ export default async function PublicProfilePage({ params }: Props) {
     .select("*", { count: "exact", head: true })
     .eq("profile_id", clientProfile.id);
 
+  // Fetch active stamp cards if enabled
+  let stampCards: StampCard[] = [];
+  if (clientProfile.stamp_card_enabled) {
+    const { data: cards } = await supabase
+      .from("stamp_cards")
+      .select("*")
+      .eq("profile_id", clientProfile.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+    stampCards = (cards as StampCard[]) || [];
+  }
+
   // Pro users don't show branding
   const showBranding = !clientProfile.is_pro;
 
   return (
     <>
       <TrackPageView profileId={clientProfile.id} />
-      <ProfilePage profile={clientProfile} showBranding={showBranding} viewCount={viewCount ?? undefined} />
+      <ProfilePage
+        profile={clientProfile}
+        showBranding={showBranding}
+        viewCount={viewCount ?? undefined}
+        stampCards={stampCards}
+      />
     </>
   );
 }

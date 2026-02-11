@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_NAME, USERNAME_REGEX, APP_URL } from "@/lib/constants";
-import { Sparkles, Copy, Check, ExternalLink, QrCode, Download } from "lucide-react";
+import { Sparkles, Copy, Check, ExternalLink, QrCode, Download, Users, UserPlus, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { SeoPreview } from "@/components/dashboard/seo-preview";
 import QRCode from "qrcode";
 
@@ -141,6 +142,65 @@ function QRCodeCard({ url }: { url: string }) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function CustomerStatsBar() {
+  const [totalCustomers, setTotalCustomers] = useState<number | null>(null);
+  const [newThisWeek, setNewThisWeek] = useState<number>(0);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/customers");
+        if (!res.ok) return;
+        const data = await res.json();
+        const customers = data.customers || [];
+        setTotalCustomers(customers.length);
+
+        // Count new this week
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const recentCount = customers.filter(
+          (c: { created_at: string }) => new Date(c.created_at) >= weekAgo
+        ).length;
+        setNewThisWeek(recentCount);
+      } catch {
+        // Silently fail — stats are non-critical
+      }
+    }
+
+    fetchStats();
+  }, []);
+
+  if (totalCustomers === null) return null;
+
+  return (
+    <Link href="/dashboard/customers" className="block">
+      <Card className="mb-6 transition-colors hover:bg-muted/50">
+        <CardContent className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <Users className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm text-muted-foreground">顧客</p>
+                <p className="text-2xl font-bold">{totalCustomers}</p>
+              </div>
+            </div>
+            {newThisWeek > 0 && (
+              <div className="flex items-center gap-3">
+                <UserPlus className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">今週の新規</p>
+                  <p className="text-2xl font-bold">{newThisWeek}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          <ArrowRight className="h-5 w-5 text-muted-foreground" />
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
@@ -374,6 +434,7 @@ export default function DashboardPage() {
       <h1 className="mb-6 text-2xl font-bold">マイページ編集</h1>
       <ShareBar url={profileUrl} />
       <QRCodeCard url={profileUrl} />
+      <CustomerStatsBar />
       <Card className="mb-6">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">SNSシェアプレビュー</CardTitle>

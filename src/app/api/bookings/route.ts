@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/email";
+import {
+  bookingConfirmationEmail,
+  bookingNotificationEmail,
+} from "@/lib/email-templates";
+import { triggerAutomation } from "@/lib/automations";
 
 // Rate limit: 3 POST requests per IP per hour
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
@@ -106,6 +112,107 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Auto-create or update customer from booking
+    try {
+      const email = booker_email?.toLowerCase().trim();
+      if (email) {
+        const { data: existingCustomer } = await supabaseAdmin
+          .from("customers")
+          .select("id, total_bookings")
+          .eq("profile_id", profile_id)
+          .eq("email", email)
+          .maybeSingle();
+
+        const now = new Date().toISOString();
+        if (existingCustomer) {
+          await supabaseAdmin
+            .from("customers")
+            .update({
+              total_bookings: (existingCustomer.total_bookings || 0) + 1,
+              last_seen_at: now,
+              updated_at: now,
+            })
+            .eq("id", existingCustomer.id);
+        } else {
+          await supabaseAdmin.from("customers").insert({
+            profile_id,
+            name: booker_name || email,
+            email,
+            source: "booking",
+            tags: [],
+            total_bookings: 1,
+            total_messages: 0,
+            first_seen_at: now,
+            last_seen_at: now,
+          });
+        }
+
+        // Trigger automation for booking (fire-and-forget)
+        const customerId = existingCustomer?.id;
+        if (customerId) {
+          triggerAutomation("after_booking", customerId, profile_id);
+        } else {
+          // Fetch the newly created customer to get ID
+          const { data: newCust } = await supabaseAdmin
+            .from("customers")
+            .select("id")
+            .eq("profile_id", profile_id)
+            .eq("email", email)
+            .maybeSingle();
+          if (newCust) {
+            triggerAutomation("after_booking", newCust.id, profile_id);
+          }
+        }
+      }
+    } catch (customerError) {
+      // Never block booking response due to customer creation failure
+      console.error("顧客自動作成エラー（予約）:", customerError);
+    }
+
+    // Send email notifications (fire-and-forget — never block the response)
+    (async () => {
+      try {
+        const { data: ownerProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("display_name, contact_email")
+          .eq("id", profile_id)
+          .single();
+
+        const businessName = ownerProfile?.display_name || "Folio";
+
+        // 1. Confirmation email to the booker
+        sendEmail({
+          to: booker_email,
+          subject: `予約確認 - ${businessName}`,
+          html: bookingConfirmationEmail({
+            businessName,
+            bookerName: booker_name,
+            date: booking_date,
+            time: time_slot,
+            notes: note || undefined,
+          }),
+        }).catch((err) => console.error("[booking] Booker confirmation email failed:", err));
+
+        // 2. Notification email to the business owner
+        const ownerEmail = ownerProfile?.contact_email;
+        if (ownerEmail) {
+          sendEmail({
+            to: ownerEmail,
+            subject: `新しい予約: ${booker_name}様 - ${booking_date} ${time_slot}`,
+            html: bookingNotificationEmail({
+              bookerName: booker_name,
+              bookerEmail: booker_email,
+              date: booking_date,
+              time: time_slot,
+              notes: note || undefined,
+            }),
+          }).catch((err) => console.error("[booking] Owner notification email failed:", err));
+        }
+      } catch (err) {
+        console.error("[booking] Email notification error:", err);
+      }
+    })();
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch {

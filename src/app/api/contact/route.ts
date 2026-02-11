@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/email";
+import { contactNotificationEmail } from "@/lib/email-templates";
+import { triggerAutomation } from "@/lib/automations";
 
 // Rate limit: 5 submissions per IP per hour
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
@@ -85,6 +88,88 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Auto-create or update customer from contact submission
+    try {
+      const email = sender_email?.toLowerCase().trim();
+      if (email) {
+        const { data: existingCustomer } = await supabaseAdmin
+          .from("customers")
+          .select("id, total_messages")
+          .eq("profile_id", profile_id)
+          .eq("email", email)
+          .maybeSingle();
+
+        const now = new Date().toISOString();
+        if (existingCustomer) {
+          await supabaseAdmin
+            .from("customers")
+            .update({
+              total_messages: (existingCustomer.total_messages || 0) + 1,
+              last_seen_at: now,
+              updated_at: now,
+            })
+            .eq("id", existingCustomer.id);
+        } else {
+          await supabaseAdmin.from("customers").insert({
+            profile_id,
+            name: sender_name || email,
+            email,
+            source: "contact",
+            tags: [],
+            total_bookings: 0,
+            total_messages: 1,
+            first_seen_at: now,
+            last_seen_at: now,
+          });
+        }
+
+        // Trigger automation for contact (fire-and-forget)
+        const customerId = existingCustomer?.id;
+        if (customerId) {
+          triggerAutomation("after_contact", customerId, profile_id);
+        } else {
+          const { data: newCust } = await supabaseAdmin
+            .from("customers")
+            .select("id")
+            .eq("profile_id", profile_id)
+            .eq("email", email)
+            .maybeSingle();
+          if (newCust) {
+            triggerAutomation("after_contact", newCust.id, profile_id);
+          }
+        }
+      }
+    } catch (customerError) {
+      // Never block contact submission response due to customer creation failure
+      console.error("顧客自動作成エラー（お問い合わせ）:", customerError);
+    }
+
+    // Send email notification to business owner (fire-and-forget)
+    (async () => {
+      try {
+        const { data: ownerProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("contact_email")
+          .eq("id", profile_id)
+          .single();
+
+        const ownerEmail = ownerProfile?.contact_email;
+        if (ownerEmail) {
+          sendEmail({
+            to: ownerEmail,
+            subject: `新しいお問い合わせ: ${sender_name}様より`,
+            html: contactNotificationEmail({
+              senderName: sender_name,
+              senderEmail: sender_email,
+              message,
+            }),
+          }).catch((err) => console.error("[contact] Owner notification email failed:", err));
+        }
+      } catch (err) {
+        console.error("[contact] Email notification error:", err);
+      }
+    })();
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch {

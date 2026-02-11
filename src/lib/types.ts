@@ -39,6 +39,8 @@ export interface Profile {
   business_hours: BusinessHours | null;
   is_published: boolean;
   is_pro: boolean;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
   settings: ProfileSettings;
   contact_form_enabled: boolean;
   booking_enabled: boolean;
@@ -49,6 +51,14 @@ export interface Profile {
   line_friend_url: string | null;
   custom_domain: string | null;
   custom_domain_verified: boolean;
+  // Marketing suite
+  stamp_card_enabled: boolean;
+  coupon_enabled: boolean;
+  referral_enabled: boolean;
+  follow_up_enabled: boolean;
+  line_channel_id: string | null;
+  line_channel_secret: string | null;
+  line_channel_access_token: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -126,6 +136,180 @@ export interface PageView {
   country: string | null;
   device_type: string | null;
 }
+
+// === Marketing Suite Types ===
+
+export interface Customer {
+  id: string;
+  profile_id: string;
+  email: string | null;
+  name: string;
+  phone: string | null;
+  line_user_id: string | null;
+  tags: string[];
+  notes: string | null;
+  source: string;
+  first_seen_at: string;
+  last_seen_at: string;
+  total_bookings: number;
+  total_messages: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Coupon {
+  id: string;
+  profile_id: string;
+  code: string;
+  title: string;
+  description: string | null;
+  discount_type: "percentage" | "fixed" | "free_service";
+  discount_value: number | null;
+  expires_at: string | null;
+  usage_limit: number | null;
+  times_used: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface StampCard {
+  id: string;
+  profile_id: string;
+  name: string;
+  total_stamps_required: number;
+  reward_type: "coupon" | "free_service" | "custom";
+  reward_coupon_id: string | null;
+  reward_description: string | null;
+  is_active: boolean;
+  icon: string;
+  color: string;
+  milestones: StampMilestone[];
+  created_at: string;
+}
+
+export interface StampMilestone {
+  at: number;
+  reward: string;
+  coupon_id?: string;
+}
+
+export interface CustomerStamp {
+  id: string;
+  stamp_card_id: string;
+  customer_id: string;
+  current_stamps: number;
+  completed_count: number;
+  last_stamped_at: string | null;
+  created_at: string;
+  // Joined fields
+  customer?: Customer;
+}
+
+export interface StampEvent {
+  id: string;
+  customer_stamp_id: string;
+  stamped_by: string;
+  note: string | null;
+  stamped_at: string;
+}
+
+export interface MessageTemplate {
+  id: string;
+  profile_id: string;
+  name: string;
+  subject: string;
+  body: string;
+  template_type: "follow_up" | "review_request" | "campaign" | "reminder" | "thank_you";
+  trigger_type: "manual" | "after_booking" | "after_days" | "after_contact";
+  trigger_delay_hours: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SentMessage {
+  id: string;
+  profile_id: string;
+  template_id: string | null;
+  customer_id: string | null;
+  channel: "email" | "line";
+  recipient_email: string | null;
+  subject: string | null;
+  body: string | null;
+  status: "pending" | "sent" | "delivered" | "opened" | "clicked" | "failed";
+  sent_at: string;
+  opened_at: string | null;
+  clicked_at: string | null;
+  // Joined fields
+  customer?: Customer;
+  template?: MessageTemplate;
+}
+
+export interface ReferralCode {
+  id: string;
+  profile_id: string;
+  customer_id: string;
+  code: string;
+  reward_coupon_id: string | null;
+  referral_count: number;
+  created_at: string;
+  // Joined
+  customer?: Customer;
+  reward_coupon?: Coupon;
+}
+
+export interface Referral {
+  id: string;
+  referral_code_id: string;
+  referred_customer_id: string | null;
+  status: "signed_up" | "booked" | "rewarded";
+  created_at: string;
+  // Joined
+  referred_customer?: Customer;
+}
+
+export interface CampaignPage {
+  id: string;
+  profile_id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  hero_image_url: string | null;
+  cta_text: string;
+  cta_url: string | null;
+  coupon_id: string | null;
+  expires_at: string | null;
+  is_published: boolean;
+  template: string;
+  created_at: string;
+  // Joined
+  coupon?: Coupon;
+}
+
+export interface LineContact {
+  id: string;
+  profile_id: string;
+  customer_id: string | null;
+  line_user_id: string;
+  display_name: string | null;
+  picture_url: string | null;
+  is_friend: boolean;
+  created_at: string;
+}
+
+// Placeholder variables for message templates
+export const MESSAGE_PLACEHOLDERS = [
+  { key: "{{customer_name}}", label: "顧客名", description: "お客様の名前" },
+  { key: "{{business_name}}", label: "店舗名", description: "あなたの表示名" },
+  { key: "{{booking_date}}", label: "予約日", description: "予約の日付" },
+  { key: "{{booking_time}}", label: "予約時間", description: "予約の時間" },
+  { key: "{{review_url}}", label: "レビューURL", description: "Googleレビューのリンク" },
+  { key: "{{profile_url}}", label: "プロフィールURL", description: "あなたのFolioページ" },
+  { key: "{{coupon_code}}", label: "クーポンコード", description: "クーポンのコード" },
+  { key: "{{stamp_count}}", label: "スタンプ数", description: "現在のスタンプ数" },
+  { key: "{{referral_url}}", label: "紹介URL", description: "紹介用リンク" },
+  { key: "{{unsubscribe_url}}", label: "配信停止URL", description: "配信停止リンク" },
+] as const;
 
 export interface WallpaperConfig {
   name: string;

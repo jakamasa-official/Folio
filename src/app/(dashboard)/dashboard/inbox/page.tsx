@@ -15,7 +15,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Mail, Trash2, Inbox } from "lucide-react";
+import { Mail, Trash2, Inbox, Reply, CheckCircle2 } from "lucide-react";
 
 export default function InboxPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -23,6 +23,39 @@ export default function InboxPage() {
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<ContactSubmission | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ContactSubmission | null>(null);
+  const [repliedIds, setRepliedIds] = useState<Set<string>>(new Set());
+
+  // Load replied status from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("inbox_replied_ids");
+      if (stored) {
+        setRepliedIds(new Set(JSON.parse(stored)));
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, []);
+
+  function markAsReplied(submissionId: string) {
+    setRepliedIds((prev) => {
+      const next = new Set(prev);
+      next.add(submissionId);
+      try {
+        localStorage.setItem("inbox_replied_ids", JSON.stringify([...next]));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  }
+
+  function handleReply(submission: ContactSubmission) {
+    const subject = encodeURIComponent("Re: お問い合わせの返信");
+    const mailtoUrl = `mailto:${encodeURIComponent(submission.sender_email)}?subject=${subject}`;
+    window.open(mailtoUrl, "_blank");
+    markAsReplied(submission.id);
+  }
 
   useEffect(() => {
     loadData();
@@ -137,6 +170,12 @@ export default function InboxPage() {
                         未読
                       </Badge>
                     )}
+                    {repliedIds.has(submission.id) && (
+                      <Badge variant="outline" className="text-xs gap-1 text-green-600 border-green-300">
+                        <CheckCircle2 className="h-3 w-3" />
+                        返信済み
+                      </Badge>
+                    )}
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {submission.sender_email}
@@ -148,17 +187,31 @@ export default function InboxPage() {
                     {new Date(submission.created_at).toLocaleString("ja-JP")}
                   </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 text-muted-foreground hover:text-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteTarget(submission);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex shrink-0 flex-col gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReply(submission);
+                    }}
+                    title="返信"
+                  >
+                    <Reply className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteTarget(submission);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -184,12 +237,22 @@ export default function InboxPage() {
           <div className="whitespace-pre-wrap text-sm">
             {selectedSubmission?.message}
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={() => setSelectedSubmission(null)}
             >
               閉じる
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedSubmission) {
+                  handleReply(selectedSubmission);
+                }
+              }}
+            >
+              <Reply className="mr-2 h-4 w-4" />
+              返信
             </Button>
           </DialogFooter>
         </DialogContent>

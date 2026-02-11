@@ -5,6 +5,9 @@ import { ContactForm } from "./contact-form";
 import { BookingWidget } from "./booking-widget";
 import { EmailSubscribe } from "./email-subscribe";
 import { VCardButton } from "./vcard-button";
+import { StampCardWidget } from "./stamp-card-widget";
+import { ReviewsSection } from "./reviews-section";
+import type { StampCard } from "@/lib/types";
 import {
   Globe,
   MapPin,
@@ -48,9 +51,10 @@ interface ProfilePageProps {
   profile: Profile;
   showBranding?: boolean;
   viewCount?: number;
+  stampCards?: StampCard[];
 }
 
-export function ProfilePage({ profile, showBranding = true, viewCount }: ProfilePageProps) {
+export function ProfilePage({ profile, showBranding = true, viewCount, stampCards }: ProfilePageProps) {
   const templateStyles = getTemplateStyles(profile.template);
   const socialEntries = Object.entries(profile.social_links || {}).filter(
     ([, url]) => url && url.trim() !== ""
@@ -254,6 +258,16 @@ export function ProfilePage({ profile, showBranding = true, viewCount }: Profile
             <BookingWidget profileId={profile.id} slots={profile.booking_slots} />
           </div>
         )}
+
+        {/* Stamp Card Widget */}
+        {profile.stamp_card_enabled && stampCards && stampCards.length > 0 && (
+          <div className="mt-8">
+            <StampCardWidget cards={stampCards} />
+          </div>
+        )}
+
+        {/* Reviews Section */}
+        <ReviewsSection profileId={profile.id} />
 
         {/* Contact Form */}
         {profile.contact_form_enabled && (
