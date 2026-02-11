@@ -42,7 +42,6 @@ import { toast } from "sonner";
 import type { Profile, ProfileLink, ProfileSlide, TemplateId } from "@/lib/types";
 import { SOCIAL_PLATFORMS, FREE_TEMPLATES, PREMIUM_TEMPLATES, TEMPLATES } from "@/lib/types";
 import { APP_URL, ALLOWED_IMAGE_TYPES, MAX_AVATAR_SIZE, MAX_BIO_LENGTH, MAX_LINKS } from "@/lib/constants";
-import { BusinessHoursEditor } from "./business-hours-editor";
 import { RichTextEditor } from "./rich-text-editor";
 import { SlidesEditor } from "./slides-editor";
 import { Video, Image, Type } from "lucide-react";
@@ -453,6 +452,8 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
           page_password: pagePasswordInput ? pagePassword : profile.page_password,
           google_review_url: profile.google_review_url,
           line_friend_url: profile.line_friend_url,
+          rich_content: profile.rich_content,
+          slides: profile.slides,
         })
         .eq("id", profile.id);
 
@@ -1008,19 +1009,6 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
               />
             </div>
           ))}
-        </CardContent>
-      </Card>
-
-      {/* Business Hours */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">営業時間</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BusinessHoursEditor
-            value={profile.business_hours}
-            onChange={(hours) => updateField("business_hours", hours)}
-          />
         </CardContent>
       </Card>
 
