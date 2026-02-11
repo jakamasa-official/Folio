@@ -37,6 +37,11 @@ export default async function HomePage() {
                 壁紙名刺
               </Button>
             </Link>
+            <Link href="/about">
+              <Button variant="ghost" size="sm">
+                About
+              </Button>
+            </Link>
             {isLoggedIn ? (
               <Link href="/dashboard">
                 <Button size="sm" className="gap-1.5">
@@ -358,6 +363,10 @@ export default async function HomePage() {
       <footer className="border-t py-8">
         <div className="mx-auto max-w-5xl px-4 text-center text-sm text-muted-foreground">
           <div className="flex items-center justify-center gap-4">
+            <Link href="/about" className="hover:text-foreground">
+              About
+            </Link>
+            <span aria-hidden="true">/</span>
             <Link href="/privacy" className="hover:text-foreground">
               プライバシーポリシー
             </Link>
