@@ -1039,6 +1039,18 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
               className="h-4 w-4"
             />
           </label>
+          <label className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">予約カレンダー</div>
+              <div className="text-xs text-muted-foreground">訪問者がオンラインで予約できるようにします</div>
+            </div>
+            <input
+              type="checkbox"
+              checked={profile.booking_enabled}
+              onChange={(e) => updateField("booking_enabled", e.target.checked)}
+              className="h-4 w-4"
+            />
+          </label>
         </CardContent>
       </Card>
 
