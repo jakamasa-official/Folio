@@ -10,6 +10,12 @@ export const analytics: Record<string, string> = {
   "analytics.copy": "コピー",
   "analytics.copiedUrl": "URLをコピーしました",
 
+  // ─── Source filter ─────────────────────────────────
+  "analytics.sourceLabel": "データソース",
+  "analytics.sourceAll": "すべて",
+  "analytics.sourceFolio": "Folioプロフィール",
+  "analytics.sourceExternal": "外部サイト",
+
   // ─── Tabs ───────────────────────────────────────────
   "analytics.tabOverview": "概要",
   "analytics.tabTraffic": "流入元",

@@ -19,6 +19,7 @@ import {
   MonitorSmartphone,
   HelpCircle,
   ChevronRight,
+  MousePointerClick,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -103,6 +104,35 @@ export default async function GuideEmbedPage() {
   data-widgets="tracking,contact-float,review-float,badge"
   data-lang="ja"
   defer></script>`;
+
+  const clickTrackingExample = `<!-- Basic: track a button click -->
+<a href="/shop" data-folio-track="Shop Now">Shop Now</a>
+
+<!-- Track a CTA button -->
+<button data-folio-track="Get Quote">Get a Quote</button>
+
+<!-- Track a phone number link -->
+<a href="tel:090-1234-5678" data-folio-track="Phone Call">
+  Call Us
+</a>`;
+
+  const clickTrackingHtmlExample = `<body>
+  <h1>My Business</h1>
+
+  <a href="/menu" data-folio-track="View Menu">
+    View Our Menu
+  </a>
+
+  <a href="tel:090-1234-5678" data-folio-track="Phone">
+    Call Now
+  </a>
+
+  <a href="/contact" data-folio-track="Contact Page">
+    Contact Us
+  </a>
+
+  ${sampleScript}
+</body>`;
 
   const htmlBefore = `<!DOCTYPE html>
 <html>
@@ -232,6 +262,11 @@ export default function RootLayout({ children }) {
                 icon: BadgeCheck,
                 title: t("widgetBadgeTitle"),
                 desc: t("widgetBadgeDesc"),
+              },
+              {
+                icon: MousePointerClick,
+                title: t("widgetClickTitle"),
+                desc: t("widgetClickDesc"),
               },
             ].map((widget) => (
               <div
@@ -502,6 +537,46 @@ export default function RootLayout({ children }) {
           <div className="mt-8">
             <p className="mb-3 text-sm font-medium">{t("inlineExample")}</p>
             <CodeBlock code={inlineExample} />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Click Tracking ─────────────────────────────────── */}
+      <section className="border-t py-16">
+        <div className="mx-auto max-w-3xl px-4">
+          <div className="mb-3 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <MousePointerClick className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold">{t("clickTrackingTitle")}</h2>
+          </div>
+          <p className="mb-8 text-muted-foreground leading-relaxed">
+            {t("clickTrackingDesc")}
+          </p>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="mb-2 text-lg font-semibold">{t("clickTrackingHowTitle")}</h3>
+              <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
+                {t("clickTrackingHowDesc")}
+              </p>
+              <CodeBlock code={clickTrackingExample} />
+            </div>
+
+            <div>
+              <h3 className="mb-2 text-lg font-semibold">{t("clickTrackingFullTitle")}</h3>
+              <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
+                {t("clickTrackingFullDesc")}
+              </p>
+              <CodeBlock code={clickTrackingHtmlExample} />
+            </div>
+
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <h4 className="mb-1 text-sm font-semibold">{t("clickTrackingTipTitle")}</h4>
+              <p className="text-sm text-muted-foreground">
+                {t("clickTrackingTipDesc")}
+              </p>
+            </div>
           </div>
         </div>
       </section>

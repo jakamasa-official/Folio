@@ -211,10 +211,77 @@
     document.body.appendChild(host);
   }
 
+  // --- MODULE 6: CLICK TRACKING ---
+  function trackClick(label, url) {
+    var payload = JSON.stringify({
+      profile_id: profileId,
+      link_id: "ext-" + label.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").slice(0, 60),
+      link_url: url,
+      link_label: label
+    });
+    var clickUrl = baseUrl + "/api/analytics/click";
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(clickUrl, new Blob([payload], { type: "application/json" }));
+    } else {
+      try { var x = new XMLHttpRequest(); x.open("POST", clickUrl, true); x.setRequestHeader("Content-Type", "application/json"); x.send(payload); }
+      catch (e) { /* click tracking must never break host page */ }
+    }
+  }
+
+  function setupClickTracking() {
+    document.addEventListener("click", function(e) {
+      var node = e.target;
+      while (node && node !== document) {
+        var label = node.getAttribute && node.getAttribute("data-folio-track");
+        if (label) {
+          var href = node.getAttribute("href") || (node.closest && node.closest("a") ? node.closest("a").href : "") || window.location.href;
+          trackClick(label, href);
+          return;
+        }
+        node = node.parentNode;
+      }
+    }, true);
+  }
+
+  // --- MODULE 7: SPA NAVIGATION TRACKING ---
+  function setupSpaTracking() {
+    var lastUrl = window.location.href;
+
+    // Intercept pushState
+    var origPushState = history.pushState;
+    history.pushState = function() {
+      origPushState.apply(this, arguments);
+      if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href;
+        trackPageView();
+      }
+    };
+
+    // Intercept replaceState
+    var origReplaceState = history.replaceState;
+    history.replaceState = function() {
+      origReplaceState.apply(this, arguments);
+      if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href;
+        trackPageView();
+      }
+    };
+
+    // Back/forward buttons
+    window.addEventListener("popstate", function() {
+      if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href;
+        trackPageView();
+      }
+    }, false);
+  }
+
   // --- INITIALIZATION ---
   setupMessageListener();
 
   if (widgets["tracking"]) trackPageView();
+  if (widgets["tracking"]) setupClickTracking();
+  if (widgets["tracking"]) setupSpaTracking();
   if (widgets["badge"]) renderBadge();
 
   // Floating buttons (stacked vertically, bottom-up)

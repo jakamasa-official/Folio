@@ -3,7 +3,7 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { Copy, Globe, Layout } from "lucide-react";
 import { toast } from "sonner";
 import { APP_URL } from "@/lib/constants";
 import { OverviewTab } from "./overview-tab";
@@ -20,9 +20,11 @@ interface Props {
   username: string;
   range: string;
   onRangeChange: (range: string) => void;
+  source: string;
+  onSourceChange: (source: string) => void;
 }
 
-export function AnalyticsDashboard({ data, username, range, onRangeChange }: Props) {
+export function AnalyticsDashboard({ data, username, range, onRangeChange, source, onSourceChange }: Props) {
   const { t } = useTranslation();
 
   function copyUrl() {
@@ -47,6 +49,36 @@ export function AnalyticsDashboard({ data, username, range, onRangeChange }: Pro
               <Copy className="mr-1 h-4 w-4" />
               {t("analytics.copy")}
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Source filter */}
+      <Card>
+        <CardContent className="flex items-center justify-between pt-6">
+          <p className="text-sm font-medium text-muted-foreground">{t("analytics.sourceLabel")}</p>
+          <div className="flex rounded-lg bg-muted p-1">
+            {[
+              { label: t("analytics.sourceAll"), value: "all", icon: null },
+              { label: t("analytics.sourceFolio"), value: "folio", icon: Layout },
+              { label: t("analytics.sourceExternal"), value: "external", icon: Globe },
+            ].map((opt) => {
+              const Icon = opt.icon;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => onSourceChange(opt.value)}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                    source === opt.value
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {Icon && <Icon className="h-3.5 w-3.5" />}
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

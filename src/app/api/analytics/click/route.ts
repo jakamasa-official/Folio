@@ -3,6 +3,19 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const UAParser = require("ua-parser-js");
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 // Rate limit: 1 click per profile+link+IP per 5 minutes
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 let lastCleanup = Date.now();
@@ -43,9 +56,12 @@ export async function POST(request: NextRequest) {
       utm_campaign,
     } = body;
 
-    if (!profile_id || !link_id || !link_url) {
-      return NextResponse.json({ success: true }, { status: 200 });
+    if (!profile_id || !link_url) {
+      return NextResponse.json({ success: true }, { status: 200, headers: CORS_HEADERS });
     }
+
+    // Auto-generate link_id for external clicks if not provided
+    const effectiveLinkId = link_id || ("ext-" + (link_url as string).slice(0, 60));
 
     // Truncate string fields to prevent storage bloat
     const safeStr = (v: unknown, max: number) =>
@@ -71,14 +87,14 @@ export async function POST(request: NextRequest) {
     const device_type = parsed.device.type || "desktop";
 
     // Rate limit: 1 click per profile+link+IP per 5 minutes
-    const rateLimitKey = `click:${profile_id}:${link_id}:${ip}`;
+    const rateLimitKey = `click:${profile_id}:${effectiveLinkId}:${ip}`;
     if (!checkRateLimit(rateLimitKey, 1, 5 * 60 * 1000)) {
-      return NextResponse.json({ success: true }, { status: 200 });
+      return NextResponse.json({ success: true }, { status: 200, headers: CORS_HEADERS });
     }
 
     await supabaseAdmin.from("link_clicks").insert({
       profile_id,
-      link_id,
+      link_id: effectiveLinkId,
       link_url: safeLinkUrl,
       link_label: safeLinkLabel || null,
       clicked_at: new Date().toISOString(),
@@ -92,8 +108,8 @@ export async function POST(request: NextRequest) {
       utm_campaign: safeUtmCampaign || null,
     });
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({ success: true }, { status: 200, headers: CORS_HEADERS });
   } catch {
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({ success: true }, { status: 200, headers: CORS_HEADERS });
   }
 }

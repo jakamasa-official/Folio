@@ -12,13 +12,14 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState("30d");
+  const [source, setSource] = useState("all");
 
-  const fetchData = useCallback(async (r: string) => {
+  const fetchData = useCallback(async (r: string, s: string = "all") => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await apiFetch(`/api/analytics/dashboard?range=${r}`);
+      const res = await apiFetch(`/api/analytics/dashboard?range=${r}&source=${s}`);
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -35,11 +36,15 @@ export default function AnalyticsPage() {
   }, [t]);
 
   useEffect(() => {
-    fetchData(range);
-  }, [range, fetchData]);
+    fetchData(range, source);
+  }, [range, source, fetchData]);
 
   function handleRangeChange(newRange: string) {
     setRange(newRange);
+  }
+
+  function handleSourceChange(newSource: string) {
+    setSource(newSource);
   }
 
   if (loading) {
@@ -81,6 +86,8 @@ export default function AnalyticsPage() {
         username={data.username}
         range={range}
         onRangeChange={handleRangeChange}
+        source={source}
+        onSourceChange={handleSourceChange}
       />
     </div>
   );

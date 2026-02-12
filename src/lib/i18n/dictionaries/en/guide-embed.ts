@@ -131,6 +131,25 @@ export const guideEmbed = {
   platformReactNote:
     "If you are using Next.js App Router, use the next/script component with strategy=\"afterInteractive\".",
 
+  // --- Click Tracking Widget ---
+  widgetClickTitle: "Click Tracking",
+  widgetClickDesc:
+    "Track which links and buttons visitors click on your website. See results in your analytics dashboard.",
+
+  // --- Click Tracking Section ---
+  clickTrackingTitle: "Click Tracking",
+  clickTrackingDesc:
+    "Want to know which links and buttons visitors are clicking on your website? Add a simple attribute to any element and Folio will track it automatically. Results appear in your Analytics dashboard under the Links tab.",
+  clickTrackingHowTitle: "How to Add Click Tracking",
+  clickTrackingHowDesc:
+    "Add data-folio-track=\"Label\" to any link or button you want to track. The label you choose will appear in your analytics dashboard.",
+  clickTrackingFullTitle: "Full Example",
+  clickTrackingFullDesc:
+    "Here is a complete example with multiple tracked elements. Note that the Folio script (with tracking enabled) must be included on the same page.",
+  clickTrackingTipTitle: "Tip: Use descriptive labels",
+  clickTrackingTipDesc:
+    "Choose labels that are easy to recognize in your analytics, like \"Phone Call\", \"View Menu\", or \"Book Now\". You can view all click data in Dashboard > Analytics > Links tab, and filter by \"External Sites\" to see only clicks from your website.",
+
   // --- Inline Widgets ---
   inlineTitle: "Inline Widgets (Advanced)",
   inlineDesc:

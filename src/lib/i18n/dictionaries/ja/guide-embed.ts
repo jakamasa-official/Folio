@@ -136,6 +136,25 @@ export const guideEmbed = {
   platformReactNote:
     "Next.js App Routerを使用している場合は、next/scriptコンポーネントでstrategy=\"afterInteractive\"を使用してください。",
 
+  // --- Click Tracking Widget ---
+  widgetClickTitle: "クリック計測",
+  widgetClickDesc:
+    "ウェブサイト上でどのリンクやボタンがクリックされたかを計測。結果はアナリティクスダッシュボードで確認できます。",
+
+  // --- Click Tracking Section ---
+  clickTrackingTitle: "クリック計測",
+  clickTrackingDesc:
+    "ウェブサイト上でどのリンクやボタンが訪問者にクリックされているか知りたいですか？任意の要素にシンプルな属性を追加するだけで、Folioが自動的に計測します。結果はアナリティクスダッシュボードの「リンク」タブで確認できます。",
+  clickTrackingHowTitle: "クリック計測の追加方法",
+  clickTrackingHowDesc:
+    "計測したいリンクやボタンに data-folio-track=\"ラベル\" を追加します。設定したラベル名がアナリティクスダッシュボードに表示されます。",
+  clickTrackingFullTitle: "完全な例",
+  clickTrackingFullDesc:
+    "複数の計測要素を含む完全な例です。同じページにFolioスクリプト（tracking有効）が含まれている必要があります。",
+  clickTrackingTipTitle: "ヒント：分かりやすいラベルを使いましょう",
+  clickTrackingTipDesc:
+    "「電話」「メニューを見る」「予約する」など、アナリティクスで見分けやすいラベルを選びましょう。クリックデータはダッシュボード > アナリティクス > リンクタブで確認でき、「外部サイト」でフィルターするとウェブサイトからのクリックのみ表示されます。",
+
   // --- Inline Widgets ---
   inlineTitle: "インラインウィジェット（上級者向け）",
   inlineDesc:

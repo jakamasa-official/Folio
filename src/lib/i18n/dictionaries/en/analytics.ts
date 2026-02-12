@@ -10,6 +10,12 @@ export const analytics: Record<string, string> = {
   "analytics.copy": "Copy",
   "analytics.copiedUrl": "URL copied",
 
+  // ─── Source filter ─────────────────────────────────
+  "analytics.sourceLabel": "Data Source",
+  "analytics.sourceAll": "All",
+  "analytics.sourceFolio": "Folio Profile",
+  "analytics.sourceExternal": "External Sites",
+
   // ─── Tabs ───────────────────────────────────────────
   "analytics.tabOverview": "Overview",
   "analytics.tabTraffic": "Traffic",

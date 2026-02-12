@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getLocaleFromCookie, createTranslator } from "@/lib/i18n";
+import { APP_URL } from "@/lib/constants";
 
 type RangeType = "30d" | "12w" | "12m";
 
@@ -129,12 +130,23 @@ export async function GET(request: NextRequest) {
     const profileId = profile.id;
     const { searchParams } = new URL(request.url);
     const range = (searchParams.get("range") || "30d") as RangeType;
+    const source = searchParams.get("source") || "all"; // "all" | "folio" | "external"
 
     if (!["30d", "12w", "12m"].includes(range)) {
       return NextResponse.json(
         { error: t("invalidRangeParam") },
         { status: 400 }
       );
+    }
+
+    // Determine Folio hostname for source segmentation
+    let folioHostname = "";
+    try { folioHostname = new URL(APP_URL).hostname; } catch { /* fallback */ }
+
+    function isFromFolio(referrer: string | null): boolean {
+      if (!referrer) return true; // no referrer = direct access / folio
+      try { return new URL(referrer).hostname === folioHostname; }
+      catch { return true; }
     }
 
     const rangeStart = getDateRange(range);
@@ -168,10 +180,21 @@ export async function GET(request: NextRequest) {
           .gte("viewed_at", fiveMinutesAgo),
       ]);
 
-    const views = viewsResult.data || [];
-    const clicks = clicksResult.data || [];
+    const allViews = viewsResult.data || [];
+    const allClicks = clicksResult.data || [];
     const conversions = conversionsResult.data || [];
     const realtimeViewers = realtimeResult.count || 0;
+
+    // Apply source filter
+    let views = allViews;
+    let clicks = allClicks;
+    if (source === "folio") {
+      views = allViews.filter(v => isFromFolio(v.referrer));
+      clicks = allClicks.filter(c => isFromFolio(c.referrer));
+    } else if (source === "external") {
+      views = allViews.filter(v => !isFromFolio(v.referrer));
+      clicks = allClicks.filter(c => !isFromFolio(c.referrer));
+    }
 
     // === Aggregate views ===
     const totalViews = views.length;
