@@ -14,8 +14,10 @@ import { Sparkles, Copy, Check, ExternalLink, QrCode, Download, Users, UserPlus,
 import Link from "next/link";
 import { SeoPreview } from "@/components/dashboard/seo-preview";
 import QRCode from "qrcode";
+import { useTranslation } from "@/lib/i18n/client";
 
 function ShareBar({ url }: { url: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
@@ -31,12 +33,12 @@ function ShareBar({ url }: { url: string }) {
       </div>
       <Button variant="outline" size="sm" onClick={handleCopy} className="shrink-0 gap-1.5">
         {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-        {copied ? "コピー済み" : "コピー"}
+        {copied ? t("dashboard.copied") : t("dashboard.copy")}
       </Button>
       <Button variant="outline" size="sm" asChild className="shrink-0 gap-1.5">
         <a href={url} target="_blank" rel="noopener noreferrer">
           <ExternalLink className="h-4 w-4" />
-          プレビュー
+          {t("dashboard.preview")}
         </a>
       </Button>
     </div>

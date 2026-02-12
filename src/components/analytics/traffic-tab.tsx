@@ -2,16 +2,19 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 import type { AnalyticsData, BreakdownItem } from "./types";
 
 interface TrafficTabProps {
   data: AnalyticsData;
 }
 
-export function BreakdownList({ items, emptyMessage = "データなし" }: { items: BreakdownItem[]; emptyMessage?: string }) {
+export function BreakdownList({ items, emptyMessage }: { items: BreakdownItem[]; emptyMessage?: string }) {
+  const { t } = useTranslation();
+
   if (items.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+      <p className="text-sm text-muted-foreground">{emptyMessage || t("analytics.noData")}</p>
     );
   }
 
@@ -45,11 +48,13 @@ export function BreakdownList({ items, emptyMessage = "データなし" }: { ite
 }
 
 export function TrafficTab({ data }: TrafficTabProps) {
+  const { t } = useTranslation();
+
   const sections = [
-    { title: "流入元", items: data.referrers, icon: ExternalLink },
-    { title: "UTMソース", items: data.utmSources },
-    { title: "UTMメディア", items: data.utmMediums },
-    { title: "UTMキャンペーン", items: data.utmCampaigns },
+    { title: t("analytics.referrers"), items: data.referrers, icon: ExternalLink },
+    { title: t("analytics.utmSource"), items: data.utmSources },
+    { title: t("analytics.utmMedium"), items: data.utmMediums },
+    { title: t("analytics.utmCampaign"), items: data.utmCampaigns },
   ];
 
   return (

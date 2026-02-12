@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslation } from "@/lib/i18n/client";
 import { apiFetch } from "@/lib/api-client";
 import { PLANS } from "@/lib/stripe";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -24,14 +25,16 @@ import type { Profile } from "@/lib/types";
 function BillingToggle({
   isYearly,
   onToggle,
+  t,
 }: {
   isYearly: boolean;
   onToggle: () => void;
+  t: (key: string, replacements?: Record<string, string>) => string;
 }) {
   return (
     <div className="flex items-center justify-center gap-3">
       <span className={`text-sm font-medium ${!isYearly ? "text-foreground" : "text-muted-foreground"}`}>
-        月額
+        {t("billing.monthly")}
       </span>
       <button
         type="button"
@@ -49,8 +52,8 @@ function BillingToggle({
         />
       </button>
       <span className={`text-sm font-medium ${isYearly ? "text-foreground" : "text-muted-foreground"}`}>
-        年額
-        <Badge variant="secondary" className="ml-1.5 text-[10px]">お得</Badge>
+        {t("billing.yearly")}
+        <Badge variant="secondary" className="ml-1.5 text-[10px]">{t("billing.yearlyBadge")}</Badge>
       </span>
     </div>
   );
@@ -91,19 +94,20 @@ function UpgradeView({
   loading: boolean;
   onUpgrade: (tier: "pro" | "pro_plus", period: "monthly" | "yearly") => void;
 }) {
+  const { t } = useTranslation();
   const [isYearly, setIsYearly] = useState(false);
   const currentTier = profile.plan_tier || "free";
 
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">プランをアップグレード</h1>
+        <h1 className="text-2xl font-bold">{t("billing.upgradeTitle")}</h1>
         <p className="mt-2 text-muted-foreground">
-          ビジネスに合ったプランをお選びください
+          {t("billing.upgradeSubtitle")}
         </p>
       </div>
 
-      <BillingToggle isYearly={isYearly} onToggle={() => setIsYearly(!isYearly)} />
+      <BillingToggle isYearly={isYearly} onToggle={() => setIsYearly(!isYearly)} t={t} />
 
       <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
         {/* Free */}
@@ -111,11 +115,11 @@ function UpgradeView({
           <CardHeader>
             <div className="flex items-center gap-2">
               <CardTitle>{PLANS.free.name}</CardTitle>
-              {currentTier === "free" && <Badge variant="secondary">現在</Badge>}
+              {currentTier === "free" && <Badge variant="secondary">{t("billing.currentBadge")}</Badge>}
             </div>
             <CardDescription>
               <span className="text-2xl font-bold text-foreground">¥0</span>
-              <span className="text-muted-foreground">/月</span>
+              <span className="text-muted-foreground">{t("billing.perMonth")}</span>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -130,7 +134,7 @@ function UpgradeView({
           {currentTier === "free" && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <Badge className="bg-primary px-3 py-1 text-xs">
-                <Sparkles className="mr-1 h-3 w-3" />おすすめ
+                <Sparkles className="mr-1 h-3 w-3" />{t("billing.recommended")}
               </Badge>
             </div>
           )}
@@ -138,19 +142,19 @@ function UpgradeView({
             <div className="flex items-center gap-2">
               <CardTitle>{PLANS.pro.name}</CardTitle>
               <Crown className="h-5 w-5 text-yellow-500" />
-              {currentTier === "pro" && <Badge variant="secondary">現在</Badge>}
+              {currentTier === "pro" && <Badge variant="secondary">{t("billing.currentBadge")}</Badge>}
             </div>
             <CardDescription>
               {isYearly ? (
                 <>
                   <span className="text-2xl font-bold text-foreground">¥{PLANS.pro.priceYearly.toLocaleString()}</span>
-                  <span className="text-muted-foreground">/年</span>
+                  <span className="text-muted-foreground">{t("billing.perYear")}</span>
                   <span className="ml-2 text-xs text-muted-foreground line-through">¥{(PLANS.pro.priceMonthly * 12).toLocaleString()}</span>
                 </>
               ) : (
                 <>
                   <span className="text-2xl font-bold text-foreground">¥{PLANS.pro.priceMonthly.toLocaleString()}</span>
-                  <span className="text-muted-foreground">/月</span>
+                  <span className="text-muted-foreground">{t("billing.perMonth")}</span>
                 </>
               )}
             </CardDescription>
@@ -166,7 +170,7 @@ function UpgradeView({
                 disabled={loading}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {loading ? "処理中..." : "Proにアップグレード"}
+                {loading ? t("billing.processing") : t("billing.upgradeToPro")}
               </Button>
             )}
           </CardContent>
@@ -177,7 +181,7 @@ function UpgradeView({
           {currentTier === "pro" && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <Badge className="bg-amber-500 px-3 py-1 text-xs text-white">
-                <Zap className="mr-1 h-3 w-3" />アップグレード
+                <Zap className="mr-1 h-3 w-3" />{t("billing.upgradeBadge")}
               </Badge>
             </div>
           )}
@@ -185,19 +189,19 @@ function UpgradeView({
             <div className="flex items-center gap-2">
               <CardTitle>{PLANS.pro_plus.name}</CardTitle>
               <Zap className="h-5 w-5 text-amber-500" />
-              {currentTier === "pro_plus" && <Badge variant="secondary">現在</Badge>}
+              {currentTier === "pro_plus" && <Badge variant="secondary">{t("billing.currentBadge")}</Badge>}
             </div>
             <CardDescription>
               {isYearly ? (
                 <>
                   <span className="text-2xl font-bold text-foreground">¥{PLANS.pro_plus.priceYearly.toLocaleString()}</span>
-                  <span className="text-muted-foreground">/年</span>
+                  <span className="text-muted-foreground">{t("billing.perYear")}</span>
                   <span className="ml-2 text-xs text-muted-foreground line-through">¥{(PLANS.pro_plus.priceMonthly * 12).toLocaleString()}</span>
                 </>
               ) : (
                 <>
                   <span className="text-2xl font-bold text-foreground">¥{PLANS.pro_plus.priceMonthly.toLocaleString()}</span>
-                  <span className="text-muted-foreground">/月</span>
+                  <span className="text-muted-foreground">{t("billing.perMonth")}</span>
                 </>
               )}
             </CardDescription>
@@ -214,7 +218,7 @@ function UpgradeView({
                 disabled={loading}
               >
                 <Zap className="mr-2 h-4 w-4" />
-                {loading ? "処理中..." : "Pro+にアップグレード"}
+                {loading ? t("billing.processing") : t("billing.upgradeToProPlus")}
               </Button>
             )}
           </CardContent>
@@ -223,19 +227,19 @@ function UpgradeView({
 
       {/* FAQ */}
       <div className="mx-auto max-w-2xl">
-        <h2 className="mb-4 text-lg font-semibold">よくある質問</h2>
+        <h2 className="mb-4 text-lg font-semibold">{t("billing.faqTitle")}</h2>
         <div className="rounded-lg border px-4">
           <FAQItem
-            question="いつでもキャンセルできますか？"
-            answer="はい、いつでもキャンセル可能です。キャンセル後も現在の請求期間が終了するまでご利用いただけます。"
+            question={t("billing.faqCancelQ")}
+            answer={t("billing.faqCancelA")}
           />
           <FAQItem
-            question="プランのアップグレード・ダウングレードはできますか？"
-            answer="はい、カスタマーポータルからいつでもプランの変更が可能です。差額は自動的に日割り調整されます。"
+            question={t("billing.faqChangeQ")}
+            answer={t("billing.faqChangeA")}
           />
           <FAQItem
-            question="支払い方法は？"
-            answer="クレジットカード（Visa、Mastercard、JCB、AMEX）に対応。決済はStripeで安全に処理されます。"
+            question={t("billing.faqPaymentQ")}
+            answer={t("billing.faqPaymentA")}
           />
         </div>
       </div>
@@ -253,28 +257,29 @@ function ActivePlanView({
   loading: boolean;
   onManage: () => void;
 }) {
+  const { t } = useTranslation();
   const tier = profile.plan_tier || "pro";
   const planInfo = tier === "pro_plus" ? PLANS.pro_plus : PLANS.pro;
   const Icon = tier === "pro_plus" ? Zap : Crown;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">プランと請求</h1>
+      <h1 className="text-2xl font-bold">{t("billing.pageTitle")}</h1>
 
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <CardTitle className="flex items-center gap-2">
               <Icon className="h-5 w-5 text-yellow-500" />
-              {planInfo.name}プラン
+              {planInfo.name}{t("billing.planSuffix")}
             </CardTitle>
-            <Badge className="bg-green-100 text-green-800">有効</Badge>
+            <Badge className="bg-green-100 text-green-800">{t("billing.activeBadge")}</Badge>
           </div>
-          <CardDescription>全てのプレミアム機能をご利用いただけます</CardDescription>
+          <CardDescription>{t("billing.activeDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <p className="mb-3 text-sm font-medium text-muted-foreground">ご利用中の機能</p>
+            <p className="mb-3 text-sm font-medium text-muted-foreground">{t("billing.currentFeatures")}</p>
             <ul className="grid gap-2 sm:grid-cols-2">
               {planInfo.features.map((f) => <FeatureItem key={f}>{f}</FeatureItem>)}
             </ul>
@@ -282,14 +287,14 @@ function ActivePlanView({
 
           <div className="flex flex-wrap gap-3">
             <Button onClick={onManage} disabled={loading}>
-              {loading ? "読み込み中..." : (
-                <><ExternalLink className="mr-2 h-4 w-4" />プランを管理</>
+              {loading ? t("billing.loadingPortal") : (
+                <><ExternalLink className="mr-2 h-4 w-4" />{t("billing.managePlan")}</>
               )}
             </Button>
           </div>
 
           <p className="text-xs text-muted-foreground">
-            プランの変更・キャンセルはStripeカスタマーポータルから行えます。
+            {t("billing.manageNote")}
           </p>
         </CardContent>
       </Card>
@@ -298,14 +303,15 @@ function ActivePlanView({
 }
 
 function StripeNotConfiguredView() {
+  const { t } = useTranslation();
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">プランと請求</h1>
+      <h1 className="text-2xl font-bold">{t("billing.pageTitle")}</h1>
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
           <AlertTriangle className="mb-4 h-12 w-12 text-yellow-500" />
-          <h2 className="mb-2 text-lg font-semibold">設定が必要です</h2>
-          <p className="text-muted-foreground">Stripe の設定が完了していません。管理者に連絡してください。</p>
+          <h2 className="mb-2 text-lg font-semibold">{t("billing.stripeNotConfiguredTitle")}</h2>
+          <p className="text-muted-foreground">{t("billing.stripeNotConfiguredDescription")}</p>
         </CardContent>
       </Card>
     </div>
@@ -313,6 +319,7 @@ function StripeNotConfiguredView() {
 }
 
 export default function BillingPage() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -324,16 +331,16 @@ export default function BillingPage() {
     const canceled = searchParams.get("canceled");
 
     if (success === "true") {
-      toast.success("アップグレードが完了しました！", {
-        description: "プレミアム機能をお使いいただけます。",
+      toast.success(t("billing.upgradeSuccess"), {
+        description: t("billing.upgradeSuccessDescription"),
         duration: 5000,
       });
       window.history.replaceState({}, "", "/dashboard/billing");
     } else if (canceled === "true") {
-      toast.info("アップグレードがキャンセルされました。");
+      toast.info(t("billing.upgradeCanceled"));
       window.history.replaceState({}, "", "/dashboard/billing");
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   useEffect(() => {
     async function load() {
@@ -387,14 +394,14 @@ export default function BillingPage() {
       }
 
       if (!res.ok) {
-        toast.error(data.error || "エラーが発生しました");
+        toast.error(data.error || t("billing.error"));
         setActionLoading(false);
         return;
       }
 
       if (data.url) window.location.href = data.url;
     } catch {
-      toast.error("ネットワークエラーが発生しました");
+      toast.error(t("billing.networkError"));
       setActionLoading(false);
     }
   }
@@ -415,14 +422,14 @@ export default function BillingPage() {
       }
 
       if (!res.ok) {
-        toast.error(data.error || "エラーが発生しました");
+        toast.error(data.error || t("billing.error"));
         setActionLoading(false);
         return;
       }
 
       if (data.url) window.location.href = data.url;
     } catch {
-      toast.error("ネットワークエラーが発生しました");
+      toast.error(t("billing.networkError"));
       setActionLoading(false);
     }
   }

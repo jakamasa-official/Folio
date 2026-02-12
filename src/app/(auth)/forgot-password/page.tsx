@@ -8,12 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_NAME } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n/client";
+import { LanguageToggle } from "@/components/ui/language-toggle";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const { t } = useTranslation();
 
   async function handleReset(e: React.FormEvent) {
     e.preventDefault();
@@ -43,19 +46,18 @@ export default function ForgotPasswordPage() {
             <Link href="/" className="text-2xl font-bold tracking-tight">
               {APP_NAME}
             </Link>
-            <CardTitle className="mt-4 text-xl">メールを送信しました</CardTitle>
+            <CardTitle className="mt-4 text-xl">{t("resetSentTitle")}</CardTitle>
             <CardDescription>
-              <span className="font-medium text-foreground">{email}</span> にパスワードリセットのリンクを送信しました。
-              メール内のリンクをクリックして、パスワードを再設定してください。
+              {t("resetSentDescription", { email })}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-sm text-muted-foreground">
-              メールが届かない場合は、迷惑メールフォルダをご確認ください。
+              {t("resetSentSpamNote")}
             </p>
             <Link href="/login">
               <Button variant="outline" className="mt-6">
-                ログインページに戻る
+                {t("backToLogin")}
               </Button>
             </Link>
           </CardContent>
@@ -68,12 +70,15 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <div className="flex justify-end">
+            <LanguageToggle />
+          </div>
           <Link href="/" className="text-2xl font-bold tracking-tight">
             {APP_NAME}
           </Link>
-          <CardTitle className="mt-4 text-xl">パスワードをお忘れですか？</CardTitle>
+          <CardTitle className="mt-4 text-xl">{t("forgotPasswordTitle")}</CardTitle>
           <CardDescription>
-            登録済みのメールアドレスを入力してください。パスワードリセットのリンクをお送りします。
+            {t("forgotPasswordDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -84,11 +89,11 @@ export default function ForgotPasswordPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">メールアドレス</Label>
+              <Label htmlFor="email">{t("emailLabel")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -96,12 +101,12 @@ export default function ForgotPasswordPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "送信中..." : "リセットリンクを送信"}
+              {loading ? t("resetLoading") : t("resetButton")}
             </Button>
           </form>
           <div className="mt-6 text-center text-sm text-muted-foreground">
             <Link href="/login" className="text-primary underline">
-              ログインに戻る
+              {t("backToLoginLink")}
             </Link>
           </div>
         </CardContent>

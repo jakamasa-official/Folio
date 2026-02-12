@@ -3,9 +3,17 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 // Rate limit: 10 redeem attempts per IP per hour
 const redeemRateLimit = new Map<string, { count: number; resetAt: number }>();
+let lastRedeemCleanup = Date.now();
 
 function checkRedeemRateLimit(ip: string): boolean {
   const now = Date.now();
+  // Periodically purge expired entries to prevent unbounded growth
+  if (now - lastRedeemCleanup > 30 * 60 * 1000) {
+    for (const [k, v] of redeemRateLimit) {
+      if (now > v.resetAt) redeemRateLimit.delete(k);
+    }
+    lastRedeemCleanup = now;
+  }
   const entry = redeemRateLimit.get(ip);
   if (!entry || now > entry.resetAt) {
     redeemRateLimit.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
@@ -62,19 +70,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate: is_active
+    // Validate: is_active — use same generic error to prevent enumeration
     if (!coupon.is_active) {
       return NextResponse.json(
-        { error: "このクーポンは現在無効です" },
-        { status: 400 }
+        { error: "クーポンが見つかりません" },
+        { status: 404 }
       );
     }
 
-    // Validate: not expired
+    // Validate: not expired — use same generic error to prevent enumeration
     if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
       return NextResponse.json(
-        { error: "このクーポンは期限切れです" },
-        { status: 400 }
+        { error: "クーポンが見つかりません" },
+        { status: 404 }
       );
     }
 

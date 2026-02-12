@@ -3,6 +3,7 @@
 import { Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface ProGateProps {
   isPro: boolean;
@@ -17,6 +18,8 @@ interface ProGateProps {
  * visually appealing upgrade prompt. Pro users see the children as-is.
  */
 export function ProGate({ isPro, feature, children }: ProGateProps) {
+  const { t } = useTranslation();
+
   if (isPro) {
     return <>{children}</>;
   }
@@ -35,15 +38,15 @@ export function ProGate({ isPro, feature, children }: ProGateProps) {
             <Crown className="h-6 w-6 text-amber-600" />
           </div>
           <h3 className="text-lg font-semibold">
-            {feature}はプロプランでご利用いただけます
+            {t("proGate.featureProOnly", { feature })}
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            プロプランにアップグレードして、すべての機能をご利用ください。
+            {t("proGate.upgradeDescription")}
           </p>
           <Button asChild className="mt-4 w-full gap-1.5">
             <Link href="/dashboard/settings">
               <Crown className="h-4 w-4" />
-              アップグレード
+              {t("proGate.upgrade")}
             </Link>
           </Button>
         </div>
@@ -64,6 +67,7 @@ interface LimitBannerProps {
 }
 
 export function LimitBanner({ current, max, label, isPro }: LimitBannerProps) {
+  const { t } = useTranslation();
   if (isPro) return null;
 
   const atLimit = current >= max;
@@ -85,7 +89,7 @@ export function LimitBanner({ current, max, label, isPro }: LimitBannerProps) {
           className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-amber-700 underline hover:no-underline"
         >
           <Crown className="h-3 w-3" />
-          アップグレード
+          {t("proGate.upgrade")}
         </Link>
       )}
     </div>

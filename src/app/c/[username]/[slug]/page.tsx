@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getServerTranslator } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { APP_NAME, APP_URL } from "@/lib/constants";
 import Link from "next/link";
@@ -77,6 +78,8 @@ export default async function CampaignPublicPage({ params }: Props) {
   const ctaUrl = campaign.cta_url || `${APP_URL}/${profile.username}`;
   const template = campaign.template || "default";
 
+  const { t } = await getServerTranslator("common", "marketing");
+
   return (
     <div className="min-h-screen relative">
       {/* Expired overlay */}
@@ -106,6 +109,7 @@ export default async function CampaignPublicPage({ params }: Props) {
           campaign={campaign}
           profile={profile}
           ctaUrl={ctaUrl}
+          t={t}
         />
       )}
       {template === "minimal" && (
@@ -113,6 +117,7 @@ export default async function CampaignPublicPage({ params }: Props) {
           campaign={campaign}
           profile={profile}
           ctaUrl={ctaUrl}
+          t={t}
         />
       )}
       {template === "bold" && (
@@ -120,6 +125,7 @@ export default async function CampaignPublicPage({ params }: Props) {
           campaign={campaign}
           profile={profile}
           ctaUrl={ctaUrl}
+          t={t}
         />
       )}
       {template === "festive" && (
@@ -127,6 +133,7 @@ export default async function CampaignPublicPage({ params }: Props) {
           campaign={campaign}
           profile={profile}
           ctaUrl={ctaUrl}
+          t={t}
         />
       )}
 
@@ -151,6 +158,8 @@ export default async function CampaignPublicPage({ params }: Props) {
    Template Components
    ======================================== */
 
+type TFunc = (key: string, replacements?: Record<string, string>) => string;
+
 interface TemplateProps {
   campaign: {
     title: string;
@@ -172,16 +181,17 @@ interface TemplateProps {
     username: string;
   };
   ctaUrl: string;
+  t: TFunc;
 }
 
-function CouponBadge({ coupon }: { coupon: NonNullable<TemplateProps["campaign"]["coupon"]> }) {
+function CouponBadge({ coupon, t }: { coupon: NonNullable<TemplateProps["campaign"]["coupon"]>; t: TFunc }) {
   let discountText = "";
   if (coupon.discount_type === "percentage" && coupon.discount_value) {
-    discountText = `${coupon.discount_value}% OFF`;
+    discountText = t("percentOff", { value: String(coupon.discount_value) });
   } else if (coupon.discount_type === "fixed" && coupon.discount_value) {
-    discountText = `${coupon.discount_value.toLocaleString()}円 OFF`;
+    discountText = t("fixedOff", { value: coupon.discount_value.toLocaleString() });
   } else if (coupon.discount_type === "free_service") {
-    discountText = "無料サービス";
+    discountText = t("freeService");
   }
 
   return (
@@ -198,7 +208,7 @@ function CouponBadge({ coupon }: { coupon: NonNullable<TemplateProps["campaign"]
 }
 
 /* ---------- DEFAULT TEMPLATE ---------- */
-function DefaultTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
+function DefaultTemplate({ campaign, profile, ctaUrl, t }: TemplateProps) {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
@@ -245,7 +255,7 @@ function DefaultTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
         {/* Coupon */}
         {campaign.coupon && (
           <div className="mb-8 flex justify-center">
-            <CouponBadge coupon={campaign.coupon} />
+            <CouponBadge coupon={campaign.coupon} t={t} />
           </div>
         )}
 
@@ -264,7 +274,7 @@ function DefaultTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
 }
 
 /* ---------- MINIMAL TEMPLATE ---------- */
-function MinimalTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
+function MinimalTemplate({ campaign, profile, ctaUrl, t }: TemplateProps) {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-xl px-6 py-16">
@@ -310,7 +320,7 @@ function MinimalTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
         {/* Coupon */}
         {campaign.coupon && (
           <div className="mb-8 flex justify-center">
-            <CouponBadge coupon={campaign.coupon} />
+            <CouponBadge coupon={campaign.coupon} t={t} />
           </div>
         )}
 
@@ -329,7 +339,7 @@ function MinimalTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
 }
 
 /* ---------- BOLD TEMPLATE ---------- */
-function BoldTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
+function BoldTemplate({ campaign, profile, ctaUrl, t }: TemplateProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 text-white">
       {/* Hero */}
@@ -377,13 +387,13 @@ function BoldTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
         {campaign.coupon && (
           <div className="mb-10 inline-flex flex-col items-center rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-8 py-5">
             {campaign.coupon.discount_type === "percentage" && campaign.coupon.discount_value && (
-              <span className="text-3xl font-bold">{campaign.coupon.discount_value}% OFF</span>
+              <span className="text-3xl font-bold">{t("percentOff", { value: String(campaign.coupon.discount_value) })}</span>
             )}
             {campaign.coupon.discount_type === "fixed" && campaign.coupon.discount_value && (
-              <span className="text-3xl font-bold">{campaign.coupon.discount_value.toLocaleString()}円 OFF</span>
+              <span className="text-3xl font-bold">{t("fixedOff", { value: campaign.coupon.discount_value.toLocaleString() })}</span>
             )}
             {campaign.coupon.discount_type === "free_service" && (
-              <span className="text-3xl font-bold">無料サービス</span>
+              <span className="text-3xl font-bold">{t("freeService")}</span>
             )}
             <span className="text-white/80 mt-1">{campaign.coupon.title}</span>
           </div>
@@ -404,7 +414,7 @@ function BoldTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
 }
 
 /* ---------- FESTIVE TEMPLATE ---------- */
-function FestiveTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
+function FestiveTemplate({ campaign, profile, ctaUrl, t }: TemplateProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-rose-50">
       {/* Decorative top border */}
@@ -461,13 +471,13 @@ function FestiveTemplate({ campaign, profile, ctaUrl }: TemplateProps) {
               特別オファー
             </span>
             {campaign.coupon.discount_type === "percentage" && campaign.coupon.discount_value && (
-              <span className="text-3xl font-bold text-rose-600">{campaign.coupon.discount_value}% OFF</span>
+              <span className="text-3xl font-bold text-rose-600">{t("percentOff", { value: String(campaign.coupon.discount_value) })}</span>
             )}
             {campaign.coupon.discount_type === "fixed" && campaign.coupon.discount_value && (
-              <span className="text-3xl font-bold text-rose-600">{campaign.coupon.discount_value.toLocaleString()}円 OFF</span>
+              <span className="text-3xl font-bold text-rose-600">{t("fixedOff", { value: campaign.coupon.discount_value.toLocaleString() })}</span>
             )}
             {campaign.coupon.discount_type === "free_service" && (
-              <span className="text-3xl font-bold text-rose-600">無料サービス</span>
+              <span className="text-3xl font-bold text-rose-600">{t("freeService")}</span>
             )}
             <span className="text-amber-800 mt-1">{campaign.coupon.title}</span>
             {campaign.coupon.description && (

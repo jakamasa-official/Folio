@@ -48,7 +48,7 @@ function resolvePlaceholders(
     .replace(/\{\{coupon_code\}\}/g, "") // Coupon context not available here
     .replace(/\{\{stamp_count\}\}/g, "")
     .replace(/\{\{referral_url\}\}/g, "")
-    .replace(/\{\{unsubscribe_url\}\}/g, ""); // TODO: Implement unsubscribe URL
+    .replace(/\{\{unsubscribe_url\}\}/g, "#"); // TODO: Implement unsubscribe URL
 }
 
 // POST: Send messages to one or more customers

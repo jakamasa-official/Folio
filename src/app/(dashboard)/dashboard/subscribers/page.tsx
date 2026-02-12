@@ -10,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Users, Trash2, Download } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 
 export default function SubscribersPage() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [subscribers, setSubscribers] = useState<EmailSubscriber[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +95,7 @@ export default function SubscribersPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold">購読者管理</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("subscribers.title")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -103,26 +105,26 @@ export default function SubscribersPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">購読者管理</h1>
+      <h1 className="text-2xl font-bold">{t("subscribers.title")}</h1>
 
       {/* Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>メール収集設定</CardTitle>
+          <CardTitle>{t("subscribers.settingsTitle")}</CardTitle>
           <CardDescription>
-            ページ訪問者からメールアドレスを収集する機能を管理します
+            {t("subscribers.settingsDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <Label>メール収集を有効にする</Label>
+            <Label>{t("subscribers.enableCollection")}</Label>
             <Button
               variant={emailCollectionEnabled ? "default" : "outline"}
               size="sm"
               onClick={toggleEmailCollection}
               disabled={saving}
             >
-              {emailCollectionEnabled ? "有効" : "無効"}
+              {emailCollectionEnabled ? t("subscribers.enabled") : t("subscribers.disabled")}
             </Button>
           </div>
         </CardContent>
@@ -134,13 +136,13 @@ export default function SubscribersPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold">購読者一覧</h2>
-            <Badge variant="secondary">{subscribers.length} 件</Badge>
+            <h2 className="text-xl font-semibold">{t("subscribers.listTitle")}</h2>
+            <Badge variant="secondary">{t("subscribers.count", { count: String(subscribers.length) })}</Badge>
           </div>
           {subscribers.length > 0 && (
             <Button variant="outline" size="sm" onClick={exportCsv}>
               <Download className="mr-2 h-4 w-4" />
-              CSVエクスポート
+              {t("subscribers.csvExport")}
             </Button>
           )}
         </div>
@@ -149,7 +151,7 @@ export default function SubscribersPage() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Users className="mb-4 h-12 w-12" />
-              <p>購読者はまだいません</p>
+              <p>{t("subscribers.emptyState")}</p>
             </CardContent>
           </Card>
         ) : (
@@ -160,10 +162,9 @@ export default function SubscribersPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{subscriber.email}</p>
                     <p className="text-sm text-muted-foreground">
-                      登録日:{" "}
-                      {new Date(subscriber.subscribed_at).toLocaleDateString(
-                        "ja-JP"
-                      )}
+                      {t("subscribers.registeredAt", {
+                        date: new Date(subscriber.subscribed_at).toLocaleDateString("ja-JP"),
+                      })}
                     </p>
                   </div>
                   <Button

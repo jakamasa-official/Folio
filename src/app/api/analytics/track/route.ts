@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getLocaleFromCookie, createTranslator } from "@/lib/i18n";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const UAParser = require("ua-parser-js");
 
@@ -23,13 +24,17 @@ function checkRateLimit(
 }
 
 export async function POST(request: NextRequest) {
+  const locale = getLocaleFromCookie(request.headers.get("cookie") || "");
+  const t = createTranslator(locale, "api");
+
   try {
+
     const body = await request.json();
     const { profile_id, utm_source, utm_medium, utm_campaign } = body;
 
     if (!profile_id) {
       return NextResponse.json(
-        { error: "profile_id は必須です" },
+        { error: t("profileIdRequired") },
         { status: 400 }
       );
     }
@@ -52,7 +57,7 @@ export async function POST(request: NextRequest) {
     const rateLimitKey = `analytics:${profile_id}:${ip}`;
     if (!checkRateLimit(rateLimitKey, 1, 10 * 60 * 1000)) {
       return NextResponse.json(
-        { error: "リクエストが多すぎます。しばらくしてからお試しください" },
+        { error: t("tooManyRequests") },
         { status: 429 }
       );
     }
@@ -66,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     if (!profileExists) {
       return NextResponse.json(
-        { error: "プロフィールが見つかりません" },
+        { error: t("profileNotFound") },
         { status: 404 }
       );
     }
@@ -85,9 +90,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      console.error("ページビュー記録エラー:", error);
+      console.error("Page view record error:", error);
       return NextResponse.json(
-        { error: "ページビューの記録に失敗しました" },
+        { error: t("pageViewRecordFailed") },
         { status: 500 }
       );
     }
@@ -95,7 +100,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true }, { status: 200 });
   } catch {
     return NextResponse.json(
-      { error: "リクエストの処理に失敗しました" },
+      { error: t("requestFailed") },
       { status: 500 }
     );
   }

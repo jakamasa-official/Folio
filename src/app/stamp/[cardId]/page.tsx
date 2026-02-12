@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getServerLocale } from "@/lib/i18n/server";
+import { I18nProvider } from "@/lib/i18n/client";
 import type { Metadata } from "next";
 import type { StampCard } from "@/lib/types";
 import { StampCardPublicView } from "./stamp-card-public-view";
@@ -47,11 +49,15 @@ export default async function StampCardPage({ params }: Props) {
     .eq("id", typedCard.profile_id)
     .maybeSingle();
 
+  const locale = await getServerLocale();
+
   return (
-    <StampCardPublicView
-      card={typedCard}
-      profileName={profile?.display_name || ""}
-      profileUsername={profile?.username || ""}
-    />
+    <I18nProvider initialLocale={locale} namespaces={["common"]}>
+      <StampCardPublicView
+        card={typedCard}
+        profileName={profile?.display_name || ""}
+        profileUsername={profile?.username || ""}
+      />
+    </I18nProvider>
   );
 }

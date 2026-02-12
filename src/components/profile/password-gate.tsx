@@ -5,6 +5,7 @@ import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface PasswordGateProps {
   profileId: string;
@@ -12,6 +13,7 @@ interface PasswordGateProps {
 }
 
 export function PasswordGate({ profileId, onSuccess }: PasswordGateProps) {
+  const { t } = useTranslation();
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +34,7 @@ export function PasswordGate({ profileId, onSuccess }: PasswordGateProps) {
       });
 
       if (!res.ok) {
-        setError("パスワードが正しくありません");
+        setError(t("passwordGateError"));
         return;
       }
 
@@ -47,7 +49,7 @@ export function PasswordGate({ profileId, onSuccess }: PasswordGateProps) {
 
       onSuccess();
     } catch {
-      setError("パスワードが正しくありません");
+      setError(t("passwordGateError"));
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export function PasswordGate({ profileId, onSuccess }: PasswordGateProps) {
             </div>
 
             <h2 className="text-center text-lg font-semibold">
-              このページはパスワードで保護されています
+              {t("passwordGateTitle")}
             </h2>
 
             {error && (
@@ -77,13 +79,13 @@ export function PasswordGate({ profileId, onSuccess }: PasswordGateProps) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="パスワードを入力"
+                placeholder={t("passwordGatePlaceholder")}
                 required
                 autoFocus
               />
 
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? "確認中..." : "ページを表示"}
+                {loading ? t("passwordGateChecking") : t("passwordGateSubmit")}
               </Button>
             </form>
           </div>

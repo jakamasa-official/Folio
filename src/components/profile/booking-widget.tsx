@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BookingSlots } from "@/lib/types";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface BookingWidgetProps {
   profileId: string;
@@ -22,6 +23,7 @@ interface BookingWidgetProps {
 
 
 export function BookingWidget({ profileId, slots }: BookingWidgetProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -69,12 +71,13 @@ export function BookingWidget({ profileId, slots }: BookingWidgetProps) {
 
   const monthLabel = useMemo(() => {
     const { year, month } = currentMonth;
-    const monthNames = [
-      "1月", "2月", "3月", "4月", "5月", "6月",
-      "7月", "8月", "9月", "10月", "11月", "12月",
+    const monthKeys = [
+      "bookingMonth1", "bookingMonth2", "bookingMonth3", "bookingMonth4",
+      "bookingMonth5", "bookingMonth6", "bookingMonth7", "bookingMonth8",
+      "bookingMonth9", "bookingMonth10", "bookingMonth11", "bookingMonth12",
     ];
-    return `${year}年${monthNames[month]}`;
-  }, [currentMonth]);
+    return t("bookingMonthFormat", { year: String(year), month: t(monthKeys[month]) });
+  }, [currentMonth, t]);
 
   function isAvailableDay(date: Date): boolean {
     if (date < today) return false;
@@ -161,8 +164,20 @@ export function BookingWidget({ profileId, slots }: BookingWidgetProps) {
   function formatDateDisplay(date: Date): string {
     const m = date.getMonth() + 1;
     const d = date.getDate();
-    const dowNames = ["日", "月", "火", "水", "木", "金", "土"];
-    return `${m}月${d}日（${dowNames[date.getDay()]}）`;
+    const dowKeys = [
+      "bookingDowSun", "bookingDowMon", "bookingDowTue", "bookingDowWed",
+      "bookingDowThu", "bookingDowFri", "bookingDowSat",
+    ];
+    const monthKeys = [
+      "", "bookingMonth1", "bookingMonth2", "bookingMonth3", "bookingMonth4",
+      "bookingMonth5", "bookingMonth6", "bookingMonth7", "bookingMonth8",
+      "bookingMonth9", "bookingMonth10", "bookingMonth11", "bookingMonth12",
+    ];
+    return t("bookingDateFormat", {
+      month: t(monthKeys[m]),
+      day: String(d),
+      dow: t(dowKeys[date.getDay()]),
+    });
   }
 
   function handleSelectSlot(slot: string) {
@@ -193,12 +208,12 @@ export function BookingWidget({ profileId, slots }: BookingWidgetProps) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "予約に失敗しました");
+        throw new Error(data.error || t("bookingError"));
       }
 
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "予約に失敗しました");
+      setError(err instanceof Error ? err.message : t("bookingError"));
     } finally {
       setLoading(false);
     }
@@ -212,21 +227,24 @@ export function BookingWidget({ profileId, slots }: BookingWidgetProps) {
     );
   }
 
-  const dowHeaders = ["日", "月", "火", "水", "木", "金", "土"];
+  const dowHeaders = [
+    t("bookingDowSun"), t("bookingDowMon"), t("bookingDowTue"), t("bookingDowWed"),
+    t("bookingDowThu"), t("bookingDowFri"), t("bookingDowSat"),
+  ];
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Calendar className="h-5 w-5" />
-          予約する
+          {t("bookingTitle")}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {success ? (
           <div className="flex items-center gap-2 rounded-md bg-green-50 p-4 text-sm text-green-800">
             <Check className="h-4 w-4 shrink-0" />
-            予約リクエストを送信しました
+            {t("bookingSuccess")}
           </div>
         ) : (
           <>
@@ -290,7 +308,7 @@ export function BookingWidget({ profileId, slots }: BookingWidgetProps) {
                   className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  カレンダーに戻る
+                  {t("bookingBackToCalendar")}
                 </button>
 
                 <div className="mb-3 flex items-center gap-2 text-sm font-medium">
@@ -300,11 +318,11 @@ export function BookingWidget({ profileId, slots }: BookingWidgetProps) {
 
                 {loadingSlots ? (
                   <div className="py-4 text-center text-sm text-muted-foreground">
-                    読み込み中...
+                    {t("bookingLoadingSlots")}
                   </div>
                 ) : timeSlots.length === 0 ? (
                   <div className="py-4 text-center text-sm text-muted-foreground">
-                    利用可能な時間帯がありません
+                    {t("bookingNoSlots")}
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-2">
@@ -338,7 +356,7 @@ export function BookingWidget({ profileId, slots }: BookingWidgetProps) {
                   className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  時間選択に戻る
+                  {t("bookingBackToTime")}
                 </button>
 
                 <div className="mb-4 rounded-md bg-muted/50 p-3 text-sm">

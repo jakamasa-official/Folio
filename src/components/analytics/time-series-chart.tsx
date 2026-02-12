@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "@/lib/i18n/client";
 import type { TimeSeriesPoint } from "./types";
 
 interface TimeSeriesChartProps {
@@ -9,12 +10,13 @@ interface TimeSeriesChartProps {
 }
 
 export function TimeSeriesChart({ data, range }: TimeSeriesChartProps) {
+  const { t } = useTranslation();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   if (data.length === 0) {
     return (
       <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-        データなし
+        {t("analytics.chartNoData")}
       </div>
     );
   }
@@ -30,7 +32,11 @@ export function TimeSeriesChart({ data, range }: TimeSeriesChartProps) {
       {/* Tooltip */}
       {hoveredIndex !== null && (
         <div className="pointer-events-none absolute -top-2 left-1/2 z-10 -translate-x-1/2 rounded-md bg-foreground px-2 py-1 text-xs text-background shadow-md whitespace-nowrap">
-          {data[hoveredIndex].label}: {data[hoveredIndex].views} ビュー, {data[hoveredIndex].clicks} クリック
+          {t("analytics.chartTooltip", {
+            label: data[hoveredIndex].label,
+            views: String(data[hoveredIndex].views),
+            clicks: String(data[hoveredIndex].clicks),
+          })}
         </div>
       )}
 
@@ -73,11 +79,11 @@ export function TimeSeriesChart({ data, range }: TimeSeriesChartProps) {
       <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
           <div className="h-2.5 w-2.5 rounded-sm bg-primary/80" />
-          <span>ビュー</span>
+          <span>{t("analytics.chartViews")}</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="h-2.5 w-2.5 rounded-sm bg-orange-400/80" />
-          <span>クリック</span>
+          <span>{t("analytics.chartClicks")}</span>
         </div>
       </div>
     </div>

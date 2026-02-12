@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getLocaleFromCookie, createTranslator } from "@/lib/i18n";
 
 type RangeType = "30d" | "12w" | "12m";
 
@@ -75,13 +76,13 @@ function getDateLabel(key: string, range: RangeType): string {
   }
 }
 
-function extractHostname(url: string | null): string {
-  if (!url) return "直接アクセス";
+function extractHostname(url: string | null, directLabel: string): string {
+  if (!url) return directLabel;
   try {
     const hostname = new URL(url).hostname;
-    return hostname || "直接アクセス";
+    return hostname || directLabel;
   } catch {
-    return "直接アクセス";
+    return directLabel;
   }
 }
 
@@ -93,7 +94,11 @@ function topN(map: Map<string, number>, n: number): CountEntry[] {
 }
 
 export async function GET(request: NextRequest) {
+  const locale = getLocaleFromCookie(request.headers.get("cookie") || "");
+  const t = createTranslator(locale, "api");
+
   try {
+
     // Auth check
     const supabase = await createClient();
     const {
@@ -102,7 +107,7 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "認証が必要です" },
+        { error: t("authRequired") },
         { status: 401 }
       );
     }
@@ -116,7 +121,7 @@ export async function GET(request: NextRequest) {
 
     if (!profile) {
       return NextResponse.json(
-        { error: "プロフィールが見つかりません" },
+        { error: t("profileNotFound") },
         { status: 401 }
       );
     }
@@ -127,7 +132,7 @@ export async function GET(request: NextRequest) {
 
     if (!["30d", "12w", "12m"].includes(range)) {
       return NextResponse.json(
-        { error: "無効な範囲パラメータです" },
+        { error: t("invalidRangeParam") },
         { status: 400 }
       );
     }
@@ -228,7 +233,7 @@ export async function GET(request: NextRequest) {
       const country = v.country || "unknown";
       countryMap.set(country, (countryMap.get(country) || 0) + 1);
 
-      const referrer = extractHostname(v.referrer);
+      const referrer = extractHostname(v.referrer, t("directAccess"));
       referrerMap.set(referrer, (referrerMap.get(referrer) || 0) + 1);
 
       if (v.utm_source) {
@@ -301,9 +306,9 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("アナリティクスダッシュボードエラー:", err);
+    console.error("Analytics dashboard error:", err);
     return NextResponse.json(
-      { error: "アナリティクスデータの取得に失敗しました" },
+      { error: t("analyticsFetchFailed") },
       { status: 500 }
     );
   }

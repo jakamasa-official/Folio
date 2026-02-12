@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { APP_URL } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface LineSetupGuideProps {
   channelId: string;
@@ -55,16 +56,6 @@ const STEP_ICONS = [
   CheckCircle2,
 ];
 
-const STEP_TITLES = [
-  "LINE Developersにログイン",
-  "プロバイダーを作成",
-  "Messaging APIチャネルを作成",
-  "チャネルIDとシークレットをコピー",
-  "チャネルアクセストークンを発行",
-  "Webhook URLを設定",
-  "設定完了！",
-];
-
 // --- Progress Bar ---
 function StepProgressBar({
   currentStep,
@@ -73,13 +64,14 @@ function StepProgressBar({
   currentStep: number;
   totalSteps: number;
 }) {
+  const { t } = useTranslation();
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
-          ステップ {currentStep + 1} / {totalSteps}
+          {t("stepOf", { current: String(currentStep + 1), total: String(totalSteps) })}
         </span>
         <span>{Math.round(progress)}%</span>
       </div>
@@ -151,6 +143,7 @@ function TipBox({
 
 // --- Learn More Collapsible ---
 function LearnMore({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   return (
@@ -164,7 +157,7 @@ function LearnMore({ children }: { children: React.ReactNode }) {
         ) : (
           <ChevronDown className="h-3.5 w-3.5" />
         )}
-        {open ? "閉じる" : "詳しく見る"}
+        {open ? t("learnMoreClose") : t("learnMoreOpen")}
       </button>
       {open && (
         <div className="mt-2 rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground space-y-2">
@@ -193,6 +186,7 @@ function InstructionList({ items }: { items: React.ReactNode[] }) {
 
 // --- Copy Button ---
 function CopyButton({ text }: { text: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
@@ -206,12 +200,12 @@ function CopyButton({ text }: { text: string }) {
       {copied ? (
         <>
           <Check className="h-3.5 w-3.5" />
-          コピー済み
+          {t("copiedButton")}
         </>
       ) : (
         <>
           <Copy className="h-3.5 w-3.5" />
-          コピー
+          {t("copyButton")}
         </>
       )}
     </Button>
@@ -223,6 +217,8 @@ function CopyButton({ text }: { text: string }) {
 // ============================================================
 
 function Step1() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       <InstructionList
@@ -237,27 +233,25 @@ function Step1() {
               LINE Developers
               <ExternalLink className="h-3.5 w-3.5" />
             </a>{" "}
-            にアクセス
+            {t("step1Instruction1")}
           </span>,
-          "LINEアカウントでログイン（お持ちでない場合は新規作成）",
-          "ログイン後、コンソールが表示されます",
+          t("step1Instruction2"),
+          t("step1Instruction3"),
         ]}
       />
 
       <TipBox variant="info">
         <p>
-          普段お使いのLINEアカウントでログインできます。ビジネス用の別アカウントは不要です。
+          {t("step1Tip")}
         </p>
       </TipBox>
 
       <LearnMore>
         <p>
-          LINE
-          Developersは、LINEの公式開発者ツールです。ここでMessaging
-          APIのチャネル（公式アカウント）を作成・管理できます。
+          {t("step1LearnMore1")}
         </p>
         <p>
-          ログインに使用するLINEアカウントは、個人のアカウントで構いません。お客様に公開されるのはプロバイダー名とチャネル名のみです。
+          {t("step1LearnMore2")}
         </p>
       </LearnMore>
     </div>
@@ -265,35 +259,37 @@ function Step1() {
 }
 
 function Step2() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       <InstructionList
         items={[
           <span key="1">
-            コンソール画面で「<strong>プロバイダー</strong>」の横にある「
-            <strong>作成</strong>」をクリック
+            コンソール画面で「<strong>{t("step2Instruction1Provider")}</strong>」の横にある「
+            <strong>{t("step2Instruction1Create")}</strong>」をクリック
           </span>,
           <span key="2">
-            プロバイダー名に<strong>お店やサービスの名前</strong>を入力
+            プロバイダー名に<strong>{t("step2Instruction2")}</strong>を入力
           </span>,
           <span key="3">
-            「<strong>作成</strong>」をクリック
+            「<strong>{t("step2Instruction3Create")}</strong>」をクリック
           </span>,
         ]}
       />
 
       <TipBox variant="tip">
         <p>
-          プロバイダー名はお客様に表示されます。お店やサービスの正式名称をおすすめします。（例：「○○サロン」「△△スタジオ」）
+          {t("step2Tip")}
         </p>
       </TipBox>
 
       <LearnMore>
         <p>
-          プロバイダーは、LINEサービスを提供する組織や個人を表します。1つのプロバイダーの中に複数のチャネル（公式アカウント）を作成できます。
+          {t("step2LearnMore1")}
         </p>
         <p>
-          既にプロバイダーをお持ちの場合は、新しく作成せずに既存のプロバイダーを使用しても構いません。
+          {t("step2LearnMore2")}
         </p>
       </LearnMore>
     </div>
@@ -301,45 +297,43 @@ function Step2() {
 }
 
 function Step3() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       <InstructionList
         items={[
           <span key="1">
-            「<strong>新規チャネル作成</strong>」をクリックし、「
-            <strong>Messaging API</strong>」を選択
+            「<strong>{t("step3Instruction1Prefix")}</strong>」をクリックし、「
+            <strong>{t("step3Instruction1")}</strong>」を選択
           </span>,
           <span key="2">
-            チャネル名に<strong>お店の名前</strong>を入力
+            チャネル名に<strong>{t("step3Instruction2")}</strong>を入力
           </span>,
-          <span key="3">
-            チャネル説明を入力（例：「○○サロンの公式アカウント」）
-          </span>,
-          "カテゴリとサブカテゴリを選択",
+          t("step3Instruction3"),
+          t("step3Instruction4"),
           <span key="5">
-            利用規約に同意して「<strong>作成</strong>」をクリック
+            利用規約に同意して「<strong>{t("step3Instruction5Create")}</strong>」をクリック
           </span>,
         ]}
       />
 
       <TipBox variant="info">
         <p>
-          チャネル名がLINE公式アカウントの名前になります。お客様がLINEで検索したときに表示されます。
+          {t("step3Tip")}
         </p>
       </TipBox>
 
       <LearnMore>
-        <p>カテゴリの選択例：</p>
+        <p>{t("step3LearnMoreCategoryTitle")}</p>
         <ul className="ml-4 list-disc space-y-1">
-          <li>美容サロン → 「ビューティー」→「ヘアサロン」</li>
-          <li>ネイルサロン → 「ビューティー」→「ネイル」</li>
-          <li>整体・マッサージ → 「ヘルス」→「リラクゼーション」</li>
-          <li>
-            フリーランス → 該当するカテゴリを選択、なければ「その他」
-          </li>
+          <li>{t("step3LearnMoreCat1")}</li>
+          <li>{t("step3LearnMoreCat2")}</li>
+          <li>{t("step3LearnMoreCat3")}</li>
+          <li>{t("step3LearnMoreCat4")}</li>
         </ul>
         <p className="mt-2">
-          メールアドレスは受信可能なものを設定してください。LINE側からの重要な通知が届きます。
+          {t("step3LearnMoreEmailNote")}
         </p>
       </LearnMore>
     </div>
@@ -357,20 +351,22 @@ function Step4({
   onChannelIdChange: (v: string) => void;
   onChannelSecretChange: (v: string) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       <InstructionList
         items={[
           <span key="1">
-            作成したチャネルの「<strong>チャネル基本設定</strong>
+            作成したチャネルの「<strong>{t("step4Instruction1")}</strong>
             」タブを開く
           </span>,
           <span key="2">
-            「<strong>チャネルID</strong>
+            「<strong>{t("step4Instruction2")}</strong>
             」をコピーして、下のフィールドに貼り付け
           </span>,
           <span key="3">
-            「<strong>チャネルシークレット</strong>
+            「<strong>{t("step4Instruction3")}</strong>
             」をコピーして、下のフィールドに貼り付け
           </span>,
         ]}
@@ -380,7 +376,7 @@ function Step4({
       <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
         <div className="space-y-2">
           <Label htmlFor="guide-channelId" className="text-sm font-medium">
-            チャネルID
+            {t("step4ChannelIdLabel")}
           </Label>
           <Input
             id="guide-channelId"
@@ -392,30 +388,30 @@ function Step4({
         </div>
         <div className="space-y-2">
           <Label htmlFor="guide-channelSecret" className="text-sm font-medium">
-            チャネルシークレット
+            {t("step4ChannelSecretLabel")}
           </Label>
           <Input
             id="guide-channelSecret"
             type="password"
             value={channelSecret}
             onChange={(e) => onChannelSecretChange(e.target.value)}
-            placeholder="チャネルシークレットを貼り付け"
+            placeholder={t("step4ChannelSecretPlaceholder")}
           />
         </div>
       </div>
 
       <TipBox variant="warning">
         <p>
-          チャネルシークレットが表示されていない場合は、「発行」ボタンを押してください。
+          {t("step4Warning")}
         </p>
       </TipBox>
 
       <LearnMore>
         <p>
-          チャネルIDは数字のみの文字列です。チャネル基本設定ページの上部に表示されています。
+          {t("step4LearnMore1")}
         </p>
         <p>
-          チャネルシークレットは英数字の文字列です。これはパスワードのようなものなので、他の人と共有しないでください。
+          {t("step4LearnMore2")}
         </p>
       </LearnMore>
     </div>
@@ -429,21 +425,23 @@ function Step5({
   channelAccessToken: string;
   onChannelAccessTokenChange: (v: string) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       <InstructionList
         items={[
           <span key="1">
-            「<strong>Messaging API設定</strong>」タブを開く
+            「<strong>{t("step5Instruction1")}</strong>」タブを開く
           </span>,
           <span key="2">
             ページ下部の「
-            <strong>チャネルアクセストークン（長期）</strong>」を探す
+            <strong>{t("step5Instruction2")}</strong>」を探す
           </span>,
           <span key="3">
-            「<strong>発行</strong>」をクリック
+            「<strong>{t("step5Instruction3Issue")}</strong>」をクリック
           </span>,
-          "表示されたトークンをコピーして、下のフィールドに貼り付け",
+          t("step5Instruction4"),
         ]}
       />
 
@@ -454,30 +452,30 @@ function Step5({
             htmlFor="guide-channelAccessToken"
             className="text-sm font-medium"
           >
-            チャネルアクセストークン
+            {t("step5TokenLabel")}
           </Label>
           <Input
             id="guide-channelAccessToken"
             type="password"
             value={channelAccessToken}
             onChange={(e) => onChannelAccessTokenChange(e.target.value)}
-            placeholder="チャネルアクセストークンを貼り付け"
+            placeholder={t("step5TokenPlaceholder")}
           />
         </div>
       </div>
 
       <TipBox variant="info">
         <p>
-          アクセストークンは非常に長い文字列です。必ず全体をコピーしてください。
+          {t("step5Tip")}
         </p>
       </TipBox>
 
       <LearnMore>
         <p>
-          チャネルアクセストークンは、LINEのAPIにアクセスするための認証情報です。「発行」ボタンを押すと新しいトークンが生成されます。
+          {t("step5LearnMore1")}
         </p>
         <p>
-          以前発行したトークンがある場合、再発行すると古いトークンは無効になります。
+          {t("step5LearnMore2")}
         </p>
       </LearnMore>
     </div>
@@ -485,6 +483,7 @@ function Step5({
 }
 
 function Step6() {
+  const { t } = useTranslation();
   const webhookUrl = `${APP_URL}/api/line/webhook`;
 
   return (
@@ -492,10 +491,10 @@ function Step6() {
       <InstructionList
         items={[
           <span key="1">
-            同じ「<strong>Messaging API設定</strong>」タブで
+            同じ「<strong>{t("step6Instruction1")}</strong>」タブで
           </span>,
           <span key="2">
-            「<strong>Webhook URL</strong>」に以下のURLを入力：
+            「<strong>{t("step6Instruction2")}</strong>」に以下のURLを入力：
           </span>,
         ]}
       />
@@ -511,33 +510,30 @@ function Step6() {
       <InstructionList
         items={[
           <span key="3">
-            「<strong>Webhookの利用</strong>」をオンにする
+            「<strong>{t("step6Instruction3")}</strong>」をオンにする
           </span>,
           <span key="4">
-            「<strong>検証</strong>」ボタンで接続テスト
+            「<strong>{t("step6Instruction4")}</strong>」ボタンで接続テスト
           </span>,
         ]}
       />
 
       <TipBox variant="warning">
         <p>
-          <strong>重要：</strong>
-          応答メッセージの設定で「応答メッセージ」を<strong>オフ</strong>に、「Webhook」を
-          <strong>オン</strong>にしてください。
+          <strong>{t("step6WarningImportant")}</strong>
+          {t("step6Warning")}
         </p>
       </TipBox>
 
       <LearnMore>
         <p>
-          Webhook
-          URLは、お客様がLINEでメッセージを送信した際に、そのメッセージの情報が送られる先のURLです。
+          {t("step6LearnMore1")}
         </p>
         <p>
-          「応答メッセージ」をオフにすると、LINE側の自動応答が無効になり、こちらのシステムで応答を制御できるようになります。
+          {t("step6LearnMore2")}
         </p>
         <p>
-          「検証」ボタンを押して「成功」と表示されれば、Webhook
-          URLの設定は正常です。エラーが出る場合は、URLが正しいか確認してください。
+          {t("step6LearnMore3")}
         </p>
       </LearnMore>
     </div>
@@ -557,6 +553,7 @@ function Step7({
   onSave: () => Promise<void>;
   saving: boolean;
 }) {
+  const { t } = useTranslation();
   const [saved, setSaved] = useState(false);
   const allFilled = !!(channelId && channelSecret && channelAccessToken);
 
@@ -569,40 +566,40 @@ function Step7({
     <div className="space-y-4">
       {/* Summary */}
       <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
-        <h4 className="text-sm font-semibold">入力内容の確認</h4>
+        <h4 className="text-sm font-semibold">{t("inputConfirmation")}</h4>
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">チャネルID</span>
+            <span className="text-muted-foreground">{t("channelIdStatus")}</span>
             {channelId ? (
               <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                入力済み
+                {t("entered")}
               </Badge>
             ) : (
-              <Badge variant="secondary">未入力</Badge>
+              <Badge variant="secondary">{t("notEntered")}</Badge>
             )}
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">
-              チャネルシークレット
+              {t("channelSecretStatus")}
             </span>
             {channelSecret ? (
               <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                入力済み
+                {t("entered")}
               </Badge>
             ) : (
-              <Badge variant="secondary">未入力</Badge>
+              <Badge variant="secondary">{t("notEntered")}</Badge>
             )}
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">
-              アクセストークン
+              {t("accessTokenStatus")}
             </span>
             {channelAccessToken ? (
               <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                入力済み
+                {t("entered")}
               </Badge>
             ) : (
-              <Badge variant="secondary">未入力</Badge>
+              <Badge variant="secondary">{t("notEntered")}</Badge>
             )}
           </div>
         </div>
@@ -611,7 +608,7 @@ function Step7({
       {!allFilled && (
         <TipBox variant="warning">
           <p>
-            すべての項目を入力してください。前のステップに戻って入力できます。
+            {t("fillAllFields")}
           </p>
         </TipBox>
       )}
@@ -620,10 +617,10 @@ function Step7({
         <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center dark:border-green-800 dark:bg-green-950">
           <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-green-600 dark:text-green-400" />
           <p className="font-medium text-green-800 dark:text-green-200">
-            設定を保存しました！
+            {t("settingsSaved")}
           </p>
           <p className="mt-1 text-sm text-green-700 dark:text-green-300">
-            LINE公式アカウントが接続されました。
+            {t("lineAccountConnected")}
           </p>
         </div>
       )}
@@ -635,13 +632,13 @@ function Step7({
           onClick={handleSave}
           disabled={saving || !allFilled}
         >
-          {saving ? "保存中..." : "保存して接続"}
+          {saving ? t("saving") : t("saveAndConnect")}
         </Button>
       )}
 
       <TipBox variant="tip">
         <p>
-          LINE公式アカウントのQRコードを友だち追加ページに表示して、お客様に友だち登録してもらいましょう。
+          {t("step7Tip")}
         </p>
       </TipBox>
     </div>
@@ -663,7 +660,18 @@ export function LineSetupGuide({
   saving,
   onClose,
 }: LineSetupGuideProps) {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
+
+  const STEP_TITLES = [
+    t("stepTitle1"),
+    t("stepTitle2"),
+    t("stepTitle3"),
+    t("stepTitle4"),
+    t("stepTitle5"),
+    t("stepTitle6"),
+    t("stepTitle7"),
+  ];
 
   function goNext() {
     if (currentStep < TOTAL_STEPS - 1) {
@@ -683,10 +691,10 @@ export function LineSetupGuide({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">LINE Messaging API セットアップ</h2>
+        <h2 className="text-lg font-bold">{t("lineSetupTitle")}</h2>
         {onClose && (
           <Button variant="ghost" size="sm" onClick={onClose}>
-            閉じる
+            {t("close")}
           </Button>
         )}
       </div>
@@ -704,7 +712,7 @@ export function LineSetupGuide({
             </div>
             <div>
               <p className="text-xs text-muted-foreground">
-                ステップ {currentStep + 1}
+                {t("step", { num: String(currentStep + 1) })}
               </p>
               <h3 className="font-semibold">{STEP_TITLES[currentStep]}</h3>
             </div>
@@ -748,12 +756,12 @@ export function LineSetupGuide({
               className="gap-1"
             >
               <ChevronLeft className="h-4 w-4" />
-              戻る
+              {t("back")}
             </Button>
 
             {currentStep < TOTAL_STEPS - 1 && (
               <Button onClick={goNext} className="gap-1">
-                次へ
+                {t("next")}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             )}
@@ -764,7 +772,7 @@ export function LineSetupGuide({
                 onClick={onClose}
                 disabled={!(channelId && channelSecret && channelAccessToken)}
               >
-                完了して閉じる
+                {t("doneAndClose")}
               </Button>
             )}
           </div>

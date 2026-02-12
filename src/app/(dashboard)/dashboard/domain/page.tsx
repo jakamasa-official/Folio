@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslation } from "@/lib/i18n/client";
 import type { Profile } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Globe, AlertTriangle, CheckCircle, Clock, Trash2 } from "lucide-react";
 
 export default function DomainPage() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [domain, setDomain] = useState("");
@@ -65,7 +67,7 @@ export default function DomainPage() {
 
   async function removeDomain() {
     if (!profile) return;
-    if (!confirm("カスタムドメインを削除しますか？")) return;
+    if (!confirm(t("settings.domainDeleteConfirm"))) return;
     setRemoving(true);
 
     const supabase = createClient();
@@ -89,7 +91,7 @@ export default function DomainPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold">カスタムドメイン</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("domain.pageTitle")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -103,16 +105,16 @@ export default function DomainPage() {
   if (!profile.is_pro) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
-        <h1 className="text-2xl font-bold">カスタムドメイン</h1>
+        <h1 className="text-2xl font-bold">{t("domain.pageTitle")}</h1>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <AlertTriangle className="mb-4 h-12 w-12 text-yellow-500" />
-            <h2 className="mb-2 text-lg font-semibold">Proプランが必要です</h2>
+            <h2 className="mb-2 text-lg font-semibold">{t("settings.domainProRequired")}</h2>
             <p className="mb-4 text-muted-foreground">
-              カスタムドメインの設定はProプランの機能です。アップグレードすることでご利用いただけます。
+              {t("settings.domainProRequiredDescription")}
             </p>
             <Button asChild>
-              <a href="/dashboard/settings">プランをアップグレード</a>
+              <a href="/dashboard/settings">{t("domain.upgradeButton")}</a>
             </Button>
           </CardContent>
         </Card>
@@ -122,18 +124,18 @@ export default function DomainPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">カスタムドメイン</h1>
+      <h1 className="text-2xl font-bold">{t("domain.pageTitle")}</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>ドメイン設定</CardTitle>
+          <CardTitle>{t("settings.domainSettingsTitle")}</CardTitle>
           <CardDescription>
-            独自ドメインを設定してページをカスタマイズします
+            {t("settings.domainSettingsDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="domain">ドメイン名</Label>
+            <Label htmlFor="domain">{t("settings.domainNameLabel")}</Label>
             <div className="flex gap-2">
               <Input
                 id="domain"
@@ -143,7 +145,7 @@ export default function DomainPage() {
                 onChange={(e) => setDomain(e.target.value)}
               />
               <Button onClick={saveDomain} disabled={saving}>
-                {saving ? "保存中..." : "保存"}
+                {saving ? t("settings.saving") : t("settings.save")}
               </Button>
             </div>
           </div>
@@ -156,21 +158,21 @@ export default function DomainPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <CardTitle>DNS設定</CardTitle>
+                <CardTitle>{t("settings.dnsSettingsTitle")}</CardTitle>
                 {profile.custom_domain_verified ? (
                   <Badge className="bg-green-100 text-green-800">
                     <CheckCircle className="mr-1 h-3 w-3" />
-                    確認済み
+                    {t("settings.dnsVerified")}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="border-yellow-500 text-yellow-600">
                     <Clock className="mr-1 h-3 w-3" />
-                    確認待ち
+                    {t("settings.dnsPending")}
                   </Badge>
                 )}
               </div>
               <CardDescription>
-                以下のDNSレコードを設定してください：
+                {t("settings.dnsInstructions")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -178,9 +180,9 @@ export default function DomainPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th className="px-4 py-2 text-left font-medium">タイプ</th>
-                      <th className="px-4 py-2 text-left font-medium">名前</th>
-                      <th className="px-4 py-2 text-left font-medium">値</th>
+                      <th className="px-4 py-2 text-left font-medium">{t("settings.dnsTableType")}</th>
+                      <th className="px-4 py-2 text-left font-medium">{t("settings.dnsTableName")}</th>
+                      <th className="px-4 py-2 text-left font-medium">{t("settings.dnsTableValue")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -208,7 +210,7 @@ export default function DomainPage() {
 
               <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
                 <p>
-                  DNSの反映には最大48時間かかることがあります。設定後、しばらくお待ちください。
+                  {t("settings.dnsNote")}
                 </p>
               </div>
             </CardContent>
@@ -218,9 +220,9 @@ export default function DomainPage() {
 
           <Card className="border-destructive/50">
             <CardHeader>
-              <CardTitle className="text-destructive">ドメインを削除</CardTitle>
+              <CardTitle className="text-destructive">{t("settings.domainDeleteTitle")}</CardTitle>
               <CardDescription>
-                カスタムドメインの設定を削除します。削除後はデフォルトのURLに戻ります。
+                {t("settings.domainDeleteDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -230,7 +232,7 @@ export default function DomainPage() {
                 disabled={removing}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                {removing ? "削除中..." : "ドメインを削除"}
+                {removing ? t("settings.domainDeleting") : t("settings.domainDeleteButton")}
               </Button>
             </CardContent>
           </Card>

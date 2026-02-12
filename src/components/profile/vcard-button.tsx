@@ -1,6 +1,7 @@
 "use client";
 
 import { UserPlus } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface VCardButtonProps {
   displayName: string;
@@ -19,6 +20,8 @@ export function VCardButton({
   location,
   profileUrl,
 }: VCardButtonProps) {
+  const { t } = useTranslation();
+
   function handleDownload() {
     const lines: string[] = [
       "BEGIN:VCARD",
@@ -61,7 +64,7 @@ export function VCardButton({
       className="flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-3.5 text-sm font-medium transition-all hover:scale-[1.02]"
     >
       <UserPlus className="h-4 w-4" />
-      連絡先に追加
+      {t("vcardAddContact")}
     </button>
   );
 }

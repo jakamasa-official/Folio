@@ -1,12 +1,15 @@
 "use client";
 
 import { Users } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface RealtimeBadgeProps {
   count: number;
 }
 
 export function RealtimeBadge({ count }: RealtimeBadgeProps) {
+  const { t } = useTranslation();
+
   if (count <= 0) return null;
 
   return (
@@ -16,7 +19,7 @@ export function RealtimeBadge({ count }: RealtimeBadgeProps) {
         <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
       </span>
       <Users className="h-3 w-3" />
-      <span>{count}人が閲覧中</span>
+      <span>{t("analytics.viewingNow", { count: String(count) })}</span>
     </div>
   );
 }

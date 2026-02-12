@@ -42,31 +42,40 @@ import {
 import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { ProGate } from "@/components/dashboard/pro-gate";
+import { useTranslation } from "@/lib/i18n/client";
 
 // === Constants ===
 
-const TEMPLATE_TYPE_MAP: Record<string, { label: string; color: string }> = {
-  follow_up: { label: "フォローアップ", color: "bg-blue-100 text-blue-800" },
-  review_request: { label: "レビュー依頼", color: "bg-yellow-100 text-yellow-800" },
-  campaign: { label: "キャンペーン", color: "bg-purple-100 text-purple-800" },
-  reminder: { label: "リマインダー", color: "bg-green-100 text-green-800" },
-  thank_you: { label: "お礼", color: "bg-pink-100 text-pink-800" },
+const TEMPLATE_TYPE_COLORS: Record<string, string> = {
+  follow_up: "bg-blue-100 text-blue-800",
+  review_request: "bg-yellow-100 text-yellow-800",
+  campaign: "bg-purple-100 text-purple-800",
+  reminder: "bg-green-100 text-green-800",
+  thank_you: "bg-pink-100 text-pink-800",
 };
 
-const TRIGGER_TYPE_MAP: Record<string, string> = {
-  manual: "手動",
-  after_booking: "予約後",
-  after_days: "日数経過後",
-  after_contact: "お問い合わせ後",
+const TEMPLATE_TYPE_KEYS: Record<string, string> = {
+  follow_up: "templateTypeFollowUp",
+  review_request: "templateTypeReviewRequest",
+  campaign: "templateTypeCampaign",
+  reminder: "templateTypeReminder",
+  thank_you: "templateTypeThankYou",
 };
 
-const STATUS_MAP: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  pending: { label: "送信待ち", icon: <Clock className="h-3.5 w-3.5" />, color: "bg-gray-100 text-gray-700" },
-  sent: { label: "送信済み", icon: <Send className="h-3.5 w-3.5" />, color: "bg-blue-100 text-blue-700" },
-  delivered: { label: "配信済み", icon: <CheckCircle2 className="h-3.5 w-3.5" />, color: "bg-green-100 text-green-700" },
-  opened: { label: "開封済み", icon: <Eye className="h-3.5 w-3.5" />, color: "bg-emerald-100 text-emerald-700" },
-  clicked: { label: "クリック済み", icon: <MousePointerClick className="h-3.5 w-3.5" />, color: "bg-purple-100 text-purple-700" },
-  failed: { label: "失敗", icon: <XCircle className="h-3.5 w-3.5" />, color: "bg-red-100 text-red-700" },
+const TRIGGER_TYPE_KEYS: Record<string, string> = {
+  manual: "triggerManual",
+  after_booking: "triggerAfterBooking",
+  after_days: "triggerAfterDays",
+  after_contact: "triggerAfterContact",
+};
+
+const STATUS_MAP_CONFIG: Record<string, { labelKey: string; icon: React.ReactNode; color: string }> = {
+  pending: { labelKey: "statusPending", icon: <Clock className="h-3.5 w-3.5" />, color: "bg-gray-100 text-gray-700" },
+  sent: { labelKey: "statusSent", icon: <Send className="h-3.5 w-3.5" />, color: "bg-blue-100 text-blue-700" },
+  delivered: { labelKey: "statusDelivered", icon: <CheckCircle2 className="h-3.5 w-3.5" />, color: "bg-green-100 text-green-700" },
+  opened: { labelKey: "statusOpened", icon: <Eye className="h-3.5 w-3.5" />, color: "bg-emerald-100 text-emerald-700" },
+  clicked: { labelKey: "statusClicked", icon: <MousePointerClick className="h-3.5 w-3.5" />, color: "bg-purple-100 text-purple-700" },
+  failed: { labelKey: "statusFailed", icon: <XCircle className="h-3.5 w-3.5" />, color: "bg-red-100 text-red-700" },
 };
 
 const SAMPLE_DATA: Record<string, string> = {
@@ -193,6 +202,7 @@ function emptyTemplate(): Omit<MessageTemplate, "id" | "profile_id" | "created_a
 // === Component ===
 
 export default function MessagesPage() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -274,8 +284,8 @@ export default function MessagesPage() {
         setTemplates(data.templates);
       }
     } catch (e) {
-      console.error("テンプレート読み込みエラー:", e);
-      toast.error("テンプレートの読み込みに失敗しました");
+      console.error("Template load error:", e);
+      toast.error(t("templateLoadError"));
     }
   }
 
@@ -293,8 +303,8 @@ export default function MessagesPage() {
         setHistoryStats(data.stats);
       }
     } catch (e) {
-      console.error("送信履歴読み込みエラー:", e);
-      toast.error("送信履歴の読み込みに失敗しました");
+      console.error("History load error:", e);
+      toast.error(t("historyLoadError"));
     }
     setLoadingHistory(false);
   }, [statusFilter]);
@@ -369,7 +379,7 @@ export default function MessagesPage() {
         const data = await res.json();
         if (data.template) {
           setTemplates((prev) =>
-            prev.map((t) => (t.id === editingTemplate.id ? data.template : t))
+            prev.map((item) => (item.id === editingTemplate.id ? data.template : item))
           );
           setEditorOpen(false);
         }
@@ -387,8 +397,8 @@ export default function MessagesPage() {
         }
       }
     } catch (e) {
-      console.error("テンプレート保存エラー:", e);
-      toast.error("テンプレートの保存に失敗しました");
+      console.error("Template save error:", e);
+      toast.error(t("templateSaveError"));
     }
     setSaving(false);
   }
@@ -399,30 +409,30 @@ export default function MessagesPage() {
       await apiFetch(`/api/messages/templates?id=${deleteTarget.id}`, {
         method: "DELETE",
       });
-      setTemplates((prev) => prev.filter((t) => t.id !== deleteTarget.id));
+      setTemplates((prev) => prev.filter((item) => item.id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch (e) {
-      console.error("テンプレート削除エラー:", e);
-      toast.error("テンプレートの削除に失敗しました");
+      console.error("Template delete error:", e);
+      toast.error(t("templateDeleteError"));
     }
   }
 
-  async function toggleTemplateActive(t: MessageTemplate) {
+  async function toggleTemplateActive(tmpl: MessageTemplate) {
     try {
       const res = await apiFetch("/api/messages/templates", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: t.id, is_active: !t.is_active }),
+        body: JSON.stringify({ id: tmpl.id, is_active: !tmpl.is_active }),
       });
       const data = await res.json();
       if (data.template) {
         setTemplates((prev) =>
-          prev.map((tmpl) => (tmpl.id === t.id ? data.template : tmpl))
+          prev.map((item) => (item.id === tmpl.id ? data.template : item))
         );
       }
     } catch (e) {
-      console.error("テンプレート更新エラー:", e);
-      toast.error("テンプレートの更新に失敗しました");
+      console.error("Template update error:", e);
+      toast.error(t("templateUpdateError"));
     }
   }
 
@@ -503,19 +513,19 @@ export default function MessagesPage() {
         setSelectedCustomerIds([]);
         if (data.failed > 0) {
           toast.success(
-            `${data.sent}件送信成功、${data.failed}件送信失敗`
+            t("sendPartialSuccess", { sent: String(data.sent), failed: String(data.failed) })
           );
         } else {
-          toast.success(`${data.sent || data.total}件のメールを送信しました`);
+          toast.success(t("sendSuccess", { sent: String(data.sent || data.total) }));
         }
         // Reload history
         loadHistory();
       } else {
-        toast.error(data.error || "送信に失敗しました");
+        toast.error(data.error || t("sendFailed"));
       }
     } catch (e) {
-      console.error("送信エラー:", e);
-      toast.error("メッセージの送信に失敗しました");
+      console.error("Send error:", e);
+      toast.error(t("messageSendFailed"));
     }
     setSending(false);
   }
@@ -532,7 +542,7 @@ export default function MessagesPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl">
-        <h1 className="mb-6 text-2xl font-bold">メッセージ配信</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("messageDelivery")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -542,7 +552,7 @@ export default function MessagesPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <h1 className="text-2xl font-bold">メッセージ配信</h1>
+      <h1 className="text-2xl font-bold">{t("messageDelivery")}</h1>
 
       <Tabs defaultValue="templates" onValueChange={(v) => {
         if (v === "history") loadHistory();
@@ -550,15 +560,15 @@ export default function MessagesPage() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="templates" className="gap-1.5">
             <FileText className="h-4 w-4" />
-            テンプレート
+            {t("templatesTab")}
           </TabsTrigger>
           <TabsTrigger value="send" className="gap-1.5">
             <Send className="h-4 w-4" />
-            送信
+            {t("sendTab")}
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-1.5">
             <History className="h-4 w-4" />
-            送信履歴
+            {t("historyTab")}
           </TabsTrigger>
         </TabsList>
 
@@ -568,9 +578,9 @@ export default function MessagesPage() {
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">自動フォローアップ</p>
+                <p className="font-medium">{t("autoFollowUp")}</p>
                 <p className="text-sm text-muted-foreground">
-                  予約やお問い合わせ後に自動でメッセージを送信します
+                  {t("autoFollowUpDesc")}
                 </p>
               </div>
               <Button
@@ -579,17 +589,17 @@ export default function MessagesPage() {
                 onClick={toggleFollowUp}
                 disabled={savingFollowUp}
               >
-                {followUpEnabled ? "有効" : "無効"}
+                {followUpEnabled ? t("enabled") : t("disabled")}
               </Button>
             </CardContent>
           </Card>
 
           {/* Templates list */}
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">テンプレート一覧</h2>
+            <h2 className="text-lg font-semibold">{t("templateList")}</h2>
             <Button onClick={openNewTemplate} size="sm">
               <Plus className="mr-1.5 h-4 w-4" />
-              新規テンプレート
+              {t("newTemplate")}
             </Button>
           </div>
 
@@ -597,57 +607,57 @@ export default function MessagesPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <FileText className="mb-4 h-12 w-12" />
-                <p>テンプレートはまだありません</p>
-                <p className="mt-1 text-sm">「新規テンプレート」から作成してください</p>
+                <p>{t("noTemplatesYet")}</p>
+                <p className="mt-1 text-sm">{t("noTemplatesHint")}</p>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-3">
-              {templates.map((t) => {
-                const typeInfo = TEMPLATE_TYPE_MAP[t.template_type];
+              {templates.map((tmpl) => {
+                const typeColor = TEMPLATE_TYPE_COLORS[tmpl.template_type] || "bg-gray-100 text-gray-800";
+                const typeKey = TEMPLATE_TYPE_KEYS[tmpl.template_type];
                 return (
-                  <Card key={t.id}>
+                  <Card key={tmpl.id}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1 space-y-1.5">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-medium">{t.name}</span>
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${typeInfo?.color || "bg-gray-100 text-gray-800"}`}>
-                              {typeInfo?.label || t.template_type}
+                            <span className="font-medium">{tmpl.name}</span>
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${typeColor}`}>
+                              {typeKey ? t(typeKey) : tmpl.template_type}
                             </span>
-                            {t.is_active ? (
-                              <Badge variant="default" className="text-xs">有効</Badge>
+                            {tmpl.is_active ? (
+                              <Badge variant="default" className="text-xs">{t("enabled")}</Badge>
                             ) : (
-                              <Badge variant="secondary" className="text-xs">無効</Badge>
+                              <Badge variant="secondary" className="text-xs">{t("disabled")}</Badge>
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {TRIGGER_TYPE_MAP[t.trigger_type] || t.trigger_type}
-                            {t.trigger_type !== "manual" && t.trigger_delay_hours > 0 && (
+                            {TRIGGER_TYPE_KEYS[tmpl.trigger_type] ? t(TRIGGER_TYPE_KEYS[tmpl.trigger_type]) : tmpl.trigger_type}
+                            {tmpl.trigger_type !== "manual" && tmpl.trigger_delay_hours > 0 && (
                               <span>
-                                {" "}({t.trigger_delay_hours >= 24
-                                  ? `${Math.round(t.trigger_delay_hours / 24)}日後`
-                                  : `${t.trigger_delay_hours}時間後`})
+                                {" "}({tmpl.trigger_delay_hours >= 24
+                                  ? t("daysLater", { days: String(Math.round(tmpl.trigger_delay_hours / 24)) })
+                                  : t("hoursLater", { hours: String(tmpl.trigger_delay_hours) })})
                               </span>
                             )}
                           </p>
                           <p className="truncate text-sm text-muted-foreground">
-                            件名: {t.subject}
+                            {t("subject")}: {tmpl.subject}
                           </p>
                         </div>
                         <div className="flex shrink-0 gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => toggleTemplateActive(t)}
-                            title={t.is_active ? "無効にする" : "有効にする"}
+                            onClick={() => toggleTemplateActive(tmpl)}
                           >
-                            <Zap className={`h-4 w-4 ${t.is_active ? "text-yellow-500" : "text-muted-foreground"}`} />
+                            <Zap className={`h-4 w-4 ${tmpl.is_active ? "text-yellow-500" : "text-muted-foreground"}`} />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => openEditTemplate(t)}
+                            onClick={() => openEditTemplate(tmpl)}
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -655,7 +665,7 @@ export default function MessagesPage() {
                             variant="ghost"
                             size="icon"
                             className="text-muted-foreground hover:text-destructive"
-                            onClick={() => setDeleteTarget(t)}
+                            onClick={() => setDeleteTarget(tmpl)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -671,15 +681,15 @@ export default function MessagesPage() {
 
         {/* ==================== 送信 Tab ==================== */}
         <TabsContent value="send" className="mt-6 space-y-6">
-          <ProGate isPro={isPro} feature="メール配信">
+          <ProGate isPro={isPro} feature={t("emailDelivery")}>
           {/* Template selection */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">テンプレート選択</CardTitle>
+              <CardTitle className="text-base">{t("templateSelection")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>テンプレート</Label>
+                <Label>{t("template")}</Label>
                 <div className="grid gap-2">
                   <button
                     onClick={() => setSelectedTemplateId("")}
@@ -687,26 +697,27 @@ export default function MessagesPage() {
                       !selectedTemplateId ? "border-primary bg-primary/5" : "hover:bg-muted/50"
                     }`}
                   >
-                    <span className="text-muted-foreground">テンプレートを選択してください</span>
+                    <span className="text-muted-foreground">{t("selectTemplate")}</span>
                   </button>
-                  {templates.filter((t) => t.is_active).map((t) => {
-                    const typeInfo = TEMPLATE_TYPE_MAP[t.template_type];
+                  {templates.filter((tmpl) => tmpl.is_active).map((tmpl) => {
+                    const typeColor = TEMPLATE_TYPE_COLORS[tmpl.template_type] || "";
+                    const typeKey = TEMPLATE_TYPE_KEYS[tmpl.template_type];
                     return (
                       <button
-                        key={t.id}
-                        onClick={() => setSelectedTemplateId(t.id)}
+                        key={tmpl.id}
+                        onClick={() => setSelectedTemplateId(tmpl.id)}
                         className={`rounded-lg border p-3 text-left transition-colors ${
-                          selectedTemplateId === t.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+                          selectedTemplateId === tmpl.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{t.name}</span>
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${typeInfo?.color || ""}`}>
-                            {typeInfo?.label}
+                          <span className="text-sm font-medium">{tmpl.name}</span>
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${typeColor}`}>
+                            {typeKey ? t(typeKey) : tmpl.template_type}
                           </span>
                         </div>
                         <p className="mt-1 truncate text-xs text-muted-foreground">
-                          件名: {t.subject}
+                          {t("subject")}: {tmpl.subject}
                         </p>
                       </button>
                     );
@@ -717,7 +728,7 @@ export default function MessagesPage() {
               {/* Preview */}
               {selectedTemplate && (
                 <div className="space-y-2 rounded-lg border bg-muted/30 p-4">
-                  <p className="text-sm font-medium">プレビュー</p>
+                  <p className="text-sm font-medium">{t("previewLabel")}</p>
                   <div className="space-y-1">
                     <p className="text-sm">
                       <span className="text-muted-foreground">件名: </span>
@@ -736,7 +747,7 @@ export default function MessagesPage() {
           {/* Recipients */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">送信先</CardTitle>
+              <CardTitle className="text-base">{t("recipients")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-2">
@@ -746,29 +757,29 @@ export default function MessagesPage() {
                   onClick={() => setRecipientMode("all")}
                 >
                   <Users className="mr-1.5 h-4 w-4" />
-                  全顧客
+                  {t("allCustomers")}
                 </Button>
                 <Button
                   variant={recipientMode === "tag" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setRecipientMode("tag")}
                 >
-                  タグで絞り込み
+                  {t("filterByTag")}
                 </Button>
                 <Button
                   variant={recipientMode === "manual" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setRecipientMode("manual")}
                 >
-                  個別選択
+                  {t("manualSelect")}
                 </Button>
               </div>
 
               {recipientMode === "tag" && (
                 <div className="space-y-2">
-                  <Label>タグで絞り込み</Label>
+                  <Label>{t("filterByTagLabel")}</Label>
                   <Input
-                    placeholder="タグ名を入力..."
+                    placeholder={t("tagPlaceholder")}
                     value={tagFilter}
                     onChange={(e) => setTagFilter(e.target.value)}
                   />
@@ -796,7 +807,7 @@ export default function MessagesPage() {
                 <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg border p-2">
                   {customers.length === 0 ? (
                     <p className="py-4 text-center text-sm text-muted-foreground">
-                      顧客がいません
+                      {t("noCustomers")}
                     </p>
                   ) : (
                     customers.map((c) => (
@@ -835,9 +846,9 @@ export default function MessagesPage() {
               )}
 
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-2">
-                <span className="text-sm text-muted-foreground">送信先</span>
+                <span className="text-sm text-muted-foreground">{t("recipients")}</span>
                 <span className="font-medium">
-                  {getRecipients().length}件
+                  {t("recipientCount", { count: String(getRecipients().length) })}
                 </span>
               </div>
 
@@ -847,7 +858,7 @@ export default function MessagesPage() {
                 onClick={() => setSendConfirmOpen(true)}
               >
                 <Send className="mr-1.5 h-4 w-4" />
-                送信する
+                {t("sendButton")}
               </Button>
             </CardContent>
           </Card>
@@ -861,25 +872,25 @@ export default function MessagesPage() {
             <Card>
               <CardContent className="p-4 text-center">
                 <p className="text-2xl font-bold">{historyStats.total}</p>
-                <p className="text-xs text-muted-foreground">合計送信</p>
+                <p className="text-xs text-muted-foreground">{t("totalSent")}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
                 <p className="text-2xl font-bold text-green-600">{historyStats.opened}</p>
-                <p className="text-xs text-muted-foreground">開封</p>
+                <p className="text-xs text-muted-foreground">{t("opened")}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
                 <p className="text-2xl font-bold text-purple-600">{historyStats.clicked}</p>
-                <p className="text-xs text-muted-foreground">クリック</p>
+                <p className="text-xs text-muted-foreground">{t("clicked")}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
                 <p className="text-2xl font-bold text-red-600">{historyStats.failed}</p>
-                <p className="text-xs text-muted-foreground">失敗</p>
+                <p className="text-xs text-muted-foreground">{t("failed")}</p>
               </CardContent>
             </Card>
           </div>
@@ -888,13 +899,13 @@ export default function MessagesPage() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-muted-foreground">ステータス:</span>
             {[
-              { value: "", label: "すべて" },
-              { value: "pending", label: "送信待ち" },
-              { value: "sent", label: "送信済み" },
-              { value: "delivered", label: "配信済み" },
-              { value: "opened", label: "開封済み" },
-              { value: "clicked", label: "クリック済み" },
-              { value: "failed", label: "失敗" },
+              { value: "", labelKey: "statusFilterAll" },
+              { value: "pending", labelKey: "statusPending" },
+              { value: "sent", labelKey: "statusSent" },
+              { value: "delivered", labelKey: "statusDelivered" },
+              { value: "opened", labelKey: "statusOpened" },
+              { value: "clicked", labelKey: "statusClicked" },
+              { value: "failed", labelKey: "statusFailed" },
             ].map((opt) => (
               <Button
                 key={opt.value}
@@ -905,7 +916,7 @@ export default function MessagesPage() {
                   loadHistory(opt.value);
                 }}
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </Button>
             ))}
           </div>
@@ -919,13 +930,13 @@ export default function MessagesPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <Mail className="mb-4 h-12 w-12" />
-                <p>送信履歴はまだありません</p>
+                <p>{t("noHistory")}</p>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-2">
               {sentMessages.map((msg) => {
-                const statusInfo = STATUS_MAP[msg.status];
+                const statusInfo = STATUS_MAP_CONFIG[msg.status];
                 const customerData = msg.customer as Customer | undefined;
                 const templateData = msg.template as MessageTemplate | undefined;
                 return (
@@ -935,7 +946,7 @@ export default function MessagesPage() {
                         <div className="min-w-0 flex-1 space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="text-sm font-medium">
-                              {customerData?.name || msg.recipient_email || "不明"}
+                              {customerData?.name || msg.recipient_email || t("unknown")}
                             </span>
                             {customerData?.email && (
                               <span className="text-xs text-muted-foreground">
@@ -945,12 +956,12 @@ export default function MessagesPage() {
                           </div>
                           {templateData && (
                             <p className="text-xs text-muted-foreground">
-                              テンプレート: {templateData.name}
+                              {t("templateLabel", { name: templateData.name })}
                             </p>
                           )}
                           {msg.subject && (
                             <p className="truncate text-sm text-muted-foreground">
-                              件名: {msg.subject}
+                              {t("subject")}: {msg.subject}
                             </p>
                           )}
                           <p className="text-xs text-muted-foreground">
@@ -960,10 +971,10 @@ export default function MessagesPage() {
                         <div className="flex shrink-0 items-center gap-2">
                           <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusInfo?.color || ""}`}>
                             {statusInfo?.icon}
-                            {statusInfo?.label || msg.status}
+                            {statusInfo?.labelKey ? t(statusInfo.labelKey) : msg.status}
                           </span>
                           <Badge variant="outline" className="text-xs">
-                            {msg.channel === "email" ? "メール" : "LINE"}
+                            {msg.channel === "email" ? t("channelEmailBadge") : t("channelLineBadge")}
                           </Badge>
                         </div>
                       </div>
@@ -981,10 +992,10 @@ export default function MessagesPage() {
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingTemplate ? "テンプレートを編集" : "新規テンプレート"}
+              {editingTemplate ? t("editTemplate") : t("newTemplateDialogTitle")}
             </DialogTitle>
             <DialogDescription>
-              メッセージテンプレートの内容を設定します
+              {t("templateEditorDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -992,11 +1003,12 @@ export default function MessagesPage() {
           {showStarters && !editingTemplate && (
             <div className="space-y-3">
               <p className="text-sm font-medium text-muted-foreground">
-                テンプレートから始める：
+                {t("startFromTemplate")}
               </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {TEMPLATE_STARTERS.map((starter, i) => {
-                  const typeInfo = TEMPLATE_TYPE_MAP[starter.template_type];
+                  const typeColor = TEMPLATE_TYPE_COLORS[starter.template_type] || "";
+                  const typeKey = TEMPLATE_TYPE_KEYS[starter.template_type];
                   return (
                     <button
                       key={i}
@@ -1007,8 +1019,8 @@ export default function MessagesPage() {
                         <Copy className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium">{starter.name}</span>
                       </div>
-                      <span className={`mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${typeInfo?.color || ""}`}>
-                        {typeInfo?.label}
+                      <span className={`mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${typeColor}`}>
+                        {typeKey ? t(typeKey) : starter.template_type}
                       </span>
                     </button>
                   );
@@ -1020,7 +1032,7 @@ export default function MessagesPage() {
                 size="sm"
                 onClick={() => setShowStarters(false)}
               >
-                白紙から作成
+                {t("startFromBlank")}
               </Button>
             </div>
           )}
@@ -1030,9 +1042,9 @@ export default function MessagesPage() {
             <div className="space-y-4">
               {/* Name */}
               <div className="space-y-2">
-                <Label>テンプレート名</Label>
+                <Label>{t("templateName")}</Label>
                 <Input
-                  placeholder="例: 予約お礼メール"
+                  placeholder={t("templateNamePlaceholder")}
                   value={editorForm.name}
                   onChange={(e) =>
                     setEditorForm((prev) => ({ ...prev, name: e.target.value }))
@@ -1042,15 +1054,15 @@ export default function MessagesPage() {
 
               {/* Type */}
               <div className="space-y-2">
-                <Label>タイプ</Label>
+                <Label>{t("type")}</Label>
                 <div className="flex flex-wrap gap-2">
                   {(
                     [
-                      { value: "follow_up", label: "フォローアップ" },
-                      { value: "review_request", label: "レビュー依頼" },
-                      { value: "campaign", label: "キャンペーン" },
-                      { value: "reminder", label: "リマインダー" },
-                      { value: "thank_you", label: "お礼" },
+                      { value: "follow_up", labelKey: "templateTypeFollowUp" },
+                      { value: "review_request", labelKey: "templateTypeReviewRequest" },
+                      { value: "campaign", labelKey: "templateTypeCampaign" },
+                      { value: "reminder", labelKey: "templateTypeReminder" },
+                      { value: "thank_you", labelKey: "templateTypeThankYou" },
                     ] as const
                   ).map((opt) => (
                     <Button
@@ -1068,7 +1080,7 @@ export default function MessagesPage() {
                         }))
                       }
                     >
-                      {opt.label}
+                      {t(opt.labelKey)}
                     </Button>
                   ))}
                 </div>
@@ -1081,21 +1093,21 @@ export default function MessagesPage() {
                   <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                     <AlertCircle className="h-5 w-5 shrink-0 text-yellow-600" />
                     <p className="text-sm text-yellow-800">
-                      設定 &gt; GoogleレビューURLを先に設定してください
+                      {t("setGoogleReviewUrlFirst")}
                     </p>
                   </div>
                 )}
 
               {/* Trigger */}
               <div className="space-y-2">
-                <Label>トリガー</Label>
+                <Label>{t("trigger")}</Label>
                 <div className="flex flex-wrap gap-2">
                   {(
                     [
-                      { value: "manual", label: "手動" },
-                      { value: "after_booking", label: "予約後" },
-                      { value: "after_days", label: "日数経過後" },
-                      { value: "after_contact", label: "お問い合わせ後" },
+                      { value: "manual", labelKey: "triggerManual" },
+                      { value: "after_booking", labelKey: "triggerAfterBooking" },
+                      { value: "after_days", labelKey: "triggerAfterDays" },
+                      { value: "after_contact", labelKey: "triggerAfterContact" },
                     ] as const
                   ).map((opt) => (
                     <Button
@@ -1113,7 +1125,7 @@ export default function MessagesPage() {
                         }))
                       }
                     >
-                      {opt.label}
+                      {t(opt.labelKey)}
                     </Button>
                   ))}
                 </div>
@@ -1122,7 +1134,7 @@ export default function MessagesPage() {
               {/* Trigger delay */}
               {editorForm.trigger_type !== "manual" && (
                 <div className="space-y-2">
-                  <Label>遅延時間（時間）</Label>
+                  <Label>{t("delayHours")}</Label>
                   <Input
                     type="number"
                     min={0}
@@ -1136,17 +1148,17 @@ export default function MessagesPage() {
                   />
                   <p className="text-xs text-muted-foreground">
                     {editorForm.trigger_delay_hours >= 24
-                      ? `約${Math.round(editorForm.trigger_delay_hours / 24)}日後に送信`
-                      : `${editorForm.trigger_delay_hours}時間後に送信`}
+                      ? t("sendAfterDays", { days: String(Math.round(editorForm.trigger_delay_hours / 24)) })
+                      : t("sendAfterHours", { hours: String(editorForm.trigger_delay_hours) })}
                   </p>
                 </div>
               )}
 
               {/* Subject */}
               <div className="space-y-2">
-                <Label>件名</Label>
+                <Label>{t("subjectLabel")}</Label>
                 <Input
-                  placeholder="メールの件名"
+                  placeholder={t("subjectPlaceholder")}
                   value={editorForm.subject}
                   onChange={(e) =>
                     setEditorForm((prev) => ({
@@ -1159,7 +1171,7 @@ export default function MessagesPage() {
 
               {/* Placeholder chips */}
               <div className="space-y-2">
-                <Label>差し込み変数（クリックで本文に挿入）</Label>
+                <Label>{t("placeholderChips")}</Label>
                 <div className="flex flex-wrap gap-1.5 rounded-lg border bg-muted/30 p-2.5">
                   {MESSAGE_PLACEHOLDERS.map((p) => (
                     <button
@@ -1178,14 +1190,14 @@ export default function MessagesPage() {
               {/* Body */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>本文</Label>
+                  <Label>{t("bodyLabel")}</Label>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowPreview(!showPreview)}
                   >
                     <Eye className="mr-1.5 h-4 w-4" />
-                    {showPreview ? "編集に戻る" : "プレビュー"}
+                    {showPreview ? t("backToEdit") : t("preview")}
                   </Button>
                 </div>
 
@@ -1202,7 +1214,7 @@ export default function MessagesPage() {
                 ) : (
                   <Textarea
                     ref={bodyTextareaRef}
-                    placeholder="メッセージ本文を入力..."
+                    placeholder={t("bodyPlaceholder")}
                     value={editorForm.body}
                     onChange={(e) =>
                       setEditorForm((prev) => ({
@@ -1218,7 +1230,7 @@ export default function MessagesPage() {
 
               {/* Active toggle */}
               <div className="flex items-center justify-between">
-                <Label>テンプレートを有効にする</Label>
+                <Label>{t("enableTemplate")}</Label>
                 <Button
                   variant={editorForm.is_active ? "default" : "outline"}
                   size="sm"
@@ -1229,7 +1241,7 @@ export default function MessagesPage() {
                     }))
                   }
                 >
-                  {editorForm.is_active ? "有効" : "無効"}
+                  {editorForm.is_active ? t("enabled") : t("disabled")}
                 </Button>
               </div>
             </div>
@@ -1239,13 +1251,13 @@ export default function MessagesPage() {
           {!showStarters && (
             <DialogFooter>
               <Button variant="outline" onClick={() => setEditorOpen(false)}>
-                キャンセル
+                {t("cancel")}
               </Button>
               <Button
                 onClick={saveTemplate}
                 disabled={saving || !editorForm.name || !editorForm.subject || !editorForm.body}
               >
-                {saving ? "保存中..." : editingTemplate ? "更新" : "保存"}
+                {saving ? t("saving") : editingTemplate ? t("update") : t("save")}
               </Button>
             </DialogFooter>
           )}
@@ -1256,17 +1268,17 @@ export default function MessagesPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>テンプレートを削除</DialogTitle>
+            <DialogTitle>{t("deleteTemplateTitle")}</DialogTitle>
             <DialogDescription>
-              「{deleteTarget?.name}」を削除しますか？この操作は取り消せません。
+              {t("deleteTemplateConfirm", { name: deleteTarget?.name || "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              キャンセル
+              {t("cancel")}
             </Button>
             <Button variant="destructive" onClick={deleteTemplate}>
-              削除する
+              {t("deleteButton")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1276,31 +1288,31 @@ export default function MessagesPage() {
       <Dialog open={sendConfirmOpen} onOpenChange={setSendConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>メッセージ送信確認</DialogTitle>
+            <DialogTitle>{t("sendConfirmTitle")}</DialogTitle>
             <DialogDescription>
-              {getRecipients().length}件のメッセージを送信しますか？
+              {t("sendConfirmDesc", { count: String(getRecipients().length) })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 text-sm">
             <p>
-              <span className="text-muted-foreground">テンプレート: </span>
+              <span className="text-muted-foreground">{t("sendConfirmTemplate")}</span>
               {selectedTemplate?.name || "-"}
             </p>
             <p>
-              <span className="text-muted-foreground">送信先: </span>
-              {getRecipients().length}名
+              <span className="text-muted-foreground">{t("sendConfirmRecipients")}</span>
+              {t("sendConfirmRecipientsCount", { count: String(getRecipients().length) })}
             </p>
             <p>
-              <span className="text-muted-foreground">チャンネル: </span>
-              メール
+              <span className="text-muted-foreground">{t("sendConfirmChannel")}</span>
+              {t("channelEmail")}
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSendConfirmOpen(false)}>
-              キャンセル
+              {t("cancel")}
             </Button>
             <Button onClick={handleSend} disabled={sending}>
-              {sending ? "送信中..." : "送信する"}
+              {sending ? t("sending") : t("sendAction")}
             </Button>
           </DialogFooter>
         </DialogContent>

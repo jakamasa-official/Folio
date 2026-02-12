@@ -12,23 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CalendarDays, Check, X, Clock } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 
 const DAY_NUMBERS: number[] = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0
 
-const DURATION_OPTIONS = [
-  { value: 30, label: "30分" },
-  { value: 60, label: "60分" },
-  { value: 90, label: "90分" },
-  { value: 120, label: "120分" },
-];
-
-const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "保留中", variant: "secondary" },
-  confirmed: { label: "確定済み", variant: "default" },
-  canceled: { label: "キャンセル", variant: "destructive" },
-};
-
 export default function BookingsPage() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +28,19 @@ export default function BookingsPage() {
   const [endTime, setEndTime] = useState("17:00");
   const [duration, setDuration] = useState(60);
   const [activeTab, setActiveTab] = useState("all");
+
+  const DURATION_OPTIONS = [
+    { value: 30, label: t("bookings.duration30") },
+    { value: 60, label: t("bookings.duration60") },
+    { value: 90, label: t("bookings.duration90") },
+    { value: 120, label: t("bookings.duration120") },
+  ];
+
+  const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+    pending: { label: t("bookings.statusPending"), variant: "secondary" },
+    confirmed: { label: t("bookings.statusConfirmed"), variant: "default" },
+    canceled: { label: t("bookings.statusCanceled"), variant: "destructive" },
+  };
 
   useEffect(() => {
     loadData();
@@ -131,7 +133,7 @@ export default function BookingsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold">予約管理</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("bookings.title")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -141,30 +143,30 @@ export default function BookingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">予約管理</h1>
+      <h1 className="text-2xl font-bold">{t("bookings.title")}</h1>
 
       {/* Booking Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>予約設定</CardTitle>
-          <CardDescription>予約可能な曜日と時間帯を設定します</CardDescription>
+          <CardTitle>{t("bookings.settingsTitle")}</CardTitle>
+          <CardDescription>{t("bookings.settingsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Enable/Disable toggle */}
           <div className="flex items-center justify-between">
-            <Label>予約機能を有効にする</Label>
+            <Label>{t("bookings.enableBooking")}</Label>
             <Button
               variant={bookingEnabled ? "default" : "outline"}
               size="sm"
               onClick={() => setBookingEnabled(!bookingEnabled)}
             >
-              {bookingEnabled ? "有効" : "無効"}
+              {bookingEnabled ? t("bookings.enabled") : t("bookings.disabled")}
             </Button>
           </div>
 
           {/* Day checkboxes */}
           <div className="space-y-2">
-            <Label>受付曜日</Label>
+            <Label>{t("bookings.acceptDays")}</Label>
             <div className="flex flex-wrap gap-2">
               {DAYS_OF_WEEK.map((day, index) => {
                 const dayNum = DAY_NUMBERS[index];
@@ -186,7 +188,7 @@ export default function BookingsPage() {
           {/* Time range */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startTime">開始時間</Label>
+              <Label htmlFor="startTime">{t("bookings.startTime")}</Label>
               <Input
                 id="startTime"
                 type="time"
@@ -195,7 +197,7 @@ export default function BookingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endTime">終了時間</Label>
+              <Label htmlFor="endTime">{t("bookings.endTime")}</Label>
               <Input
                 id="endTime"
                 type="time"
@@ -207,7 +209,7 @@ export default function BookingsPage() {
 
           {/* Duration */}
           <div className="space-y-2">
-            <Label>予約時間の長さ</Label>
+            <Label>{t("bookings.duration")}</Label>
             <div className="flex flex-wrap gap-2">
               {DURATION_OPTIONS.map((opt) => (
                 <Button
@@ -223,7 +225,7 @@ export default function BookingsPage() {
           </div>
 
           <Button onClick={saveSettings} disabled={saving}>
-            {saving ? "保存中..." : "設定を保存"}
+            {saving ? t("bookings.saving") : t("bookings.saveSettings")}
           </Button>
         </CardContent>
       </Card>
@@ -232,13 +234,13 @@ export default function BookingsPage() {
 
       {/* Bookings List */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">予約一覧</h2>
+        <h2 className="text-xl font-semibold">{t("bookings.listTitle")}</h2>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all">すべて</TabsTrigger>
-            <TabsTrigger value="pending">保留中</TabsTrigger>
-            <TabsTrigger value="confirmed">確定済み</TabsTrigger>
-            <TabsTrigger value="canceled">キャンセル</TabsTrigger>
+            <TabsTrigger value="all">{t("bookings.tabAll")}</TabsTrigger>
+            <TabsTrigger value="pending">{t("bookings.tabPending")}</TabsTrigger>
+            <TabsTrigger value="confirmed">{t("bookings.tabConfirmed")}</TabsTrigger>
+            <TabsTrigger value="canceled">{t("bookings.tabCanceled")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4">
@@ -246,7 +248,7 @@ export default function BookingsPage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                   <CalendarDays className="mb-4 h-12 w-12" />
-                  <p>予約はまだありません</p>
+                  <p>{t("bookings.emptyState")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -291,7 +293,7 @@ export default function BookingsPage() {
                                 }
                               >
                                 <Check className="mr-1 h-4 w-4" />
-                                確定
+                                {t("bookings.confirm")}
                               </Button>
                               <Button
                                 size="sm"
@@ -301,7 +303,7 @@ export default function BookingsPage() {
                                 }
                               >
                                 <X className="mr-1 h-4 w-4" />
-                                キャンセル
+                                {t("bookings.cancel")}
                               </Button>
                             </div>
                           )}

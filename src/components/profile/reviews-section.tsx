@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface PublicReview {
   id: string;
@@ -62,6 +63,7 @@ function ReviewCard({
   review: PublicReview;
   cardClassName?: string;
 }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const bodyTruncated = review.body.length > 120;
 
@@ -70,7 +72,7 @@ function ReviewCard({
       <div className="flex items-center gap-2">
         <StarRating rating={review.rating} />
         {review.verified && (
-          <span className="text-xs text-green-600">認証済み</span>
+          <span className="text-xs text-green-600">{t("reviewsVerified")}</span>
         )}
       </div>
       <div className="mt-2 flex items-center gap-2">
@@ -93,7 +95,7 @@ function ReviewCard({
           onClick={() => setExpanded(true)}
           className="mt-1 text-xs font-medium text-blue-600 hover:underline"
         >
-          もっと見る
+          {t("reviewsReadMore")}
         </button>
       )}
       {review.service_tags && review.service_tags.length > 0 && (
@@ -110,7 +112,7 @@ function ReviewCard({
       )}
       {review.response && (
         <div className="mt-3 rounded-md bg-gray-50 p-2.5">
-          <p className="text-xs font-medium text-gray-500">オーナーからの返信</p>
+          <p className="text-xs font-medium text-gray-500">{t("reviewsOwnerReply")}</p>
           <p className="mt-0.5 text-xs text-gray-600">{review.response}</p>
         </div>
       )}
@@ -207,6 +209,7 @@ function ListDisplay({ reviews }: { reviews: PublicReview[] }) {
 // ─── Main Section ──────────────────────────────────────
 
 export function ReviewsSection({ profileId }: { profileId: string }) {
+  const { t } = useTranslation();
   const [data, setData] = useState<ReviewsData | null>(null);
   const [showAll, setShowAll] = useState(false);
 
@@ -253,7 +256,7 @@ export function ReviewsSection({ profileId }: { profileId: string }) {
             {stats.averageRating.toFixed(1)}
           </span>
           <span className="text-sm text-gray-500">
-            ({stats.approvedCount}件のレビュー)
+            {t("reviewsCount", { count: String(stats.approvedCount) })}
           </span>
         </div>
       )}
@@ -276,7 +279,7 @@ export function ReviewsSection({ profileId }: { profileId: string }) {
           onClick={() => setShowAll(true)}
           className="mt-3 w-full rounded-lg border bg-white/80 py-2 text-center text-sm font-medium text-gray-600 hover:bg-gray-50"
         >
-          もっと見る ({reviews.length - 6}件)
+          {t("reviewsShowMore", { count: String(reviews.length - 6) })}
         </button>
       )}
 
@@ -287,7 +290,7 @@ export function ReviewsSection({ profileId }: { profileId: string }) {
           className="flex w-full items-center justify-center gap-2 rounded-lg border bg-white/80 px-5 py-3 text-sm font-medium transition-all hover:scale-[1.02] hover:bg-gray-50"
         >
           <Star className="h-4 w-4 text-yellow-500" />
-          レビューを書く
+          {t("reviewsWriteReview")}
         </Link>
       </div>
     </div>

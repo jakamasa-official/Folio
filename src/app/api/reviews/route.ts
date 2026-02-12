@@ -2,6 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
+// IP-based rate limit for anonymous reviews (no email)
+const anonReviewLimit = new Map<string, { count: number; resetAt: number }>();
+let lastAnonCleanup = Date.now();
+function checkAnonReviewLimit(key: string): boolean {
+  const now = Date.now();
+  // Periodically purge expired entries to prevent unbounded growth
+  if (now - lastAnonCleanup > 60 * 60 * 1000) {
+    for (const [k, v] of anonReviewLimit) {
+      if (now > v.resetAt) anonReviewLimit.delete(k);
+    }
+    lastAnonCleanup = now;
+  }
+  const entry = anonReviewLimit.get(key);
+  if (!entry || now > entry.resetAt) {
+    anonReviewLimit.set(key, { count: 1, resetAt: now + 24 * 60 * 60 * 1000 });
+    return true;
+  }
+  if (entry.count >= 3) return false;
+  entry.count++;
+  return true;
+}
+
 async function getAuthenticatedProfile() {
   const supabase = await createClient();
   const {
@@ -177,11 +199,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limit: max 3 reviews per email per profile per day
+    // Rate limit: max 3 reviews per email (or IP) per profile per day
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     if (reviewer_email) {
-      const oneDayAgo = new Date(
-        Date.now() - 24 * 60 * 60 * 1000
-      ).toISOString();
       const { count } = await supabaseAdmin
         .from("reviews")
         .select("id", { count: "exact", head: true })
@@ -190,6 +210,15 @@ export async function POST(request: NextRequest) {
         .gte("created_at", oneDayAgo);
 
       if (count && count >= 3) {
+        return NextResponse.json(
+          { error: "1日のレビュー投稿上限に達しました。明日また投稿してください。" },
+          { status: 429 }
+        );
+      }
+    } else {
+      // IP-based rate limit when no email provided
+      const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+      if (!checkAnonReviewLimit(`review:${ip}:${profile_id}`)) {
         return NextResponse.json(
           { error: "1日のレビュー投稿上限に達しました。明日また投稿してください。" },
           { status: 429 }

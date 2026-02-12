@@ -49,7 +49,7 @@ export async function POST(request: Request) {
             })
             .eq("id", profileId);
 
-          console.log(`[Stripe] Profile ${profileId} upgraded to ${tier}`);
+          console.log(`[Stripe] Profile upgraded to ${tier}`);
         }
         break;
       }
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
             })
             .eq("id", profile.id);
 
-          console.log(`[Stripe] Profile ${profile.id} subscription updated: tier=${isActive ? tier : "free"}`);
+          console.log(`[Stripe] Subscription updated: tier=${isActive ? tier : "free"}`);
         }
         break;
       }
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
             })
             .eq("id", profile.id);
 
-          console.log(`[Stripe] Profile ${profile.id} subscription canceled`);
+          console.log("[Stripe] Subscription canceled");
         }
         break;
       }
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-        console.warn(`[Stripe] Payment failed for customer ${customerId}`);
+        console.warn("[Stripe] Payment failed for a customer");
         break;
       }
 

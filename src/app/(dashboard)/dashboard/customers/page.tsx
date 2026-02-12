@@ -38,8 +38,10 @@ import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { LimitBanner } from "@/components/dashboard/pro-gate";
 import { FREE_LIMITS } from "@/lib/pro-gate";
+import { useTranslation } from "@/lib/i18n/client";
 
 export default function CustomersPage() {
+  const { t } = useTranslation();
   const { isPro, customerCount } = useProStatus();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,11 +88,11 @@ export default function CustomersPage() {
       }
     } catch (err) {
       console.error("顧客取得エラー:", err);
-      toast.error("顧客データの取得に失敗しました");
+      toast.error(t("customers.fetchError"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchCustomers();
@@ -115,7 +117,7 @@ export default function CustomersPage() {
       }
     } catch (err) {
       console.error("同期エラー:", err);
-      toast.error("顧客データの同期に失敗しました");
+      toast.error(t("customers.syncError"));
     } finally {
       setSyncing(false);
     }
@@ -146,7 +148,7 @@ export default function CustomersPage() {
       }
     } catch (err) {
       console.error("顧客作成エラー:", err);
-      toast.error("顧客の作成に失敗しました");
+      toast.error(t("customers.createError"));
     } finally {
       setCreating(false);
     }
@@ -187,7 +189,7 @@ export default function CustomersPage() {
       }
     } catch (err) {
       console.error("顧客更新エラー:", err);
-      toast.error("顧客の更新に失敗しました");
+      toast.error(t("customers.updateError"));
     } finally {
       setSaving(false);
     }
@@ -209,7 +211,7 @@ export default function CustomersPage() {
       }
     } catch (err) {
       console.error("顧客削除エラー:", err);
-      toast.error("顧客の削除に失敗しました");
+      toast.error(t("customers.deleteError"));
     } finally {
       setDeleting(false);
     }
@@ -259,10 +261,10 @@ export default function CustomersPage() {
 
   function formatSource(source: string) {
     const map: Record<string, string> = {
-      manual: "手動追加",
-      booking: "予約",
-      contact: "お問い合わせ",
-      subscriber: "メール購読",
+      manual: t("customers.sourceManual"),
+      booking: t("customers.sourceBooking"),
+      contact: t("customers.sourceContact"),
+      subscriber: t("customers.sourceSubscriber"),
     };
     return source
       .split(",")
@@ -273,7 +275,7 @@ export default function CustomersPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl">
-        <h1 className="mb-6 text-2xl font-bold">顧客管理</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("customers.title")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -285,7 +287,7 @@ export default function CustomersPage() {
     <div className="mx-auto max-w-4xl space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">顧客管理</h1>
+        <h1 className="text-2xl font-bold">{t("customers.title")}</h1>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -296,7 +298,7 @@ export default function CustomersPage() {
             <RefreshCw
               className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`}
             />
-            {syncing ? "同期中..." : "顧客を同期"}
+            {syncing ? t("customers.syncLoading") : t("customers.sync")}
           </Button>
           <Button
             size="sm"
@@ -304,7 +306,7 @@ export default function CustomersPage() {
             disabled={!isPro && customerCount >= FREE_LIMITS.customers}
           >
             <Plus className="mr-2 h-4 w-4" />
-            新規顧客
+            {t("customers.newCustomer")}
           </Button>
         </div>
       </div>
@@ -313,7 +315,7 @@ export default function CustomersPage() {
       <LimitBanner
         current={customerCount}
         max={FREE_LIMITS.customers}
-        label="顧客"
+        label={t("customers.limitLabel")}
         isPro={isPro}
       />
 
@@ -324,7 +326,7 @@ export default function CustomersPage() {
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">総顧客数</p>
+                <p className="text-sm text-muted-foreground">{t("customers.totalCustomers")}</p>
                 <p className="text-2xl font-bold">{totalCustomers}</p>
               </div>
             </div>
@@ -335,7 +337,7 @@ export default function CustomersPage() {
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">今月の新規</p>
+                <p className="text-sm text-muted-foreground">{t("customers.newThisMonth")}</p>
                 <p className="text-2xl font-bold">{newThisMonth}</p>
               </div>
             </div>
@@ -346,7 +348,7 @@ export default function CustomersPage() {
             <div className="flex items-center gap-3">
               <BookOpen className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">総予約数</p>
+                <p className="text-sm text-muted-foreground">{t("customers.totalBookings")}</p>
                 <p className="text-2xl font-bold">{totalBookings}</p>
               </div>
             </div>
@@ -360,7 +362,7 @@ export default function CustomersPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="名前またはメールで検索..."
+              placeholder={t("customers.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -378,7 +380,7 @@ export default function CustomersPage() {
               }}
             >
               <BarChart3 className="mr-2 h-4 w-4" />
-              セグメント
+              {t("customers.segments")}
             </Button>
           )}
         </div>
@@ -397,11 +399,11 @@ export default function CustomersPage() {
         {/* Source Filter */}
         <div className="flex flex-wrap gap-2">
           {[
-            { key: "all", label: "全て" },
-            { key: "booking", label: "予約客" },
-            { key: "contact", label: "お問い合わせ" },
-            { key: "subscriber", label: "メール購読" },
-            { key: "manual", label: "手動追加" },
+            { key: "all", label: t("customers.filterAll") },
+            { key: "booking", label: t("customers.filterBooking") },
+            { key: "contact", label: t("customers.filterContact") },
+            { key: "subscriber", label: t("customers.filterSubscriber") },
+            { key: "manual", label: t("customers.filterManual") },
           ].map((filter) => (
             <button
               key={filter.key}
@@ -424,9 +426,9 @@ export default function CustomersPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <Users className="mb-4 h-12 w-12" />
-            <p>顧客データはまだありません</p>
+            <p>{t("customers.emptyState")}</p>
             <p className="mt-2 text-sm">
-              「顧客を同期」で既存データを取り込むか、「新規顧客」で手動追加できます
+              {t("customers.emptyStateHint")}
             </p>
           </CardContent>
         </Card>
@@ -463,15 +465,15 @@ export default function CustomersPage() {
                     <span>{formatSource(customer.source)}</span>
                     <span className="flex items-center gap-1">
                       <BookOpen className="h-3 w-3" />
-                      予約 {customer.total_bookings}
+                      {t("customers.bookingCount", { count: String(customer.total_bookings) })}
                     </span>
                     <span className="flex items-center gap-1">
                       <MessageSquare className="h-3 w-3" />
-                      メッセージ {customer.total_messages}
+                      {t("customers.messageCount", { count: String(customer.total_messages) })}
                     </span>
                     {customer.last_seen_at && (
                       <span>
-                        最終: {new Date(customer.last_seen_at).toLocaleDateString("ja-JP")}
+                        {t("customers.lastSeen", { date: new Date(customer.last_seen_at).toLocaleDateString("ja-JP") })}
                       </span>
                     )}
                   </div>
@@ -506,9 +508,11 @@ export default function CustomersPage() {
             <DialogDescription>
               {selectedCustomer?.source && formatSource(selectedCustomer.source)}
               {" / "}
-              登録日:{" "}
-              {selectedCustomer &&
-                new Date(selectedCustomer.created_at).toLocaleDateString("ja-JP")}
+              {t("customers.registeredAt", {
+                date: selectedCustomer
+                  ? new Date(selectedCustomer.created_at).toLocaleDateString("ja-JP")
+                  : "",
+              })}
             </DialogDescription>
           </DialogHeader>
 
@@ -527,7 +531,7 @@ export default function CustomersPage() {
                   <Input
                     value={editingPhone}
                     onChange={(e) => setEditingPhone(e.target.value)}
-                    placeholder="電話番号を入力..."
+                    placeholder={t("customers.phonePlaceholder")}
                     className="h-8"
                   />
                 </div>
@@ -540,7 +544,7 @@ export default function CustomersPage() {
                     <p className="text-2xl font-bold">
                       {selectedCustomer.total_bookings}
                     </p>
-                    <p className="text-xs text-muted-foreground">予約回数</p>
+                    <p className="text-xs text-muted-foreground">{t("customers.bookingTimes")}</p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -549,7 +553,7 @@ export default function CustomersPage() {
                       {selectedCustomer.total_messages}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      メッセージ数
+                      {t("customers.messageTotal")}
                     </p>
                   </CardContent>
                 </Card>
@@ -559,17 +563,15 @@ export default function CustomersPage() {
               <div className="space-y-1 text-sm text-muted-foreground">
                 <p className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  初回:{" "}
-                  {new Date(selectedCustomer.first_seen_at).toLocaleDateString(
-                    "ja-JP"
-                  )}
+                  {t("customers.firstSeen", {
+                    date: new Date(selectedCustomer.first_seen_at).toLocaleDateString("ja-JP"),
+                  })}
                 </p>
                 <p className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  最終:{" "}
-                  {new Date(selectedCustomer.last_seen_at).toLocaleDateString(
-                    "ja-JP"
-                  )}
+                  {t("customers.lastSeen", {
+                    date: new Date(selectedCustomer.last_seen_at).toLocaleDateString("ja-JP"),
+                  })}
                 </p>
               </div>
 
@@ -577,7 +579,7 @@ export default function CustomersPage() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-1">
                   <Tag className="h-4 w-4" />
-                  タグ
+                  {t("customers.tags")}
                 </Label>
                 <div className="flex flex-wrap gap-2">
                   {editingTags.map((tag) => (
@@ -602,7 +604,7 @@ export default function CustomersPage() {
                   <Input
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
-                    placeholder="新しいタグ..."
+                    placeholder={t("customers.newTagPlaceholder")}
                     className="h-8"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
@@ -618,18 +620,18 @@ export default function CustomersPage() {
                       addTag(newTag, setNewTag, editingTags, setEditingTags)
                     }
                   >
-                    追加
+                    {t("customers.add")}
                   </Button>
                 </div>
               </div>
 
               {/* Notes */}
               <div className="space-y-2">
-                <Label>メモ</Label>
+                <Label>{t("customers.notes")}</Label>
                 <Textarea
                   value={editingNotes}
                   onChange={(e) => setEditingNotes(e.target.value)}
-                  placeholder="メモを入力..."
+                  placeholder={t("customers.notesPlaceholder")}
                   rows={3}
                 />
               </div>
@@ -647,10 +649,10 @@ export default function CustomersPage() {
               }}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              削除
+              {t("customers.delete")}
             </Button>
             <Button onClick={handleUpdate} disabled={saving}>
-              {saving ? "保存中..." : "保存"}
+              {saving ? t("customers.saving") : t("customers.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -668,24 +670,24 @@ export default function CustomersPage() {
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>新規顧客</DialogTitle>
+            <DialogTitle>{t("customers.createTitle")}</DialogTitle>
             <DialogDescription>
-              新しい顧客情報を手動で追加します
+              {t("customers.createDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="create-name">名前 *</Label>
+              <Label htmlFor="create-name">{t("customers.nameLabel")}</Label>
               <Input
                 id="create-name"
                 value={createName}
                 onChange={(e) => setCreateName(e.target.value)}
-                placeholder="顧客名を入力..."
+                placeholder={t("customers.namePlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-email">メールアドレス</Label>
+              <Label htmlFor="create-email">{t("customers.emailLabel")}</Label>
               <Input
                 id="create-email"
                 type="email"
@@ -695,7 +697,7 @@ export default function CustomersPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-phone">電話番号</Label>
+              <Label htmlFor="create-phone">{t("customers.phoneLabel")}</Label>
               <Input
                 id="create-phone"
                 type="tel"
@@ -705,7 +707,7 @@ export default function CustomersPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>タグ</Label>
+              <Label>{t("customers.tagsLabel")}</Label>
               <div className="flex flex-wrap gap-2">
                 {createTags.map((tag) => (
                   <Badge
@@ -729,7 +731,7 @@ export default function CustomersPage() {
                 <Input
                   value={createNewTag}
                   onChange={(e) => setCreateNewTag(e.target.value)}
-                  placeholder="タグを入力..."
+                  placeholder={t("customers.tagInputPlaceholder")}
                   className="h-8"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -755,17 +757,17 @@ export default function CustomersPage() {
                     )
                   }
                 >
-                  追加
+                  {t("customers.add")}
                 </Button>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-notes">メモ</Label>
+              <Label htmlFor="create-notes">{t("customers.notesLabel")}</Label>
               <Textarea
                 id="create-notes"
                 value={createNotes}
                 onChange={(e) => setCreateNotes(e.target.value)}
-                placeholder="メモを入力..."
+                placeholder={t("customers.notesPlaceholder")}
                 rows={3}
               />
             </div>
@@ -779,13 +781,13 @@ export default function CustomersPage() {
                 resetCreateForm();
               }}
             >
-              キャンセル
+              {t("customers.cancelButton")}
             </Button>
             <Button
               onClick={handleCreate}
               disabled={creating || !createName.trim()}
             >
-              {creating ? "作成中..." : "作成"}
+              {creating ? t("customers.creating") : t("customers.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -800,22 +802,22 @@ export default function CustomersPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>顧客を削除</DialogTitle>
+            <DialogTitle>{t("customers.deleteTitle")}</DialogTitle>
             <DialogDescription>
               {deleteTarget?.name}
-              を削除しますか？この操作は取り消せません。
+              {t("customers.deleteConfirm")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              キャンセル
+              {t("customers.cancelButton")}
             </Button>
             <Button
               variant="destructive"
               onClick={() => deleteTarget && handleDelete(deleteTarget)}
               disabled={deleting}
             >
-              {deleting ? "削除中..." : "削除する"}
+              {deleting ? t("customers.deleting") : t("customers.deleteButton")}
             </Button>
           </DialogFooter>
         </DialogContent>

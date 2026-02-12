@@ -25,6 +25,7 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 import {
   SEGMENT_FIELDS,
   SEGMENT_COLORS,
@@ -69,6 +70,7 @@ export default function CustomerSegments({
   selectedSegmentId,
   onSegmentSelect,
 }: CustomerSegmentsProps) {
+  const { t } = useTranslation();
   const [segments, setSegments] = useState<Segment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -85,7 +87,7 @@ export default function CustomerSegments({
         setSegments(data.segments || []);
       }
     } catch (err) {
-      console.error("セグメント取得エラー:", err);
+      console.error("Segment fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -99,7 +101,7 @@ export default function CustomerSegments({
         await fetchSegments();
       }
     } catch (err) {
-      console.error("セグメント初期化エラー:", err);
+      console.error("Segment init error:", err);
     }
   }, [fetchSegments]);
 
@@ -126,13 +128,13 @@ export default function CustomerSegments({
     try {
       const res = await apiFetch("/api/segments/refresh", { method: "POST" });
       if (res.ok) {
-        toast.success("セグメントを更新しました");
+        toast.success(t("segments.refreshSuccess"));
         await fetchSegments();
       } else {
-        toast.error("セグメントの更新に失敗しました");
+        toast.error(t("segments.refreshError"));
       }
     } catch {
-      toast.error("セグメントの更新に失敗しました");
+      toast.error(t("segments.refreshError"));
     } finally {
       setRefreshing(false);
     }
@@ -150,13 +152,13 @@ export default function CustomerSegments({
           onSegmentSelect(null);
         }
         setShowDetailDialog(false);
-        toast.success("セグメントを削除しました");
+        toast.success(t("segments.deleteSuccess"));
       } else {
         const data = await res.json();
-        toast.error(data.error || "削除に失敗しました");
+        toast.error(data.error || t("segments.deleteError"));
       }
     } catch {
-      toast.error("削除に失敗しました");
+      toast.error(t("segments.deleteError"));
     }
   }
 
@@ -194,7 +196,7 @@ export default function CustomerSegments({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
               <Users className="h-4 w-4" />
-              顧客セグメント
+              {t("segments.title")}
             </CardTitle>
             <div className="flex items-center gap-1">
               <Button
@@ -203,7 +205,7 @@ export default function CustomerSegments({
                 className="h-7 w-7"
                 onClick={handleRefresh}
                 disabled={refreshing}
-                title="セグメント更新"
+                title={t("segments.refreshTooltip")}
               >
                 <RefreshCw
                   className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
@@ -214,7 +216,7 @@ export default function CustomerSegments({
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => setShowCreateDialog(true)}
-                title="新規セグメント作成"
+                title={t("segments.createTooltip")}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -232,7 +234,7 @@ export default function CustomerSegments({
                 : "text-muted-foreground hover:bg-muted"
             }`}
           >
-            <span className="font-medium">全顧客</span>
+            <span className="font-medium">{t("segments.allCustomers")}</span>
             <span className="text-xs">{totalCustomers}</span>
           </button>
 
@@ -336,6 +338,7 @@ function SegmentDetailDialog({
   onDelete: (id: string) => void;
   onUpdate: (updated: Partial<Segment> & { id: string }) => void;
 }) {
+  const { t } = useTranslation();
   const [editingActions, setEditingActions] = useState(false);
   const [autoActions, setAutoActions] = useState<AutoAction[]>(
     segment.auto_actions || []
@@ -360,12 +363,12 @@ function SegmentDetailDialog({
       if (res.ok) {
         onUpdate({ id: segment.id, auto_actions: autoActions });
         setEditingActions(false);
-        toast.success("自動アクションを保存しました");
+        toast.success(t("segments.autoActionsSaved"));
       } else {
-        toast.error("保存に失敗しました");
+        toast.error(t("segments.autoActionsSaveError"));
       }
     } catch {
-      toast.error("保存に失敗しました");
+      toast.error(t("segments.autoActionsSaveError"));
     } finally {
       setSaving(false);
     }
@@ -389,9 +392,9 @@ function SegmentDetailDialog({
   }
 
   const actionTypeLabels: Record<string, string> = {
-    send_email: "メール送信",
-    send_coupon: "クーポン付与",
-    add_tag: "タグ追加",
+    send_email: t("segments.actionSendEmail"),
+    send_coupon: t("segments.actionSendCoupon"),
+    add_tag: t("segments.actionAddTag"),
   };
 
   return (
@@ -407,7 +410,7 @@ function SegmentDetailDialog({
           </DialogTitle>
           <DialogDescription>
             {segment.description || ""}
-            {segment.type === "system" ? " (システム)" : " (カスタム)"}
+            {segment.type === "system" ? ` ${t("segments.system")}` : ` ${t("segments.custom")}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -416,14 +419,14 @@ function SegmentDetailDialog({
           <div className="flex items-center gap-4">
             <div className="rounded-lg bg-muted px-4 py-2 text-center">
               <p className="text-2xl font-bold">{segment.customer_count}</p>
-              <p className="text-xs text-muted-foreground">顧客数</p>
+              <p className="text-xs text-muted-foreground">{t("segments.customerCount")}</p>
             </div>
           </div>
 
           {/* Criteria display */}
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground">
-              条件（{segment.criteria.match === "all" ? "全て一致" : "いずれか一致"}）
+              {t("segments.conditionLabel", { match: segment.criteria.match === "all" ? t("segments.matchAll") : t("segments.matchAny") })}
             </Label>
             <div className="space-y-1">
               {segment.criteria.rules?.map((rule, i) => (
@@ -441,7 +444,7 @@ function SegmentDetailDialog({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-medium text-muted-foreground">
-                セグメント参加時の自動アクション
+                {t("segments.autoActionsLabel")}
               </Label>
               <Button
                 variant="ghost"
@@ -450,13 +453,13 @@ function SegmentDetailDialog({
                 onClick={() => setEditingActions(!editingActions)}
               >
                 <Settings className="mr-1 h-3 w-3" />
-                {editingActions ? "閉じる" : "編集"}
+                {editingActions ? t("segments.closeActions") : t("segments.editActions")}
               </Button>
             </div>
 
             {!editingActions && autoActions.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                自動アクションは設定されていません
+                {t("segments.noAutoActions")}
               </p>
             )}
 
@@ -468,9 +471,9 @@ function SegmentDetailDialog({
                 >
                   {actionTypeLabels[action.type] || action.type}
                   {action.delay_hours
-                    ? ` （${action.delay_hours}時間後）`
-                    : " （即時）"}
-                  {action.tag && ` — タグ: ${action.tag}`}
+                    ? ` ${t("segments.actionDelayHours", { hours: String(action.delay_hours) })}`
+                    : ` ${t("segments.actionImmediate")}`}
+                  {action.tag && ` ${t("segments.actionTagLabel", { tag: action.tag })}`}
                 </div>
               ))}
 
@@ -492,9 +495,9 @@ function SegmentDetailDialog({
                           }
                           className="h-8 rounded-md border bg-background px-2 text-sm"
                         >
-                          <option value="send_email">メール送信</option>
-                          <option value="send_coupon">クーポン付与</option>
-                          <option value="add_tag">タグ追加</option>
+                          <option value="send_email">{t("segments.actionSendEmail")}</option>
+                          <option value="send_coupon">{t("segments.actionSendCoupon")}</option>
+                          <option value="add_tag">{t("segments.actionAddTag")}</option>
                         </select>
                         <Input
                           type="number"
@@ -505,11 +508,11 @@ function SegmentDetailDialog({
                               delay_hours: parseInt(e.target.value) || 0,
                             })
                           }
-                          placeholder="遅延(時間)"
+                          placeholder={t("segments.delayPlaceholder")}
                           className="h-8 w-24"
                         />
                         <span className="text-xs text-muted-foreground">
-                          時間後
+                          {t("segments.hoursAfter")}
                         </span>
                       </div>
                       {action.type === "add_tag" && (
@@ -518,7 +521,7 @@ function SegmentDetailDialog({
                           onChange={(e) =>
                             updateAction(i, { tag: e.target.value })
                           }
-                          placeholder="タグ名"
+                          placeholder={t("segments.tagNamePlaceholder")}
                           className="h-8"
                         />
                       )}
@@ -542,7 +545,7 @@ function SegmentDetailDialog({
                     onClick={addAction}
                   >
                     <Plus className="mr-1 h-3 w-3" />
-                    アクション追加
+                    {t("segments.addAction")}
                   </Button>
                   <Button
                     size="sm"
@@ -550,7 +553,7 @@ function SegmentDetailDialog({
                     onClick={saveAutoActions}
                     disabled={saving}
                   >
-                    {saving ? "保存中..." : "保存"}
+                    {saving ? t("segments.saving") : t("segments.save")}
                   </Button>
                 </div>
               </div>
@@ -566,7 +569,7 @@ function SegmentDetailDialog({
               onClick={() => onDelete(segment.id)}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              セグメントを削除
+              {t("segments.deleteSegment")}
             </Button>
           </DialogFooter>
         )}
@@ -588,6 +591,7 @@ function CreateSegmentDialog({
   onOpenChange: (open: boolean) => void;
   onCreated: (segment: Segment) => void;
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState(SEGMENT_COLORS[0] as string);
@@ -636,23 +640,23 @@ function CreateSegmentDialog({
     switch (fieldDef.type) {
       case "number":
         return [
-          { value: "eq", label: "＝" },
-          { value: "neq", label: "≠" },
-          { value: "gt", label: "＞" },
-          { value: "lt", label: "＜" },
-          { value: "gte", label: "≧" },
-          { value: "lte", label: "≦" },
-          { value: "between", label: "範囲内" },
+          { value: "eq", label: t("segments.opEq") },
+          { value: "neq", label: t("segments.opNeq") },
+          { value: "gt", label: t("segments.opGt") },
+          { value: "lt", label: t("segments.opLt") },
+          { value: "gte", label: t("segments.opGte") },
+          { value: "lte", label: t("segments.opLte") },
+          { value: "between", label: t("segments.opBetween") },
         ] as const;
       case "string":
         return [
-          { value: "eq", label: "一致" },
-          { value: "neq", label: "不一致" },
-          { value: "contains", label: "含む" },
-          { value: "not_contains", label: "含まない" },
+          { value: "eq", label: t("segments.opStrEq") },
+          { value: "neq", label: t("segments.opStrNeq") },
+          { value: "contains", label: t("segments.opContains") },
+          { value: "not_contains", label: t("segments.opNotContains") },
         ] as const;
       case "boolean":
-        return [{ value: "eq", label: "＝" }] as const;
+        return [{ value: "eq", label: t("segments.opEq") }] as const;
       default:
         return [];
     }
@@ -684,7 +688,7 @@ function CreateSegmentDialog({
         }
       }
     } catch {
-      toast.error("プレビューに失敗しました");
+      toast.error(t("segments.previewError"));
     } finally {
       setPreviewing(false);
     }
@@ -710,13 +714,13 @@ function CreateSegmentDialog({
         const data = await res.json();
         onCreated(data.segment);
         resetForm();
-        toast.success("セグメントを作成しました");
+        toast.success(t("segments.createSuccess"));
       } else {
         const data = await res.json();
-        toast.error(data.error || "作成に失敗しました");
+        toast.error(data.error || t("segments.createError"));
       }
     } catch {
-      toast.error("作成に失敗しました");
+      toast.error(t("segments.createError"));
     } finally {
       setCreating(false);
     }
@@ -732,38 +736,38 @@ function CreateSegmentDialog({
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>新規セグメント作成</DialogTitle>
+          <DialogTitle>{t("segments.createTitle")}</DialogTitle>
           <DialogDescription>
-            条件を設定して顧客をグループ化します
+            {t("segments.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Name */}
           <div className="space-y-2">
-            <Label htmlFor="seg-name">セグメント名 *</Label>
+            <Label htmlFor="seg-name">{t("segments.nameLabel")}</Label>
             <Input
               id="seg-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="例: 高エンゲージメント顧客"
+              placeholder={t("segments.namePlaceholder")}
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="seg-desc">説明</Label>
+            <Label htmlFor="seg-desc">{t("segments.descriptionLabel")}</Label>
             <Input
               id="seg-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="セグメントの説明..."
+              placeholder={t("segments.descriptionPlaceholder")}
             />
           </div>
 
           {/* Color */}
           <div className="space-y-2">
-            <Label>カラー</Label>
+            <Label>{t("segments.colorLabel")}</Label>
             <div className="flex flex-wrap gap-2">
               {SEGMENT_COLORS.map((c) => (
                 <button
@@ -783,7 +787,7 @@ function CreateSegmentDialog({
 
           {/* Match type */}
           <div className="space-y-2">
-            <Label>条件の一致方法</Label>
+            <Label>{t("segments.matchTypeLabel")}</Label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -797,7 +801,7 @@ function CreateSegmentDialog({
                     : "border-border hover:bg-muted"
                 }`}
               >
-                全て一致 (AND)
+                {t("segments.matchAllAnd")}
               </button>
               <button
                 type="button"
@@ -811,14 +815,14 @@ function CreateSegmentDialog({
                     : "border-border hover:bg-muted"
                 }`}
               >
-                いずれか一致 (OR)
+                {t("segments.matchAnyOr")}
               </button>
             </div>
           </div>
 
           {/* Rules */}
           <div className="space-y-3">
-            <Label>ルール</Label>
+            <Label>{t("segments.rulesLabel")}</Label>
             {rules.map((rule, i) => {
               const fieldDef = SEGMENT_FIELDS.find(
                 (f) => f.value === rule.field
@@ -896,8 +900,8 @@ function CreateSegmentDialog({
                         }
                         className="h-8 rounded-md border bg-background px-2 text-sm"
                       >
-                        <option value="true">はい</option>
-                        <option value="false">いいえ</option>
+                        <option value="true">{t("segments.boolYes")}</option>
+                        <option value="false">{t("segments.boolNo")}</option>
                       </select>
                     ) : rule.operator === "between" ? (
                       <div className="flex items-center gap-1">
@@ -962,7 +966,7 @@ function CreateSegmentDialog({
                         onChange={(e) =>
                           updateRule(i, { value: e.target.value })
                         }
-                        placeholder="値を入力..."
+                        placeholder={t("segments.valuePlaceholder")}
                         className="h-8 w-32"
                       />
                     )}
@@ -989,7 +993,7 @@ function CreateSegmentDialog({
               onClick={addRule}
             >
               <Plus className="mr-1 h-3 w-3" />
-              ルール追加
+              {t("segments.addRule")}
             </Button>
           </div>
 
@@ -1002,11 +1006,11 @@ function CreateSegmentDialog({
               onClick={handlePreview}
               disabled={previewing}
             >
-              {previewing ? "計算中..." : "プレビュー"}
+              {previewing ? t("segments.previewing") : t("segments.preview")}
             </Button>
             {previewCount !== null && (
               <span className="text-sm">
-                <strong>{previewCount}</strong> 人が該当
+                {t("segments.previewResult", { count: String(previewCount) })}
               </span>
             )}
           </div>
@@ -1020,13 +1024,13 @@ function CreateSegmentDialog({
               resetForm();
             }}
           >
-            キャンセル
+            {t("segments.cancelButton")}
           </Button>
           <Button
             onClick={handleCreate}
             disabled={creating || !name.trim() || rules.length === 0}
           >
-            {creating ? "作成中..." : "作成"}
+            {creating ? t("segments.creating") : t("segments.create")}
           </Button>
         </DialogFooter>
       </DialogContent>

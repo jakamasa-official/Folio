@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "@/lib/i18n/client";
 import type { BookingSlots } from "@/lib/types";
 
 interface BookingSettingsProps {
@@ -11,20 +12,20 @@ interface BookingSettingsProps {
 }
 
 const DAYS = [
-  { value: 1, label: "月" },
-  { value: 2, label: "火" },
-  { value: 3, label: "水" },
-  { value: 4, label: "木" },
-  { value: 5, label: "金" },
-  { value: 6, label: "土" },
-  { value: 0, label: "日" },
+  { value: 1, key: "bookingDayMon" },
+  { value: 2, key: "bookingDayTue" },
+  { value: 3, key: "bookingDayWed" },
+  { value: 4, key: "bookingDayThu" },
+  { value: 5, key: "bookingDayFri" },
+  { value: 6, key: "bookingDaySat" },
+  { value: 0, key: "bookingDaySun" },
 ] as const;
 
 const DURATION_OPTIONS = [
-  { value: 30, label: "30分" },
-  { value: 60, label: "60分" },
-  { value: 90, label: "90分" },
-  { value: 120, label: "120分" },
+  { value: 30, key: "bookingDuration30" },
+  { value: 60, key: "bookingDuration60" },
+  { value: 90, key: "bookingDuration90" },
+  { value: 120, key: "bookingDuration120" },
 ] as const;
 
 function getDefaults(): BookingSlots {
@@ -37,6 +38,7 @@ function getDefaults(): BookingSlots {
 }
 
 export function BookingSettings({ slots, onChange }: BookingSettingsProps) {
+  const { t } = useTranslation();
   const current = slots || getDefaults();
 
   const update = useCallback(
@@ -57,7 +59,7 @@ export function BookingSettings({ slots, onChange }: BookingSettingsProps) {
     <div className="space-y-4">
       {/* Day toggles */}
       <div className="space-y-2">
-        <Label>受付曜日</Label>
+        <Label>{t("bookingDaysLabel")}</Label>
         <div className="flex flex-wrap gap-2">
           {DAYS.map((day) => {
             const active = current.days.includes(day.value);
@@ -72,7 +74,7 @@ export function BookingSettings({ slots, onChange }: BookingSettingsProps) {
                     : "border-border bg-background text-muted-foreground hover:bg-muted"
                 }`}
               >
-                {day.label}
+                {t(day.key)}
               </button>
             );
           })}
@@ -82,7 +84,7 @@ export function BookingSettings({ slots, onChange }: BookingSettingsProps) {
       {/* Time range */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="booking-start">開始時間</Label>
+          <Label htmlFor="booking-start">{t("bookingStartLabel")}</Label>
           <Input
             id="booking-start"
             type="time"
@@ -91,7 +93,7 @@ export function BookingSettings({ slots, onChange }: BookingSettingsProps) {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="booking-end">終了時間</Label>
+          <Label htmlFor="booking-end">{t("bookingEndLabel")}</Label>
           <Input
             id="booking-end"
             type="time"
@@ -103,7 +105,7 @@ export function BookingSettings({ slots, onChange }: BookingSettingsProps) {
 
       {/* Duration select */}
       <div className="space-y-2">
-        <Label htmlFor="booking-duration">1枠の長さ</Label>
+        <Label htmlFor="booking-duration">{t("bookingDurationLabel")}</Label>
         <select
           id="booking-duration"
           value={current.duration}
@@ -112,7 +114,7 @@ export function BookingSettings({ slots, onChange }: BookingSettingsProps) {
         >
           {DURATION_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
-              {opt.label}
+              {t(opt.key)}
             </option>
           ))}
         </select>

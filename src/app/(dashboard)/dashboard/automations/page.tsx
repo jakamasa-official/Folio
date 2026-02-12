@@ -31,31 +31,32 @@ import {
   Sparkles,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api-client";
+import { useTranslation } from "@/lib/i18n/client";
 
 // === Constants ===
 
-const TRIGGER_TYPE_MAP: Record<string, string> = {
-  after_booking: "予約後",
-  after_contact: "お問い合わせ後",
-  after_subscribe: "メール購読後",
-  after_stamp_complete: "スタンプカード完了後",
-  no_visit_30d: "30日間来店なし",
-  no_visit_60d: "60日間来店なし",
-  no_visit_90d: "90日間来店なし",
-  birthday: "誕生日",
+const TRIGGER_TYPE_KEYS: Record<string, string> = {
+  after_booking: "autoTriggerAfterBooking",
+  after_contact: "autoTriggerAfterContact",
+  after_subscribe: "autoTriggerAfterSubscribe",
+  after_stamp_complete: "autoTriggerAfterStampComplete",
+  no_visit_30d: "autoTriggerNoVisit30d",
+  no_visit_60d: "autoTriggerNoVisit60d",
+  no_visit_90d: "autoTriggerNoVisit90d",
+  birthday: "autoTriggerBirthday",
 };
 
-const ACTION_TYPE_MAP: Record<string, string> = {
-  send_email: "メール送信",
-  send_review_request: "レビュー依頼",
-  send_coupon: "クーポン送付",
+const ACTION_TYPE_KEYS: Record<string, string> = {
+  send_email: "autoActionSendEmail",
+  send_review_request: "autoActionSendReviewRequest",
+  send_coupon: "autoActionSendCoupon",
 };
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pending: { label: "予定", icon: <Clock className="h-3.5 w-3.5" />, color: "bg-gray-100 text-gray-700" },
-  sent: { label: "送信済み", icon: <Send className="h-3.5 w-3.5" />, color: "bg-green-100 text-green-700" },
-  failed: { label: "失敗", icon: <XCircle className="h-3.5 w-3.5" />, color: "bg-red-100 text-red-700" },
-  skipped: { label: "スキップ", icon: <CheckCircle2 className="h-3.5 w-3.5" />, color: "bg-yellow-100 text-yellow-700" },
+const STATUS_CONFIG: Record<string, { labelKey: string; color: string; icon: React.ReactNode }> = {
+  pending: { labelKey: "autoStatusScheduled", icon: <Clock className="h-3.5 w-3.5" />, color: "bg-gray-100 text-gray-700" },
+  sent: { labelKey: "autoStatusSent", icon: <Send className="h-3.5 w-3.5" />, color: "bg-green-100 text-green-700" },
+  failed: { labelKey: "autoStatusFailed", icon: <XCircle className="h-3.5 w-3.5" />, color: "bg-red-100 text-red-700" },
+  skipped: { labelKey: "autoStatusSkipped", icon: <CheckCircle2 className="h-3.5 w-3.5" />, color: "bg-yellow-100 text-yellow-700" },
 };
 
 // === Pre-built templates ===
@@ -159,6 +160,7 @@ const defaultForm: FormState = {
 };
 
 export default function AutomationsPage() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [rules, setRules] = useState<AutomationRule[]>([]);
   const [logs, setLogs] = useState<AutomationLog[]>([]);
@@ -285,7 +287,7 @@ export default function AutomationsPage() {
     setFormError("");
 
     if (!form.name.trim()) {
-      setFormError("ルール名を入力してください");
+      setFormError(t("ruleNameRequired"));
       return;
     }
 
@@ -308,13 +310,13 @@ export default function AutomationsPage() {
         });
         const data = await res.json();
         if (!res.ok) {
-          setFormError(data.error || "更新に失敗しました");
+          setFormError(data.error || t("updateFailed"));
           setSaving(false);
           return;
         }
         // Refresh rules
         await loadData();
-        toast.success("ルールを更新しました");
+        toast.success(t("ruleUpdated"));
       } else {
         const res = await apiFetch("/api/automations", {
           method: "POST",
@@ -323,17 +325,17 @@ export default function AutomationsPage() {
         });
         const data = await res.json();
         if (!res.ok) {
-          setFormError(data.error || "作成に失敗しました");
+          setFormError(data.error || t("ruleCreateFailed"));
           setSaving(false);
           return;
         }
         // Refresh rules
         await loadData();
-        toast.success("ルールを作成しました");
+        toast.success(t("ruleCreated"));
       }
       setShowDialog(false);
     } catch {
-      setFormError("ネットワークエラーが発生しました");
+      setFormError(t("networkError"));
     }
 
     setSaving(false);
@@ -344,12 +346,12 @@ export default function AutomationsPage() {
       const res = await apiFetch(`/api/automations?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setRules((prev) => prev.filter((r) => r.id !== id));
-        toast.success("ルールを削除しました");
+        toast.success(t("ruleDeleteSuccess"));
       } else {
-        toast.error("ルールの削除に失敗しました");
+        toast.error(t("ruleDeleteFailed"));
       }
     } catch {
-      toast.error("ルールの削除に失敗しました");
+      toast.error(t("ruleDeleteFailed"));
     }
   }
 
@@ -366,12 +368,12 @@ export default function AutomationsPage() {
             r.id === rule.id ? { ...r, is_active: !r.is_active } : r
           )
         );
-        toast.success(rule.is_active ? "ルールを無効にしました" : "ルールを有効にしました");
+        toast.success(rule.is_active ? t("ruleDeactivated") : t("ruleActivated"));
       } else {
-        toast.error("変更に失敗しました");
+        toast.error(t("changeFailed"));
       }
     } catch {
-      toast.error("変更に失敗しました");
+      toast.error(t("changeFailed"));
     }
   }
 
@@ -392,12 +394,12 @@ export default function AutomationsPage() {
       });
       if (res.ok) {
         await loadData();
-        toast.success(`「${template.name}」を有効にしました`);
+        toast.success(t("enabledTemplate", { name: template.name }));
       } else {
-        toast.error("ルールの作成に失敗しました");
+        toast.error(t("ruleCreateFailed"));
       }
     } catch {
-      toast.error("ネットワークエラーが発生しました");
+      toast.error(t("networkError"));
     }
     setSaving(false);
   }
@@ -410,7 +412,7 @@ export default function AutomationsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl">
-        <h1 className="mb-6 text-2xl font-bold">自動フォローアップ</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("automationsTitle")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -421,17 +423,17 @@ export default function AutomationsPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">自動フォローアップ</h1>
+        <h1 className="text-2xl font-bold">{t("automationsTitle")}</h1>
         <Button onClick={() => openCreateDialog()} size="sm">
           <Plus className="mr-1 h-4 w-4" />
-          新規ルール作成
+          {t("newRule")}
         </Button>
       </div>
 
       <Tabs defaultValue="rules">
         <TabsList>
-          <TabsTrigger value="rules">ルール</TabsTrigger>
-          <TabsTrigger value="logs">送信ログ</TabsTrigger>
+          <TabsTrigger value="rules">{t("rulesTab")}</TabsTrigger>
+          <TabsTrigger value="logs">{t("logsTab")}</TabsTrigger>
         </TabsList>
 
         {/* === Rules Tab === */}
@@ -439,7 +441,7 @@ export default function AutomationsPage() {
           {/* Quick Templates Section */}
           <div>
             <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              おすすめテンプレート
+              {t("recommendedTemplates")}
             </h2>
             <div className="grid gap-3 sm:grid-cols-3">
               {QUICK_TEMPLATES.map((tmpl) => {
@@ -463,7 +465,7 @@ export default function AutomationsPage() {
                       <div className="flex gap-2 mt-3">
                         {alreadyExists ? (
                           <Badge variant="secondary" className="text-xs">
-                            設定済み
+                            {t("configured")}
                           </Badge>
                         ) : (
                           <>
@@ -474,7 +476,7 @@ export default function AutomationsPage() {
                               onClick={() => enableQuickTemplate(tmpl)}
                               disabled={saving}
                             >
-                              ワンクリックで有効化
+                              {t("enableOneClick")}
                             </Button>
                             <Button
                               size="sm"
@@ -482,7 +484,7 @@ export default function AutomationsPage() {
                               className="text-xs h-7"
                               onClick={() => openCreateDialog(tmpl)}
                             >
-                              カスタマイズ
+                              {t("customize")}
                             </Button>
                           </>
                         )}
@@ -499,9 +501,9 @@ export default function AutomationsPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <Zap className="mb-4 h-12 w-12" />
-                <p>自動化ルールがまだありません</p>
+                <p>{t("noAutomationRules")}</p>
                 <p className="text-sm mt-1">
-                  上のテンプレートから始めるか、新規ルールを作成してください
+                  {t("noAutomationRulesHint")}
                 </p>
               </CardContent>
             </Card>
@@ -515,40 +517,40 @@ export default function AutomationsPage() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-medium">{rule.name}</h3>
                           {rule.is_active ? (
-                            <Badge variant="default">有効</Badge>
+                            <Badge variant="default">{t("enabled")}</Badge>
                           ) : (
-                            <Badge variant="secondary">無効</Badge>
+                            <Badge variant="secondary">{t("disabled")}</Badge>
                           )}
                         </div>
                         <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                           <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs">
-                            {TRIGGER_TYPE_MAP[rule.trigger_type] || rule.trigger_type}
+                            {TRIGGER_TYPE_KEYS[rule.trigger_type] ? t(TRIGGER_TYPE_KEYS[rule.trigger_type]) : rule.trigger_type}
                           </span>
                           <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs">
-                            {ACTION_TYPE_MAP[rule.action_type] || rule.action_type}
+                            {ACTION_TYPE_KEYS[rule.action_type] ? t(ACTION_TYPE_KEYS[rule.action_type]) : rule.action_type}
                           </span>
                           {rule.delay_hours > 0 && (
                             <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs">
                               <Clock className="h-3 w-3" />
-                              {rule.delay_hours}時間後
+                              {t("hoursAfter", { hours: String(rule.delay_hours) })}
                             </span>
                           )}
                         </div>
                         {(rule.coupon || rule.template) && (
                           <div className="text-xs text-muted-foreground">
                             {rule.template && (
-                              <span>テンプレート: {rule.template.name}</span>
+                              <span>{t("autoTemplateLabel", { name: rule.template.name })}</span>
                             )}
                             {rule.coupon && (
                               <span>
                                 {rule.template ? " / " : ""}
-                                クーポン: {rule.coupon.title} ({rule.coupon.code})
+                                {t("autoCouponLabel", { title: rule.coupon.title, code: rule.coupon.code })}
                               </span>
                             )}
                           </div>
                         )}
                         <div className="text-xs text-muted-foreground">
-                          送信済み: {rule.sent_count}件 / 予定: {rule.pending_count}件
+                          {t("autoSentCount", { count: String(rule.sent_count) })} / {t("autoScheduledCount", { count: String(rule.pending_count) })}
                         </div>
                       </div>
 
@@ -559,7 +561,7 @@ export default function AutomationsPage() {
                           onClick={() => toggleActive(rule)}
                           className="h-8 px-2 text-xs"
                         >
-                          {rule.is_active ? "無効にする" : "有効にする"}
+                          {rule.is_active ? t("disabled") : t("enabled")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -598,8 +600,8 @@ export default function AutomationsPage() {
                 onClick={() => setLogFilter(status)}
               >
                 {status === "all"
-                  ? "すべて"
-                  : STATUS_CONFIG[status]?.label || status}
+                  ? t("all")
+                  : STATUS_CONFIG[status]?.labelKey ? t(STATUS_CONFIG[status].labelKey) : status}
               </Button>
             ))}
           </div>
@@ -607,7 +609,7 @@ export default function AutomationsPage() {
           {filteredLogs.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <p>ログがありません</p>
+                <p>{t("noLogs")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -621,14 +623,14 @@ export default function AutomationsPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-medium truncate">
-                              {log.customer?.name || "不明"}
+                              {log.customer?.name || t("unknown")}
                             </span>
                             <span className="text-xs text-muted-foreground truncate">
                               {log.customer?.email || ""}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                            <span>{log.rule?.name || "ルール削除済み"}</span>
+                            <span>{log.rule?.name || t("ruleDeleted")}</span>
                             <span>
                               {new Date(log.scheduled_at).toLocaleString("ja-JP", {
                                 month: "short",
@@ -649,7 +651,7 @@ export default function AutomationsPage() {
                           className={`shrink-0 text-xs gap-1 ${statusCfg.color}`}
                         >
                           {statusCfg.icon}
-                          {statusCfg.label}
+                          {t(statusCfg.labelKey)}
                         </Badge>
                       </div>
                     </CardContent>
@@ -666,40 +668,40 @@ export default function AutomationsPage() {
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {isEditing ? "ルール編集" : "新規ルール作成"}
+              {isEditing ? t("editRule") : t("newRuleDialogTitle")}
             </DialogTitle>
             <DialogDescription>
               {isEditing
-                ? "自動化ルールを編集します"
-                : "新しい自動フォローアップルールを作成します"}
+                ? t("editRuleDesc")
+                : t("newRuleDesc")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             {/* Name */}
             <div className="space-y-2">
-              <Label htmlFor="rule-name">ルール名 *</Label>
+              <Label htmlFor="rule-name">{t("ruleName")}</Label>
               <Input
                 id="rule-name"
                 value={form.name}
                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="予約後のお礼メール"
+                placeholder={t("ruleNamePlaceholder")}
                 maxLength={200}
               />
             </div>
 
             {/* Trigger Type */}
             <div className="space-y-2">
-              <Label htmlFor="trigger-type">トリガー *</Label>
+              <Label htmlFor="trigger-type">{t("triggerLabel")}</Label>
               <select
                 id="trigger-type"
                 value={form.trigger_type}
                 onChange={(e) => setForm((prev) => ({ ...prev, trigger_type: e.target.value }))}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                {Object.entries(TRIGGER_TYPE_MAP).map(([key, label]) => (
+                {Object.entries(TRIGGER_TYPE_KEYS).map(([key, labelKey]) => (
                   <option key={key} value={key}>
-                    {label}
+                    {t(labelKey)}
                   </option>
                 ))}
               </select>
@@ -707,16 +709,16 @@ export default function AutomationsPage() {
 
             {/* Action Type */}
             <div className="space-y-2">
-              <Label htmlFor="action-type">アクション *</Label>
+              <Label htmlFor="action-type">{t("actionLabel")}</Label>
               <select
                 id="action-type"
                 value={form.action_type}
                 onChange={(e) => setForm((prev) => ({ ...prev, action_type: e.target.value }))}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                {Object.entries(ACTION_TYPE_MAP).map(([key, label]) => (
+                {Object.entries(ACTION_TYPE_KEYS).map(([key, labelKey]) => (
                   <option key={key} value={key}>
-                    {label}
+                    {t(labelKey)}
                   </option>
                 ))}
               </select>
@@ -724,9 +726,9 @@ export default function AutomationsPage() {
 
             {/* Delay Hours */}
             <div className="space-y-2">
-              <Label htmlFor="delay-hours">遅延時間</Label>
+              <Label htmlFor="delay-hours">{t("delayLabel")}</Label>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">イベント後</span>
+                <span className="text-sm text-muted-foreground">{t("afterEvent")}</span>
                 <Input
                   id="delay-hours"
                   type="number"
@@ -740,7 +742,7 @@ export default function AutomationsPage() {
                   }
                   className="w-24"
                 />
-                <span className="text-sm text-muted-foreground">時間後に実行</span>
+                <span className="text-sm text-muted-foreground">{t("executeAfterHours")}</span>
               </div>
             </div>
 
@@ -750,7 +752,7 @@ export default function AutomationsPage() {
                 {/* Template dropdown */}
                 {templates.length > 0 && (
                   <div className="space-y-2">
-                    <Label htmlFor="template-id">メッセージテンプレート（任意）</Label>
+                    <Label htmlFor="template-id">{t("messageTemplate")}</Label>
                     <select
                       id="template-id"
                       value={form.template_id}
@@ -759,10 +761,10 @@ export default function AutomationsPage() {
                       }
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
-                      <option value="">カスタム（下記入力）</option>
-                      {templates.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.name}
+                      <option value="">{t("customInput")}</option>
+                      {templates.map((tmpl) => (
+                        <option key={tmpl.id} value={tmpl.id}>
+                          {tmpl.name}
                         </option>
                       ))}
                     </select>
@@ -771,33 +773,33 @@ export default function AutomationsPage() {
 
                 {/* Subject */}
                 <div className="space-y-2">
-                  <Label htmlFor="subject">件名</Label>
+                  <Label htmlFor="subject">{t("subjectAutoLabel")}</Label>
                   <Input
                     id="subject"
                     value={form.subject}
                     onChange={(e) =>
                       setForm((prev) => ({ ...prev, subject: e.target.value }))
                     }
-                    placeholder="ご予約ありがとうございます"
+                    placeholder={t("subjectAutoPlaceholder")}
                     maxLength={500}
                   />
                 </div>
 
                 {/* Body */}
                 <div className="space-y-2">
-                  <Label htmlFor="body">本文</Label>
+                  <Label htmlFor="body">{t("bodyAutoLabel")}</Label>
                   <Textarea
                     id="body"
                     value={form.body}
                     onChange={(e) =>
                       setForm((prev) => ({ ...prev, body: e.target.value }))
                     }
-                    placeholder={"{{customer_name}}様\n\nメッセージ本文..."}
+                    placeholder={t("bodyAutoPlaceholder")}
                     rows={6}
                     maxLength={5000}
                   />
                   <p className="text-xs text-muted-foreground">
-                    {"{{customer_name}}"} {"{{business_name}}"} などのプレースホルダーが使えます
+                    {t("placeholderHint")}
                   </p>
                 </div>
               </>
@@ -806,7 +808,7 @@ export default function AutomationsPage() {
             {/* Conditional: Coupon fields */}
             {form.action_type === "send_coupon" && coupons.length > 0 && (
               <div className="space-y-2">
-                <Label htmlFor="coupon-id">クーポン</Label>
+                <Label htmlFor="coupon-id">{t("couponSelectLabel")}</Label>
                 <select
                   id="coupon-id"
                   value={form.coupon_id}
@@ -815,7 +817,7 @@ export default function AutomationsPage() {
                   }
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  <option value="">選択してください</option>
+                  <option value="">{t("selectPlease")}</option>
                   {coupons.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.title} ({c.code})
@@ -832,14 +834,14 @@ export default function AutomationsPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>
-              キャンセル
+              {t("cancel")}
             </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving
-                ? "保存中..."
+                ? t("saving")
                 : isEditing
-                  ? "更新する"
-                  : "作成する"}
+                  ? t("updateAction")
+                  : t("createAction")}
             </Button>
           </DialogFooter>
         </DialogContent>

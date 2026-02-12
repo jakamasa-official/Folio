@@ -40,12 +40,14 @@ import { SiLine } from "react-icons/si";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { ProGate } from "@/components/dashboard/pro-gate";
 import { LineSetupGuide } from "@/components/dashboard/line-setup-guide";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface LineContactWithCustomer extends LineContact {
   customer: Customer | null;
 }
 
 export default function LinePage() {
+  const { t } = useTranslation();
   const { isPro } = useProStatus();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -139,7 +141,7 @@ export default function LinePage() {
       }
     } catch {
       console.error("Failed to load LINE contacts");
-      toast.error("LINE友だちの読み込みに失敗しました");
+      toast.error(t("lineContactLoadFailed"));
     }
     setLoadingContacts(false);
   }
@@ -161,13 +163,13 @@ export default function LinePage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setSaveMessage(data.error || "保存に失敗しました");
+        setSaveMessage(data.error || t("saveFailed"));
       } else {
-        setSaveMessage("設定を保存しました");
-        toast.success("LINE設定を保存しました");
+        setSaveMessage(t("saveSuccess"));
+        toast.success(t("lineSaveSuccess"));
       }
     } catch {
-      setSaveMessage("保存に失敗しました");
+      setSaveMessage(t("saveFailed"));
     }
     setSaving(false);
   }
@@ -200,11 +202,11 @@ export default function LinePage() {
         setSendMessage("");
       } else {
         const data = await res.json();
-        setSendError(data.error || "送信に失敗しました");
+        setSendError(data.error || t("lineSendFailed"));
       }
     } catch {
-      setSendError("送信に失敗しました");
-      toast.error("メッセージの送信に失敗しました");
+      setSendError(t("lineSendFailed"));
+      toast.error(t("lineMessageSendFailed"));
     }
     setSending(false);
   }
@@ -225,7 +227,7 @@ export default function LinePage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold">LINE連携</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("lineIntegration")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -239,7 +241,7 @@ export default function LinePage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <SiLine className="h-7 w-7 text-[#06C755]" />
-          <h1 className="text-2xl font-bold">LINE連携</h1>
+          <h1 className="text-2xl font-bold">{t("lineIntegration")}</h1>
           {!isPro && (
             <Badge variant="secondary" className="text-xs">
               Pro
@@ -248,10 +250,10 @@ export default function LinePage() {
           {isConnected ? (
             <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
               <Check className="mr-1 h-3 w-3" />
-              接続済み
+              {t("connected")}
             </Badge>
           ) : (
-            <Badge variant="secondary">未接続</Badge>
+            <Badge variant="secondary">{t("notConnected")}</Badge>
           )}
         </div>
         {!showGuide && (
@@ -262,12 +264,12 @@ export default function LinePage() {
             className="gap-1.5"
           >
             <BookOpen className="h-4 w-4" />
-            セットアップガイド
+            {t("setupGuide")}
           </Button>
         )}
       </div>
 
-      <ProGate isPro={isPro} feature="LINE連携">
+      <ProGate isPro={isPro} feature={t("lineFeature")}>
         {/* Setup Guide -- shown if not configured or manually opened */}
         {showGuide && (
           <LineSetupGuide
@@ -287,15 +289,15 @@ export default function LinePage() {
         {!showGuide && (
         <Card>
         <CardHeader>
-          <CardTitle>設定</CardTitle>
+          <CardTitle>{t("settings")}</CardTitle>
           <CardDescription>
-            LINE Messaging APIの設定を行います
+            {t("lineSettingsDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
               {/* Webhook URL -- always visible for easy copying */}
               <div className="space-y-2">
-                <Label>Webhook URL</Label>
+                <Label>{t("webhookUrl")}</Label>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 rounded-md border bg-muted px-3 py-2 text-xs break-all">
                     {webhookUrl}
@@ -306,12 +308,11 @@ export default function LinePage() {
                     ) : (
                       <Copy className="h-3.5 w-3.5" />
                     )}
-                    {webhookCopied ? "コピー済み" : "コピー"}
+                    {webhookCopied ? t("webhookCopied") : t("webhookCopy")}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  LINE DevelopersのMessaging
-                  API設定でこのURLを設定してください
+                  {t("webhookHint")}
                 </p>
               </div>
 
@@ -319,7 +320,7 @@ export default function LinePage() {
 
           {/* Channel ID */}
           <div className="space-y-2">
-            <Label htmlFor="channelId">チャネルID</Label>
+            <Label htmlFor="channelId">{t("channelId")}</Label>
             <Input
               id="channelId"
               type="text"
@@ -331,32 +332,32 @@ export default function LinePage() {
 
           {/* Channel Secret */}
           <div className="space-y-2">
-            <Label htmlFor="channelSecret">チャネルシークレット</Label>
+            <Label htmlFor="channelSecret">{t("channelSecret")}</Label>
             <Input
               id="channelSecret"
               type="password"
               value={channelSecret}
               onChange={(e) => setChannelSecret(e.target.value)}
-              placeholder="チャネルシークレットを入力"
+              placeholder={t("channelSecretPlaceholder")}
             />
           </div>
 
           {/* Channel Access Token */}
           <div className="space-y-2">
-            <Label htmlFor="channelAccessToken">チャネルアクセストークン</Label>
+            <Label htmlFor="channelAccessToken">{t("channelAccessToken")}</Label>
             <Input
               id="channelAccessToken"
               type="password"
               value={channelAccessToken}
               onChange={(e) => setChannelAccessToken(e.target.value)}
-              placeholder="チャネルアクセストークンを入力"
+              placeholder={t("channelAccessTokenPlaceholder")}
             />
           </div>
 
           {/* Friend URL display */}
           {profile?.line_friend_url && (
             <div className="space-y-2">
-              <Label>友だち追加リンク</Label>
+              <Label>{t("friendAddLink")}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   value={profile.line_friend_url}
@@ -396,7 +397,7 @@ export default function LinePage() {
             </div>
           )}
           <Button onClick={saveSettings} disabled={saving}>
-            {saving ? "保存中..." : "設定を保存"}
+            {saving ? t("savingSettings") : t("saveSettingsButton")}
           </Button>
         </CardContent>
       </Card>
@@ -415,7 +416,7 @@ export default function LinePage() {
                 <div>
                   <p className="text-2xl font-bold">{totalFriends}</p>
                   <p className="text-xs text-muted-foreground">
-                    トータル友だち
+                    {t("totalFriends")}
                   </p>
                 </div>
               </CardContent>
@@ -426,7 +427,7 @@ export default function LinePage() {
                 <div>
                   <p className="text-2xl font-bold">{activeFriends}</p>
                   <p className="text-xs text-muted-foreground">
-                    アクティブ友だち
+                    {t("activeFriends")}
                   </p>
                 </div>
               </CardContent>
@@ -435,9 +436,9 @@ export default function LinePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>友だちリスト</CardTitle>
+              <CardTitle>{t("friendList")}</CardTitle>
               <CardDescription>
-                LINE公式アカウントの友だち一覧
+                {t("friendListDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -449,9 +450,9 @@ export default function LinePage() {
                 <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                   <MessageSquare className="mb-4 h-12 w-12" />
                   <p className="text-center">
-                    LINE友だちがまだいません。
+                    {t("noLineFriends")}
                     <br />
-                    友だち追加リンクをプロフィールに設定しましょう。
+                    {t("noLineFriendsHint")}
                   </p>
                 </div>
               ) : (
@@ -478,27 +479,27 @@ export default function LinePage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="truncate text-sm font-medium">
-                            {contact.display_name || "不明"}
+                            {contact.display_name || t("unknown")}
                           </span>
                           {contact.is_friend ? (
                             <Badge
                               variant="outline"
                               className="border-green-300 text-green-700"
                             >
-                              友だち
+                              {t("friend")}
                             </Badge>
                           ) : (
-                            <Badge variant="secondary">ブロック</Badge>
+                            <Badge variant="secondary">{t("blocked")}</Badge>
                           )}
                           {!contact.customer_id && (
                             <Badge variant="outline" className="text-xs">
-                              顧客未リンク
+                              {t("customerNotLinked")}
                             </Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           {contact.customer?.name && (
-                            <span>顧客: {contact.customer.name}</span>
+                            <span>{t("customerLabel", { name: contact.customer.name })}</span>
                           )}
                           <span>
                             {new Date(contact.created_at).toLocaleDateString(
@@ -516,7 +517,7 @@ export default function LinePage() {
                           onClick={() => openSendDialog(contact)}
                         >
                           <Send className="mr-1 h-3.5 w-3.5" />
-                          送信
+                          {t("send")}
                         </Button>
                       )}
                     </div>
@@ -535,7 +536,7 @@ export default function LinePage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              メッセージ送信
+              {t("lineSendTitle")}
               {sendTarget?.display_name && ` - ${sendTarget.display_name}`}
             </DialogTitle>
           </DialogHeader>
@@ -547,16 +548,16 @@ export default function LinePage() {
             )}
             {sendSuccess && (
               <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">
-                メッセージを送信しました
+                {t("lineSendSuccess")}
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="messageText">メッセージ</Label>
+              <Label htmlFor="messageText">{t("messageLabel")}</Label>
               <Textarea
                 id="messageText"
                 value={sendMessage}
                 onChange={(e) => setSendMessage(e.target.value)}
-                placeholder="メッセージを入力..."
+                placeholder={t("messagePlaceholder")}
                 rows={4}
                 maxLength={5000}
               />
@@ -567,13 +568,13 @@ export default function LinePage() {
               variant="outline"
               onClick={() => setSendDialogOpen(false)}
             >
-              キャンセル
+              {t("cancel")}
             </Button>
             <Button
               onClick={handleSendMessage}
               disabled={sending || !sendMessage.trim()}
             >
-              {sending ? "送信中..." : "送信"}
+              {sending ? t("sending") : t("send")}
             </Button>
           </DialogFooter>
         </DialogContent>

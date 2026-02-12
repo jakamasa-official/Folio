@@ -43,6 +43,7 @@ import { toast } from "sonner";
 import type { Profile, ProfileLink, ProfileSlide, TemplateId } from "@/lib/types";
 import { SOCIAL_PLATFORMS, FREE_TEMPLATES, PREMIUM_TEMPLATES, TEMPLATES } from "@/lib/types";
 import { APP_URL, ALLOWED_IMAGE_TYPES, MAX_AVATAR_SIZE, MAX_BIO_LENGTH, MAX_LINKS } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n/client";
 import { RichTextEditor } from "./rich-text-editor";
 import { SlidesEditor } from "./slides-editor";
 import { Video, Image, Type } from "lucide-react";
@@ -113,13 +114,13 @@ const TEMPLATE_PREVIEWS: Record<string, { bg: string; btn: string; text: string 
 };
 
 const FONT_OPTIONS = [
-  { value: "", label: "デフォルト", family: "inherit" },
+  { value: "", labelKey: "fontDefault", family: "inherit" },
   { value: "Noto Sans JP", label: "Noto Sans JP", family: "'Noto Sans JP', sans-serif" },
   { value: "Noto Serif JP", label: "Noto Serif JP", family: "'Noto Serif JP', serif" },
   { value: "M PLUS Rounded 1c", label: "M PLUS Rounded 1c", family: "'M PLUS Rounded 1c', sans-serif" },
-  { value: "Sawarabi Gothic", label: "サワラビゴシック", family: "'Sawarabi Gothic', sans-serif" },
-  { value: "Kosugi Maru", label: "小杉丸ゴシック", family: "'Kosugi Maru', sans-serif" },
-  { value: "Zen Maru Gothic", label: "Zen丸ゴシック", family: "'Zen Maru Gothic', sans-serif" },
+  { value: "Sawarabi Gothic", label: "Sawarabi Gothic", family: "'Sawarabi Gothic', sans-serif" },
+  { value: "Kosugi Maru", label: "Kosugi Maru", family: "'Kosugi Maru', sans-serif" },
+  { value: "Zen Maru Gothic", label: "Zen Maru Gothic", family: "'Zen Maru Gothic', sans-serif" },
 ];
 
 const MAX_VIDEO_SIZE = 20 * 1024 * 1024; // 20MB
@@ -234,14 +235,16 @@ function TemplateCategorySection({
 function TemplateCategories({
   profile,
   onSelect,
+  t,
 }: {
   profile: Profile;
   onSelect: (id: TemplateId) => void;
+  t: (key: string, replacements?: Record<string, string>) => string;
 }) {
   const premiumCategories = PREMIUM_TEMPLATES.reduce<
     Record<string, typeof PREMIUM_TEMPLATES>
   >((acc, t) => {
-    const cat = (t as { category?: string }).category || "その他";
+    const cat = (t as { category?: string }).category || "Other";
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(t);
     return acc;
@@ -251,7 +254,7 @@ function TemplateCategories({
     <div>
       {/* Free templates - open by default */}
       <TemplateCategorySection
-        title="無料テンプレート"
+        title={t("freeTemplates")}
         templates={FREE_TEMPLATES}
         profile={profile}
         onSelect={onSelect}
@@ -261,8 +264,8 @@ function TemplateCategories({
       {/* Premium header */}
       <div className="mb-1 mt-3 flex items-center gap-1.5 px-2 text-xs text-muted-foreground">
         <Crown className="h-3 w-3 text-amber-500" />
-        <span className="font-semibold">プレミアム</span>
-        {!profile.is_pro && <span className="text-amber-600">（Proプラン）</span>}
+        <span className="font-semibold">{t("premiumLabel")}</span>
+        {!profile.is_pro && <span className="text-amber-600">{t("premiumProPlan")}</span>}
       </div>
 
       {/* Premium categories - collapsed by default (unless selected template is in them) */}
@@ -283,10 +286,12 @@ function SortableLinkItem({
   link,
   onUpdate,
   onRemove,
+  t,
 }: {
   link: ProfileLink;
   onUpdate: (id: string, field: keyof ProfileLink, value: string) => void;
   onRemove: (id: string) => void;
+  t: (key: string, replacements?: Record<string, string>) => string;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: link.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -299,7 +304,7 @@ function SortableLinkItem({
       <Input
         value={link.label}
         onChange={(e) => onUpdate(link.id, "label", e.target.value)}
-        placeholder="ラベル"
+        placeholder={t("linkLabelPlaceholder")}
         className="w-1/3"
       />
       <Input
@@ -321,6 +326,7 @@ function SortableLinkItem({
 }
 
 export function ProfileEditor({ profile: initialProfile }: { profile: Profile }) {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -375,11 +381,11 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
     const file = e.target.files?.[0];
     if (!file) return;
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      setError("JPEG、PNG、WebP、GIF画像のみアップロードできます");
+      setError(t("imageTypeError"));
       return;
     }
     if (file.size > MAX_AVATAR_SIZE) {
-      setError("ファイルサイズは5MB以下にしてください");
+      setError(t("imageSizeError"));
       return;
     }
     setAvatarFile(file);
@@ -390,7 +396,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
   function handleTemplateSelect(templateId: string) {
     const isPremium = PREMIUM_TEMPLATES.some((t) => t.id === templateId);
     if (isPremium && !profile.is_pro) {
-      setError("プレミアムテンプレートはProプランで利用できます");
+      setError(t("premiumTemplateError"));
       return;
     }
     updateField("template", templateId as TemplateId);
@@ -412,7 +418,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
         const { error: uploadError } = await supabase.storage
           .from("avatars")
           .upload(path, avatarFile, { upsert: true });
-        if (uploadError) throw new Error("画像のアップロードに失敗しました");
+        if (uploadError) throw new Error(t("imageUploadError"));
         const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
         avatarUrl = publicUrl;
       }
@@ -424,7 +430,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
           method: "POST",
           body: JSON.stringify({ password: pagePasswordInput }),
         });
-        if (!hashRes.ok) throw new Error("パスワードの設定に失敗しました");
+        if (!hashRes.ok) throw new Error(t("passwordSetError"));
         const hashData = await hashRes.json();
         pagePassword = hashData.hash;
       }
@@ -459,11 +465,11 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
 
       if (updateError) throw new Error(updateError.message);
 
-      toast.success("保存しました");
+      toast.success(t("saveSuccess"));
       setAvatarFile(null);
       setPagePasswordInput("");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "保存に失敗しました");
+      toast.error(err instanceof Error ? err.message : t("saveError"));
     } finally {
       setSaving(false);
     }
@@ -475,7 +481,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Badge variant={profile.is_published ? "default" : "secondary"}>
-            {profile.is_published ? "公開中" : "非公開"}
+            {profile.is_published ? t("statusPublished") : t("statusDraft")}
           </Badge>
           {profile.is_pro && (
             <Badge variant="outline" className="gap-1 border-amber-300 text-amber-700">
@@ -500,7 +506,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
           onClick={() => updateField("is_published", !profile.is_published)}
         >
           <Eye className="mr-1 h-4 w-4" />
-          {profile.is_published ? "非公開にする" : "公開する"}
+          {profile.is_published ? t("unpublishButton") : t("publishButton")}
         </Button>
       </div>
 
@@ -511,12 +517,13 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* Template */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">テンプレート</CardTitle>
+          <CardTitle className="text-lg">{t("templateTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <TemplateCategories
             profile={profile}
             onSelect={handleTemplateSelect}
+            t={t}
           />
         </CardContent>
       </Card>
@@ -524,13 +531,13 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* Color Customization */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">カスタムカラー</CardTitle>
-          <CardDescription>テンプレートの色をカスタマイズできます</CardDescription>
+          <CardTitle className="text-lg">{t("customColorTitle")}</CardTitle>
+          <CardDescription>{t("customColorDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs">アクセント</Label>
+              <Label className="text-xs">{t("accentColor")}</Label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -547,13 +554,13 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                       updateField("settings", { ...profile.settings, accent_color: undefined })
                     }
                   >
-                    リセット
+                    {t("colorReset")}
                   </button>
                 )}
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">背景色</Label>
+              <Label className="text-xs">{t("backgroundColor")}</Label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -570,13 +577,13 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                       updateField("settings", { ...profile.settings, background_color: undefined })
                     }
                   >
-                    リセット
+                    {t("colorReset")}
                   </button>
                 )}
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">文字色</Label>
+              <Label className="text-xs">{t("textColor")}</Label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -593,7 +600,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                       updateField("settings", { ...profile.settings, text_color: undefined })
                     }
                   >
-                    リセット
+                    {t("colorReset")}
                   </button>
                 )}
               </div>
@@ -607,7 +614,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Type className="h-4 w-4" />
-            フォント
+            {t("fontTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -625,9 +632,9 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                 }`}
                 style={{ fontFamily: font.family }}
               >
-                <div className="text-sm font-medium">{font.label}</div>
+                <div className="text-sm font-medium">{"labelKey" in font ? t(font.labelKey as string) : font.label}</div>
                 <div className="text-xs text-muted-foreground" style={{ fontFamily: font.family }}>
-                  あいうえお ABCDabcd 12345
+                  {t("fontPreviewText")}
                 </div>
               </button>
             ))}
@@ -640,10 +647,10 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Video className="h-4 w-4" />
-            動画背景
+            {t("videoBgTitle")}
             {!profile.is_pro && <Badge variant="outline" className="text-xs text-amber-600">Pro</Badge>}
           </CardTitle>
-          <CardDescription>プロフィールの背景に動画を設定できます</CardDescription>
+          <CardDescription>{t("videoBgDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {profile.settings?.video_url ? (
@@ -664,14 +671,14 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                 }
               >
                 <Trash2 className="mr-1 h-3 w-3" />
-                削除
+                {t("videoDelete")}
               </Button>
             </div>
           ) : (
             <label className={`cursor-pointer ${!profile.is_pro ? "opacity-50 pointer-events-none" : ""}`}>
               <div className="flex items-center gap-2 rounded-md border border-dashed px-4 py-6 text-sm text-muted-foreground hover:bg-muted justify-center">
                 <Upload className="h-4 w-4" />
-                動画をアップロード（MP4/WebM, 最大20MB）
+                {t("videoUploadLabel")}
               </div>
               <input
                 type="file"
@@ -681,7 +688,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                   const file = e.target.files?.[0];
                   if (!file) return;
                   if (file.size > MAX_VIDEO_SIZE) {
-                    setError("動画は20MB以下にしてください");
+                    setError(t("videoSizeError"));
                     return;
                   }
                   const supabase = createClient();
@@ -691,7 +698,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                     .from("videos")
                     .upload(path, file, { upsert: true });
                   if (uploadErr) {
-                    setError("動画のアップロードに失敗しました");
+                    setError(t("videoUploadError"));
                     return;
                   }
                   const { data: { publicUrl } } = supabase.storage.from("videos").getPublicUrl(path);
@@ -706,11 +713,11 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* Basic info */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">基本情報</CardTitle>
+          <CardTitle className="text-lg">{t("basicInfoTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>プロフィール写真</Label>
+            <Label>{t("profilePhotoLabel")}</Label>
             <div className="flex items-center gap-4">
               {avatarPreview ? (
                 <img src={avatarPreview} alt="Avatar" className="h-16 w-16 rounded-full object-cover" />
@@ -722,7 +729,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
               <label className="cursor-pointer">
                 <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted">
                   <Upload className="h-4 w-4" />
-                  画像を選択
+                  {t("selectImage")}
                 </div>
                 <input
                   type="file"
@@ -734,43 +741,43 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="displayName">表示名 *</Label>
+            <Label htmlFor="displayName">{t("displayNameLabel")}</Label>
             <Input
               id="displayName"
               value={profile.display_name}
               onChange={(e) => updateField("display_name", e.target.value)}
-              placeholder="山田 太郎"
+              placeholder={t("displayNamePlaceholder")}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="title">肩書き・タイトル</Label>
+            <Label htmlFor="title">{t("titleLabel")}</Label>
             <Input
               id="title"
               value={profile.title || ""}
               onChange={(e) => updateField("title", e.target.value)}
-              placeholder="フリーランスデザイナー / カフェオーナー"
+              placeholder={t("titlePlaceholder")}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="bio">
-              自己紹介 <span className="text-muted-foreground">({(profile.bio || "").length}/{MAX_BIO_LENGTH})</span>
+              {t("bioLabel")} <span className="text-muted-foreground">({(profile.bio || "").length}/{MAX_BIO_LENGTH})</span>
             </Label>
             <Textarea
               id="bio"
               value={profile.bio || ""}
               onChange={(e) => { if (e.target.value.length <= MAX_BIO_LENGTH) updateField("bio", e.target.value); }}
-              placeholder="あなたについて教えてください..."
+              placeholder={t("bioPlaceholder")}
               rows={3}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="location">場所</Label>
+            <Label htmlFor="location">{t("locationLabel")}</Label>
             <Input
               id="location"
               value={profile.location || ""}
               onChange={(e) => updateField("location", e.target.value)}
-              placeholder="東京都渋谷区"
+              placeholder={t("locationPlaceholder")}
             />
           </div>
         </CardContent>
@@ -779,8 +786,8 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* Free Text (Rich Text) */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">フリーテキスト</CardTitle>
-          <CardDescription>自由にフォーマットしたテキストを追加できます</CardDescription>
+          <CardTitle className="text-lg">{t("richTextTitle")}</CardTitle>
+          <CardDescription>{t("richTextDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <RichTextEditor
@@ -795,9 +802,9 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Image className="h-4 w-4" />
-            スライド
+            {t("slidesTitle")}
           </CardTitle>
-          <CardDescription>画像カルーセルまたはコンテンツセクションを追加</CardDescription>
+          <CardDescription>{t("slidesDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <SlidesEditor
@@ -811,12 +818,12 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* OG Share Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">SNSシェア設定</CardTitle>
-          <CardDescription>SNSでシェアした時に表示される画像やタイトルをカスタマイズ</CardDescription>
+          <CardTitle className="text-lg">{t("ogTitle")}</CardTitle>
+          <CardDescription>{t("ogDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>シェア画像（推奨: 1200×630px）</Label>
+            <Label>{t("ogShareImageLabel")}</Label>
             {profile.settings?.og_image_url ? (
               <div className="space-y-2">
                 <img
@@ -832,14 +839,14 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                   }
                 >
                   <Trash2 className="mr-1 h-3 w-3" />
-                  削除
+                  {t("ogDeleteImage")}
                 </Button>
               </div>
             ) : (
               <label className="cursor-pointer">
                 <div className="flex items-center gap-2 rounded-md border border-dashed px-4 py-6 text-sm text-muted-foreground hover:bg-muted justify-center">
                   <Upload className="h-4 w-4" />
-                  画像を選択
+                  {t("ogSelectImage")}
                 </div>
                 <input
                   type="file"
@@ -849,7 +856,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                     const file = e.target.files?.[0];
                     if (!file) return;
                     if (file.size > MAX_AVATAR_SIZE) {
-                      setError("画像は5MB以下にしてください");
+                      setError(t("ogImageSizeError"));
                       return;
                     }
                     const supabase = createClient();
@@ -859,7 +866,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                       .from("og-images")
                       .upload(path, file, { upsert: true });
                     if (uploadErr) {
-                      setError("画像のアップロードに失敗しました");
+                      setError(t("ogImageUploadError"));
                       return;
                     }
                     const { data: { publicUrl } } = supabase.storage.from("og-images").getPublicUrl(path);
@@ -870,7 +877,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="ogTitle">カスタムタイトル</Label>
+            <Label htmlFor="ogTitle">{t("ogCustomTitle")}</Label>
             <Input
               id="ogTitle"
               value={profile.settings?.og_title || ""}
@@ -881,20 +888,20 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="ogDescription">カスタム説明文</Label>
+            <Label htmlFor="ogDescription">{t("ogCustomDescription")}</Label>
             <Textarea
               id="ogDescription"
               value={profile.settings?.og_description || ""}
               onChange={(e) =>
                 updateField("settings", { ...profile.settings, og_description: e.target.value || undefined })
               }
-              placeholder={profile.bio || "プロフィールの説明"}
+              placeholder={profile.bio || t("ogDefaultDescription")}
               rows={2}
             />
           </div>
           {/* Preview */}
           <div className="rounded-lg border bg-muted/30 p-3">
-            <div className="text-xs text-muted-foreground mb-2">プレビュー</div>
+            <div className="text-xs text-muted-foreground mb-2">{t("ogPreview")}</div>
             <div className="flex gap-3 rounded-md border bg-background p-2">
               <div className="h-16 w-24 shrink-0 rounded bg-muted flex items-center justify-center overflow-hidden">
                 {(profile.settings?.og_image_url || profile.avatar_url) ? (
@@ -912,7 +919,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                   {profile.settings?.og_title || profile.display_name}
                 </div>
                 <div className="text-xs text-muted-foreground line-clamp-2">
-                  {profile.settings?.og_description || profile.bio || `${profile.display_name}のプロフィール`}
+                  {profile.settings?.og_description || profile.bio || t("ogFallbackDescription", { name: profile.display_name })}
                 </div>
               </div>
             </div>
@@ -923,11 +930,11 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* Contact */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">連絡先</CardTitle>
+          <CardTitle className="text-lg">{t("contactTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="contactEmail">メールアドレス（公開）</Label>
+            <Label htmlFor="contactEmail">{t("contactEmailLabel")}</Label>
             <Input
               id="contactEmail"
               type="email"
@@ -937,7 +944,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="contactPhone">電話番号（公開）</Label>
+            <Label htmlFor="contactPhone">{t("contactPhoneLabel")}</Label>
             <Input
               id="contactPhone"
               type="tel"
@@ -947,7 +954,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lineFriend">LINE友だち追加URL</Label>
+            <Label htmlFor="lineFriend">{t("lineFriendLabel")}</Label>
             <Input
               id="lineFriend"
               value={profile.line_friend_url || ""}
@@ -955,11 +962,11 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
               placeholder="https://lin.ee/xxxxx"
             />
             <p className="text-xs text-muted-foreground">
-              プロフィールに「LINEで友だち追加」ボタンが表示されます
+              {t("lineFriendHint")}
             </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="googleReview">Google口コミURL</Label>
+            <Label htmlFor="googleReview">{t("googleReviewLabel")}</Label>
             <Input
               id="googleReview"
               value={profile.google_review_url || ""}
@@ -967,7 +974,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
               placeholder="https://search.google.com/local/writereview?placeid=..."
             />
             <p className="text-xs text-muted-foreground">
-              プロフィールに「Google口コミを書く」ボタンが表示されます
+              {t("googleReviewHint")}
             </p>
           </div>
         </CardContent>
@@ -976,19 +983,19 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* Links (with drag-to-reorder) */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">リンク</CardTitle>
+          <CardTitle className="text-lg">{t("linksTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={profile.links.map((l) => l.id)} strategy={verticalListSortingStrategy}>
               {profile.links.map((link) => (
-                <SortableLinkItem key={link.id} link={link} onUpdate={updateLink} onRemove={removeLink} />
+                <SortableLinkItem key={link.id} link={link} onUpdate={updateLink} onRemove={removeLink} t={t} />
               ))}
             </SortableContext>
           </DndContext>
           <Button variant="outline" size="sm" onClick={addLink} disabled={profile.links.length >= MAX_LINKS}>
             <Plus className="mr-1 h-4 w-4" />
-            リンクを追加
+            {t("addLink")}
           </Button>
         </CardContent>
       </Card>
@@ -996,7 +1003,7 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* Social Links */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">SNS</CardTitle>
+          <CardTitle className="text-lg">{t("socialTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {SOCIAL_PLATFORMS.map((platform) => (
@@ -1015,14 +1022,14 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* Feature Toggles */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">機能設定</CardTitle>
-          <CardDescription>プロフィールページに表示する機能を選択します</CardDescription>
+          <CardTitle className="text-lg">{t("featureTitle")}</CardTitle>
+          <CardDescription>{t("featureDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <label className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium">お問い合わせフォーム</div>
-              <div className="text-xs text-muted-foreground">訪問者からのメッセージを受け取ります</div>
+              <div className="text-sm font-medium">{t("featureContactForm")}</div>
+              <div className="text-xs text-muted-foreground">{t("featureContactFormDesc")}</div>
             </div>
             <input
               type="checkbox"
@@ -1033,8 +1040,8 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
           </label>
           <label className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium">メール購読フォーム</div>
-              <div className="text-xs text-muted-foreground">訪問者のメールアドレスを収集します</div>
+              <div className="text-sm font-medium">{t("featureEmailSubscribe")}</div>
+              <div className="text-xs text-muted-foreground">{t("featureEmailSubscribeDesc")}</div>
             </div>
             <input
               type="checkbox"
@@ -1045,8 +1052,8 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
           </label>
           <label className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium">予約カレンダー</div>
-              <div className="text-xs text-muted-foreground">訪問者がオンラインで予約できるようにします</div>
+              <div className="text-sm font-medium">{t("featureBookingCalendar")}</div>
+              <div className="text-xs text-muted-foreground">{t("featureBookingCalendarDesc")}</div>
             </div>
             <input
               type="checkbox"
@@ -1061,14 +1068,14 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
       {/* Password Protection */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">パスワード保護</CardTitle>
-          <CardDescription>ページにパスワードを設定して閲覧を制限します</CardDescription>
+          <CardTitle className="text-lg">{t("passwordTitle")}</CardTitle>
+          <CardDescription>{t("passwordDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {profile.page_password && (
             <div className="flex items-center gap-2 text-sm">
               <Lock className="h-4 w-4 text-amber-500" />
-              <span className="text-muted-foreground">パスワードが設定されています</span>
+              <span className="text-muted-foreground">{t("passwordCurrentSet")}</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1078,20 +1085,20 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
                   setPagePasswordInput("");
                 }}
               >
-                解除
+                {t("passwordRemove")}
               </Button>
             </div>
           )}
           <div className="space-y-2">
             <Label htmlFor="pagePassword">
-              {profile.page_password ? "新しいパスワード" : "パスワード"}
+              {profile.page_password ? t("passwordNewLabel") : t("passwordLabel")}
             </Label>
             <Input
               id="pagePassword"
               type="password"
               value={pagePasswordInput}
               onChange={(e) => setPagePasswordInput(e.target.value)}
-              placeholder={profile.page_password ? "変更する場合のみ入力" : "パスワードを設定"}
+              placeholder={profile.page_password ? t("passwordChangePlaceholder") : t("passwordSetPlaceholder")}
               minLength={4}
             />
           </div>
@@ -1107,11 +1114,11 @@ export function ProfileEditor({ profile: initialProfile }: { profile: Profile })
             rel="noopener noreferrer"
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            プレビュー
+            {t("previewLink")}
           </a>
           <Button onClick={handleSave} disabled={saving}>
             <Save className="mr-1 h-4 w-4" />
-            {saving ? "保存中..." : "保存する"}
+            {saving ? t("savingButton") : t("saveButton")}
           </Button>
         </div>
       </div>

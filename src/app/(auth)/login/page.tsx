@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_NAME } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n/client";
+import { LanguageToggle } from "@/components/ui/language-toggle";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -19,6 +21,7 @@ function LoginForm() {
   const rawRedirect = searchParams.get("redirect") || "/dashboard";
   // Prevent open redirect: only allow relative paths starting with /
   const redirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/dashboard";
+  const { t } = useTranslation();
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -44,12 +47,15 @@ function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
+        <div className="flex justify-end">
+          <LanguageToggle />
+        </div>
         <Link href="/" className="text-2xl font-bold tracking-tight">
           {APP_NAME}
         </Link>
-        <CardTitle className="mt-4 text-xl">ログイン</CardTitle>
+        <CardTitle className="mt-4 text-xl">{t("loginTitle")}</CardTitle>
         <CardDescription>
-          アカウントにログインしてください
+          {t("loginDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -60,11 +66,11 @@ function LoginForm() {
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="email">メールアドレス</Label>
+            <Label htmlFor="email">{t("emailLabel")}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -72,11 +78,11 @@ function LoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">パスワード</Label>
+            <Label htmlFor="password">{t("passwordLabel")}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={t("passwordPlaceholder")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -85,18 +91,18 @@ function LoginForm() {
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "ログイン中..." : "ログイン"}
+            {loading ? t("loginLoading") : t("loginButton")}
           </Button>
         </form>
         <div className="mt-4 text-center">
           <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary underline">
-            パスワードをお忘れですか？
+            {t("forgotPasswordLink")}
           </Link>
         </div>
         <div className="mt-4 text-center text-sm text-muted-foreground">
-          アカウントをお持ちでないですか？{" "}
+          {t("noAccountPrompt")}{" "}
           <Link href="/signup" className="text-primary underline">
-            新規登録
+            {t("signupLink")}
           </Link>
         </div>
       </CardContent>

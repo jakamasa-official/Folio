@@ -41,6 +41,7 @@ import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { LimitBanner } from "@/components/dashboard/pro-gate";
 import { FREE_LIMITS } from "@/lib/pro-gate";
+import { useTranslation } from "@/lib/i18n/client";
 
 // ─── Constants ───
 
@@ -85,6 +86,7 @@ interface CustomerStampWithCustomer extends Omit<CustomerStamp, "customer"> {
 // ─── Main Page ───
 
 export default function StampsPage() {
+  const { t } = useTranslation();
   const { isPro, stampCardCount, couponCount } = useProStatus();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -186,7 +188,7 @@ export default function StampsPage() {
   }
 
   async function deleteStampCard(id: string) {
-    if (!confirm("このスタンプカードを削除しますか？")) return;
+    if (!confirm(t("confirmDeleteStampCard"))) return;
     const res = await apiFetch(`/api/stamp-cards?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       setStampCards((prev) => prev.filter((c) => c.id !== id));
@@ -195,7 +197,7 @@ export default function StampsPage() {
   }
 
   async function deleteCoupon(id: string) {
-    if (!confirm("このクーポンを削除しますか？")) return;
+    if (!confirm(t("confirmDeleteCoupon"))) return;
     const res = await apiFetch(`/api/coupons?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       setCoupons((prev) => prev.filter((c) => c.id !== id));
@@ -220,7 +222,7 @@ export default function StampsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold">スタンプ & クーポン</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("stampsAndCoupons")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -238,7 +240,7 @@ export default function StampsPage() {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />
-          スタンプカード一覧に戻る
+          {t("backToStampCardList")}
         </button>
         <StampCardDetail
           card={selectedCard}
@@ -252,17 +254,17 @@ export default function StampsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">スタンプ & クーポン</h1>
+      <h1 className="text-2xl font-bold">{t("stampsAndCoupons")}</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="stamps" className="gap-1.5">
             <Stamp className="h-4 w-4" />
-            スタンプカード
+            {t("stampCardTab")}
           </TabsTrigger>
           <TabsTrigger value="coupons" className="gap-1.5">
             <Ticket className="h-4 w-4" />
-            クーポン
+            {t("couponTab")}
           </TabsTrigger>
         </TabsList>
 
@@ -272,9 +274,9 @@ export default function StampsPage() {
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">スタンプカードを公開ページに表示</p>
+                <p className="font-medium">{t("showStampCardOnPublicPage")}</p>
                 <p className="text-sm text-muted-foreground">
-                  有効にすると、プロフィールページにスタンプカードウィジェットが表示されます
+                  {t("showStampCardOnPublicPageDesc")}
                 </p>
               </div>
               <Button
@@ -286,12 +288,12 @@ export default function StampsPage() {
                 {stampCardEnabled ? (
                   <>
                     <ToggleRight className="h-4 w-4" />
-                    有効
+                    {t("enabled")}
                   </>
                 ) : (
                   <>
                     <ToggleLeft className="h-4 w-4" />
-                    無効
+                    {t("disabled")}
                   </>
                 )}
               </Button>
@@ -299,14 +301,14 @@ export default function StampsPage() {
           </Card>
 
           {/* Create button */}
-          <LimitBanner current={stampCardCount} max={FREE_LIMITS.stampCards} label="スタンプカード" isPro={isPro} />
+          <LimitBanner current={stampCardCount} max={FREE_LIMITS.stampCards} label={t("stampCardLabel")} isPro={isPro} />
           <Button
             onClick={() => setShowCreateCard(true)}
             className="gap-1.5"
             disabled={!isPro && stampCardCount >= FREE_LIMITS.stampCards}
           >
             <Plus className="h-4 w-4" />
-            新規スタンプカード
+            {t("newStampCard")}
           </Button>
 
           {/* Stamp card list */}
@@ -314,8 +316,8 @@ export default function StampsPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <Stamp className="mb-4 h-12 w-12" />
-                <p>スタンプカードはまだありません</p>
-                <p className="mt-1 text-sm">「新規スタンプカード」から作成しましょう</p>
+                <p>{t("noStampCardsYet")}</p>
+                <p className="mt-1 text-sm">{t("noStampCardsHint")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -338,13 +340,13 @@ export default function StampsPage() {
                         <div>
                           <p className="font-medium">{card.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {card.total_stamps_required}スタンプで特典
+                            {t("stampsForReward", { count: String(card.total_stamps_required) })}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant={card.is_active ? "default" : "secondary"}>
-                          {card.is_active ? "有効" : "無効"}
+                          {card.is_active ? t("enabled") : t("disabled")}
                         </Badge>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Users className="h-3.5 w-3.5" />
@@ -376,9 +378,9 @@ export default function StampsPage() {
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">クーポン機能を有効にする</p>
+                <p className="font-medium">{t("enableCouponFeature")}</p>
                 <p className="text-sm text-muted-foreground">
-                  有効にすると、クーポンを作成・管理できます
+                  {t("enableCouponFeatureDesc")}
                 </p>
               </div>
               <Button
@@ -390,12 +392,12 @@ export default function StampsPage() {
                 {couponEnabled ? (
                   <>
                     <ToggleRight className="h-4 w-4" />
-                    有効
+                    {t("enabled")}
                   </>
                 ) : (
                   <>
                     <ToggleLeft className="h-4 w-4" />
-                    無効
+                    {t("disabled")}
                   </>
                 )}
               </Button>
@@ -403,14 +405,14 @@ export default function StampsPage() {
           </Card>
 
           {/* Create button */}
-          <LimitBanner current={couponCount} max={FREE_LIMITS.coupons} label="クーポン" isPro={isPro} />
+          <LimitBanner current={couponCount} max={FREE_LIMITS.coupons} label={t("couponLabel")} isPro={isPro} />
           <Button
             onClick={() => setShowCreateCoupon(true)}
             className="gap-1.5"
             disabled={!isPro && couponCount >= FREE_LIMITS.coupons}
           >
             <Plus className="h-4 w-4" />
-            新規クーポン
+            {t("newCoupon")}
           </Button>
 
           {/* Coupon list */}
@@ -418,8 +420,8 @@ export default function StampsPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <Ticket className="mb-4 h-12 w-12" />
-                <p>クーポンはまだありません</p>
-                <p className="mt-1 text-sm">「新規クーポン」から作成しましょう</p>
+                <p>{t("noCouponsYet")}</p>
+                <p className="mt-1 text-sm">{t("noCouponsHint")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -433,21 +435,23 @@ export default function StampsPage() {
                           <Tag className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{coupon.title}</span>
                           <Badge variant={coupon.is_active ? "default" : "secondary"}>
-                            {coupon.is_active ? "有効" : "無効"}
+                            {coupon.is_active ? t("enabled") : t("disabled")}
                           </Badge>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                           <span className="rounded bg-muted px-2 py-0.5 font-mono text-xs">
                             {coupon.code}
                           </span>
-                          <span>{formatDiscount(coupon)}</span>
+                          <span>{formatDiscount(coupon, t)}</span>
                           <span>
-                            利用: {coupon.times_used}
-                            {coupon.usage_limit != null ? `/${coupon.usage_limit}` : ""}回
+                            {t("usageCount", {
+                              used: String(coupon.times_used),
+                              limit: coupon.usage_limit != null ? `/${coupon.usage_limit}` : "",
+                            })}
                           </span>
                           {coupon.expires_at && (
                             <span>
-                              期限: {new Date(coupon.expires_at).toLocaleDateString("ja-JP")}
+                              {t("expiresAt", { date: new Date(coupon.expires_at).toLocaleDateString("ja-JP") })}
                             </span>
                           )}
                         </div>
@@ -461,7 +465,7 @@ export default function StampsPage() {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => toggleCouponActive(coupon)}
-                          title={coupon.is_active ? "無効にする" : "有効にする"}
+                          title={coupon.is_active ? t("deactivate") : t("activate")}
                         >
                           {coupon.is_active ? (
                             <ToggleRight className="h-4 w-4 text-primary" />
@@ -513,14 +517,14 @@ export default function StampsPage() {
 
 // ─── Helpers ───
 
-function formatDiscount(coupon: Coupon): string {
+function formatDiscount(coupon: Coupon, t: (key: string, replacements?: Record<string, string>) => string): string {
   switch (coupon.discount_type) {
     case "percentage":
-      return `${coupon.discount_value}%OFF`;
+      return t("percentOff", { value: String(coupon.discount_value) });
     case "fixed":
-      return `\u00A5${coupon.discount_value?.toLocaleString()}OFF`;
+      return t("fixedOff", { value: String(coupon.discount_value?.toLocaleString()) });
     case "free_service":
-      return "\u7121\u6599\u30B5\u30FC\u30D3\u30B9";
+      return t("freeService");
     default:
       return "";
   }
@@ -539,6 +543,7 @@ function CreateStampCardDialog({
   coupons: Coupon[];
   onCreated: (card: StampCard) => void;
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [totalStamps, setTotalStamps] = useState(10);
   const [icon, setIcon] = useState("star");
@@ -578,11 +583,11 @@ function CreateStampCardDialog({
 
   async function handleSubmit() {
     if (!name.trim()) {
-      setError("カード名を入力してください");
+      setError(t("cardNameRequired"));
       return;
     }
     if (totalStamps < 2) {
-      setError("スタンプ数は2以上にしてください");
+      setError(t("minStampsRequired"));
       return;
     }
 
@@ -607,14 +612,14 @@ function CreateStampCardDialog({
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "作成に失敗しました");
+        throw new Error(data.error || t("createFailed"));
       }
 
       const data = await res.json();
       onCreated(data.card);
       reset();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "作成に失敗しました";
+      const msg = err instanceof Error ? err.message : t("createFailed");
       setError(msg);
       toast.error(msg);
       return;
@@ -633,8 +638,8 @@ function CreateStampCardDialog({
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>新規スタンプカード</DialogTitle>
-          <DialogDescription>スタンプカードの設定を入力してください</DialogDescription>
+          <DialogTitle>{t("newStampCardDialogTitle")}</DialogTitle>
+          <DialogDescription>{t("newStampCardDialogDesc")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -644,9 +649,9 @@ function CreateStampCardDialog({
 
           {/* Card name */}
           <div className="space-y-2">
-            <Label>カード名</Label>
+            <Label>{t("cardName")}</Label>
             <Input
-              placeholder="例: コーヒーカード"
+              placeholder={t("cardNamePlaceholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -654,7 +659,7 @@ function CreateStampCardDialog({
 
           {/* Total stamps */}
           <div className="space-y-2">
-            <Label>必要スタンプ数</Label>
+            <Label>{t("requiredStamps")}</Label>
             <Input
               type="number"
               min={2}
@@ -666,7 +671,7 @@ function CreateStampCardDialog({
 
           {/* Icon selector */}
           <div className="space-y-2">
-            <Label>アイコン</Label>
+            <Label>{t("icon")}</Label>
             <div className="grid grid-cols-6 gap-2">
               {ICON_OPTIONS.map((opt) => (
                 <button
@@ -687,7 +692,7 @@ function CreateStampCardDialog({
 
           {/* Color picker */}
           <div className="space-y-2">
-            <Label>テーマカラー</Label>
+            <Label>{t("themeColor")}</Label>
             <div className="flex gap-2">
               {COLOR_OPTIONS.map((c) => (
                 <button
@@ -707,12 +712,12 @@ function CreateStampCardDialog({
 
           {/* Reward type */}
           <div className="space-y-2">
-            <Label>特典タイプ</Label>
+            <Label>{t("rewardType")}</Label>
             <div className="flex flex-wrap gap-2">
               {[
-                { value: "coupon" as const, label: "クーポン連携" },
-                { value: "free_service" as const, label: "無料サービス" },
-                { value: "custom" as const, label: "カスタム" },
+                { value: "coupon" as const, label: t("rewardTypeCoupon") },
+                { value: "free_service" as const, label: t("rewardTypeFreeService") },
+                { value: "custom" as const, label: t("rewardTypeCustom") },
               ].map((opt) => (
                 <Button
                   key={opt.value}
@@ -730,10 +735,10 @@ function CreateStampCardDialog({
           {/* Coupon selector */}
           {rewardType === "coupon" && (
             <div className="space-y-2">
-              <Label>連携クーポン</Label>
+              <Label>{t("linkedCoupon")}</Label>
               {coupons.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  まずクーポンタブでクーポンを作成してください
+                  {t("createCouponFirst")}
                 </p>
               ) : (
                 <select
@@ -741,7 +746,7 @@ function CreateStampCardDialog({
                   onChange={(e) => setRewardCouponId(e.target.value)}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
-                  <option value="">選択してください</option>
+                  <option value="">{t("selectPlease")}</option>
                   {coupons.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.title} ({c.code})
@@ -754,9 +759,9 @@ function CreateStampCardDialog({
 
           {/* Reward description */}
           <div className="space-y-2">
-            <Label>特典の説明</Label>
+            <Label>{t("rewardDescription")}</Label>
             <Input
-              placeholder="例: ドリンク1杯無料"
+              placeholder={t("rewardDescriptionPlaceholder")}
               value={rewardDescription}
               onChange={(e) => setRewardDescription(e.target.value)}
             />
@@ -767,15 +772,15 @@ function CreateStampCardDialog({
           {/* Milestones */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>マイルストーン（中間特典）</Label>
+              <Label>{t("milestonesIntermediate")}</Label>
               <Button type="button" variant="outline" size="sm" onClick={addMilestone} className="gap-1">
                 <Plus className="h-3.5 w-3.5" />
-                追加
+                {t("add")}
               </Button>
             </div>
             {milestones.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                マイルストーンを追加すると、途中段階で特典を設定できます
+                {t("milestonesHint")}
               </p>
             )}
             {milestones.map((m, i) => (
@@ -787,13 +792,13 @@ function CreateStampCardDialog({
                   value={m.at}
                   onChange={(e) => updateMilestone(i, "at", Number(e.target.value))}
                   className="w-20"
-                  placeholder="数"
+                  placeholder={t("milestonesStampCount")}
                 />
-                <span className="shrink-0 text-sm text-muted-foreground">スタンプで</span>
+                <span className="shrink-0 text-sm text-muted-foreground">{t("atStamps")}</span>
                 <Input
                   value={m.reward}
                   onChange={(e) => updateMilestone(i, "reward", e.target.value)}
-                  placeholder="例: 10%オフ"
+                  placeholder={t("milestoneRewardPlaceholder")}
                   className="flex-1"
                 />
                 <Button
@@ -812,10 +817,10 @@ function CreateStampCardDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            キャンセル
+            {t("cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={saving}>
-            {saving ? "作成中..." : "作成する"}
+            {saving ? t("creating") : t("create")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -843,6 +848,7 @@ function CreateCouponDialog({
   onOpenChange: (open: boolean) => void;
   onCreated: (coupon: Coupon) => void;
 }) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [code, setCode] = useState(() => generateCode());
   const [description, setDescription] = useState("");
@@ -866,11 +872,11 @@ function CreateCouponDialog({
 
   async function handleSubmit() {
     if (!title.trim()) {
-      setError("タイトルを入力してください");
+      setError(t("couponTitleRequired"));
       return;
     }
     if (!code.trim()) {
-      setError("クーポンコードを入力してください");
+      setError(t("couponCodeRequired"));
       return;
     }
 
@@ -894,14 +900,14 @@ function CreateCouponDialog({
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "作成に失敗しました");
+        throw new Error(data.error || t("createFailed"));
       }
 
       const data = await res.json();
       onCreated(data.coupon);
       reset();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "作成に失敗しました";
+      const msg = err instanceof Error ? err.message : t("createFailed");
       setError(msg);
       toast.error(msg);
       return;
@@ -920,8 +926,8 @@ function CreateCouponDialog({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>新規クーポン</DialogTitle>
-          <DialogDescription>クーポンの設定を入力してください</DialogDescription>
+          <DialogTitle>{t("newCouponDialogTitle")}</DialogTitle>
+          <DialogDescription>{t("newCouponDialogDesc")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -931,9 +937,9 @@ function CreateCouponDialog({
 
           {/* Title */}
           <div className="space-y-2">
-            <Label>タイトル</Label>
+            <Label>{t("couponTitle")}</Label>
             <Input
-              placeholder="例: 初回10%OFF"
+              placeholder={t("couponTitlePlaceholder")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -941,7 +947,7 @@ function CreateCouponDialog({
 
           {/* Code */}
           <div className="space-y-2">
-            <Label>クーポンコード</Label>
+            <Label>{t("couponCode")}</Label>
             <div className="flex gap-2">
               <Input
                 value={code}
@@ -955,16 +961,16 @@ function CreateCouponDialog({
                 onClick={() => setCode(generateCode())}
                 className="shrink-0"
               >
-                自動生成
+                {t("autoGenerate")}
               </Button>
             </div>
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label>説明（任意）</Label>
+            <Label>{t("couponDescription")}</Label>
             <Input
-              placeholder="例: 新規のお客様限定"
+              placeholder={t("couponDescriptionPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -974,12 +980,12 @@ function CreateCouponDialog({
 
           {/* Discount type */}
           <div className="space-y-2">
-            <Label>割引タイプ</Label>
+            <Label>{t("discountType")}</Label>
             <div className="flex flex-wrap gap-2">
               {[
-                { value: "percentage" as const, label: "割引率（%）" },
-                { value: "fixed" as const, label: "固定額（\u00A5）" },
-                { value: "free_service" as const, label: "無料サービス" },
+                { value: "percentage" as const, label: t("discountTypePercentage") },
+                { value: "fixed" as const, label: t("discountTypeFixed") },
+                { value: "free_service" as const, label: t("discountTypeFreeService") },
               ].map((opt) => (
                 <Button
                   key={opt.value}
@@ -998,7 +1004,7 @@ function CreateCouponDialog({
           {discountType !== "free_service" && (
             <div className="space-y-2">
               <Label>
-                {discountType === "percentage" ? "割引率" : "割引額"}
+                {discountType === "percentage" ? t("discountRate") : t("discountAmount")}
               </Label>
               <div className="flex items-center gap-2">
                 <Input
@@ -1009,7 +1015,7 @@ function CreateCouponDialog({
                   className="w-32"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {discountType === "percentage" ? "%" : "\u5186"}
+                  {discountType === "percentage" ? t("percentUnit") : t("yenUnit")}
                 </span>
               </div>
             </div>
@@ -1017,7 +1023,7 @@ function CreateCouponDialog({
 
           {/* Expiry */}
           <div className="space-y-2">
-            <Label>有効期限（任意）</Label>
+            <Label>{t("expiryOptional")}</Label>
             <Input
               type="date"
               value={expiresAt}
@@ -1027,11 +1033,11 @@ function CreateCouponDialog({
 
           {/* Usage limit */}
           <div className="space-y-2">
-            <Label>利用回数上限（任意）</Label>
+            <Label>{t("usageLimitOptional")}</Label>
             <Input
               type="number"
               min={1}
-              placeholder="無制限"
+              placeholder={t("unlimited")}
               value={usageLimit}
               onChange={(e) => setUsageLimit(e.target.value)}
               className="w-32"
@@ -1041,10 +1047,10 @@ function CreateCouponDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            キャンセル
+            {t("cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={saving}>
-            {saving ? "作成中..." : "作成する"}
+            {saving ? t("creating") : t("create")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1061,6 +1067,7 @@ function StampCardDetail({
   card: StampCardWithCount;
   onStampAdded: () => void;
 }) {
+  const { t } = useTranslation();
   const [stamps, setStamps] = useState<CustomerStampWithCustomer[]>([]);
   const [loading, setLoading] = useState(true);
   const [qrSrc, setQrSrc] = useState("");
@@ -1142,26 +1149,26 @@ function StampCardDetail({
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setStampResult(data.error || "スタンプの追加に失敗しました");
+        setStampResult(data.error || t("addStampFailed"));
         return;
       }
 
       const data = await res.json();
 
       if (data.completed) {
-        setStampResult(`カード完了！特典: ${data.reward_description || "おめでとうございます！"}`);
+        setStampResult(t("cardCompleted", { reward: data.reward_description || t("cardCompletedDefault") }));
       } else if (data.milestone) {
-        setStampResult(`マイルストーン達成！${data.milestone.reward}`);
+        setStampResult(t("milestoneReached", { reward: data.milestone.reward }));
       } else {
-        setStampResult("スタンプを追加しました");
+        setStampResult(t("stampAdded"));
       }
 
       // Refresh stamps
       await loadStamps();
       onStampAdded();
     } catch {
-      setStampResult("スタンプの追加に失敗しました");
-      toast.error("スタンプの追加に失敗しました");
+      setStampResult(t("addStampFailed"));
+      toast.error(t("addStampFailed"));
     } finally {
       setStampingCustomerId(null);
       setStampNote("");
@@ -1185,7 +1192,7 @@ function StampCardDetail({
             <div>
               <CardTitle>{card.name}</CardTitle>
               <CardDescription>
-                {card.total_stamps_required}スタンプで特典 |
+                {t("stampsForReward", { count: String(card.total_stamps_required) })} |
                 {card.reward_description && ` ${card.reward_description}`}
               </CardDescription>
             </div>
@@ -1198,9 +1205,9 @@ function StampCardDetail({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <QrCode className="h-4 w-4" />
-            QRコード
+            {t("qrCode")}
           </CardTitle>
-          <CardDescription>お客様がスキャンしてスタンプカードを確認できます</CardDescription>
+          <CardDescription>{t("qrCodeDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-start gap-5">
@@ -1218,11 +1225,11 @@ function StampCardDetail({
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleCopy} className="gap-1.5">
                   {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? "コピー済み" : "URLをコピー"}
+                  {copied ? t("copied") : t("copyUrl")}
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleDownloadQR} className="gap-1.5">
                   <Download className="h-3.5 w-3.5" />
-                  ダウンロード
+                  {t("download")}
                 </Button>
               </div>
             </div>
@@ -1236,22 +1243,22 @@ function StampCardDetail({
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Gift className="h-4 w-4" />
-              マイルストーン
+              {t("milestones")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {card.milestones.map((m, i) => (
                 <div key={i} className="flex items-center gap-2 text-sm">
-                  <Badge variant="outline">{m.at}スタンプ</Badge>
+                  <Badge variant="outline">{t("stampsCount", { count: String(m.at) })}</Badge>
                   <span>{m.reward}</span>
                 </div>
               ))}
               <div className="flex items-center gap-2 text-sm">
                 <Badge style={{ backgroundColor: card.color, color: "white" }}>
-                  {card.total_stamps_required}スタンプ
+                  {t("stampsCount", { count: String(card.total_stamps_required) })}
                 </Badge>
-                <span className="font-medium">{card.reward_description || "特典獲得！"}</span>
+                <span className="font-medium">{card.reward_description || t("rewardEarned")}</span>
               </div>
             </div>
           </CardContent>
@@ -1270,9 +1277,9 @@ function StampCardDetail({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Users className="h-4 w-4" />
-            顧客一覧
+            {t("customerList")}
           </CardTitle>
-          <CardDescription>{stamps.length}名のお客様</CardDescription>
+          <CardDescription>{t("customersCount", { count: String(stamps.length) })}</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -1281,7 +1288,7 @@ function StampCardDetail({
             </div>
           ) : stamps.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              まだスタンプを持つお客様はいません
+              {t("noCustomersWithStamps")}
             </div>
           ) : (
             <div className="space-y-3">
@@ -1292,7 +1299,7 @@ function StampCardDetail({
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">
-                      {s.customer?.name || "不明"}
+                      {s.customer?.name || t("unknown")}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {s.customer?.email || ""}
@@ -1318,7 +1325,7 @@ function StampCardDetail({
                       </span>
                       {s.completed_count > 0 && (
                         <Badge variant="secondary" className="text-xs">
-                          {s.completed_count}回達成
+                          {t("timesCompleted", { count: String(s.completed_count) })}
                         </Badge>
                       )}
                     </div>
@@ -1330,7 +1337,7 @@ function StampCardDetail({
                     className="gap-1 shrink-0"
                   >
                     <Stamp className="h-3.5 w-3.5" />
-                    {stampingCustomerId === s.customer_id ? "..." : "スタンプ"}
+                    {stampingCustomerId === s.customer_id ? "..." : t("stampButton")}
                   </Button>
                 </div>
               ))}

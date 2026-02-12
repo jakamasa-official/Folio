@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, ChevronUp, ChevronDown, ImagePlus, Loader2 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 import type { ProfileSlide } from "@/lib/types";
 
 interface SlidesEditorProps {
@@ -17,6 +18,7 @@ interface SlidesEditorProps {
 type SlideMode = "image" | "content";
 
 export function SlidesEditor({ slides, onChange, userId }: SlidesEditorProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<SlideMode>(() => {
     if (!slides || slides.length === 0) return "image";
     return slides[0].type;
@@ -190,7 +192,7 @@ export function SlidesEditor({ slides, onChange, userId }: SlidesEditorProps) {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          画像カルーセル
+          {t("slideModeImage")}
         </button>
         <button
           type="button"
@@ -201,7 +203,7 @@ export function SlidesEditor({ slides, onChange, userId }: SlidesEditorProps) {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          コンテンツセクション
+          {t("slideModeContent")}
         </button>
       </div>
 
@@ -271,10 +273,10 @@ export function SlidesEditor({ slides, onChange, userId }: SlidesEditorProps) {
               ) : (
                 <ImagePlus className="mr-1 h-4 w-4" />
               )}
-              {uploading ? "アップロード中..." : "画像を追加"}
+              {uploading ? t("slideUploading") : t("slideAddImage")}
             </Button>
             <p className="mt-1 text-xs text-muted-foreground">
-              {imageCount}/10枚
+              {t("slideImageCount", { count: String(imageCount) })}
             </p>
           </div>
         </div>
@@ -290,7 +292,7 @@ export function SlidesEditor({ slides, onChange, userId }: SlidesEditorProps) {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">
-                  セクション {idx + 1}
+                  {t("slideSection", { index: String(idx + 1) })}
                 </span>
                 <div className="flex items-center gap-1">
                   <button
@@ -325,7 +327,7 @@ export function SlidesEditor({ slides, onChange, userId }: SlidesEditorProps) {
                 onChange={(e) =>
                   handleContentUpdate(slide.id, "title", e.target.value)
                 }
-                placeholder="タイトル"
+                placeholder={t("slideTitlePlaceholder")}
                 className="text-sm"
               />
               <Textarea
@@ -333,7 +335,7 @@ export function SlidesEditor({ slides, onChange, userId }: SlidesEditorProps) {
                 onChange={(e) =>
                   handleContentUpdate(slide.id, "body", e.target.value)
                 }
-                placeholder="本文を入力..."
+                placeholder={t("slideBodyPlaceholder")}
                 rows={3}
                 className="text-sm"
               />
@@ -348,10 +350,10 @@ export function SlidesEditor({ slides, onChange, userId }: SlidesEditorProps) {
             disabled={contentCount >= 10}
           >
             <Plus className="mr-1 h-4 w-4" />
-            セクションを追加
+            {t("slideAddSection")}
           </Button>
           <p className="text-xs text-muted-foreground">
-            {contentCount}/10セクション
+            {t("slideSectionCount", { count: String(contentCount) })}
           </p>
         </div>
       )}

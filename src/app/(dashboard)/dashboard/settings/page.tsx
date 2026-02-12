@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslation } from "@/lib/i18n/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,6 +92,7 @@ function AccountTab({
   email: string;
   onProfileUpdate: (p: Profile) => void;
 }) {
+  const { t } = useTranslation();
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -117,7 +119,7 @@ function AccountTab({
     if (error) {
       setError(error.message);
     } else {
-      setMessage("パスワードを変更しました");
+      setMessage(t("settings.passwordChanged"));
       setNewPassword("");
     }
     setLoading(false);
@@ -143,7 +145,7 @@ function AccountTab({
     setUsernameSuccess("");
 
     if (!USERNAME_REGEX.test(username)) {
-      setUsernameError("ユーザー名は3〜30文字の英数字、ハイフン、アンダースコアのみ使用できます");
+      setUsernameError(t("settings.usernameInvalid"));
       return;
     }
 
@@ -159,7 +161,7 @@ function AccountTab({
       .maybeSingle();
 
     if (existing) {
-      setUsernameError("このユーザー名は既に使用されています");
+      setUsernameError(t("settings.usernameTaken"));
       setSavingUsername(false);
       return;
     }
@@ -173,14 +175,14 @@ function AccountTab({
 
     if (data) {
       onProfileUpdate(data as Profile);
-      setUsernameSuccess("ユーザー名を変更しました");
+      setUsernameSuccess(t("settings.usernameChanged"));
     }
     setSavingUsername(false);
   }
 
   async function handleDeleteAccount() {
-    if (!confirm("本当にアカウントを削除しますか？この操作は取り消せません。")) return;
-    if (!confirm("全てのデータが削除されます。よろしいですか？")) return;
+    if (!confirm(t("settings.deleteAccountConfirm"))) return;
+    if (!confirm(t("settings.deleteAccountConfirmFinal"))) return;
 
     const supabase = createClient();
     const {
@@ -199,8 +201,8 @@ function AccountTab({
       {/* Email (read-only) */}
       <Card>
         <CardHeader>
-          <CardTitle>メールアドレス</CardTitle>
-          <CardDescription>アカウントに登録されているメールアドレス</CardDescription>
+          <CardTitle>{t("settings.emailTitle")}</CardTitle>
+          <CardDescription>{t("settings.emailDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Input value={email} readOnly className="bg-muted" />
@@ -210,18 +212,18 @@ function AccountTab({
       {/* Display name */}
       <Card>
         <CardHeader>
-          <CardTitle>表示名</CardTitle>
-          <CardDescription>プロフィールに表示される名前</CardDescription>
+          <CardTitle>{t("settings.displayNameTitle")}</CardTitle>
+          <CardDescription>{t("settings.displayNameDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
             <Input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="山田 太郎"
+              placeholder={t("settings.displayNamePlaceholder")}
             />
             <Button onClick={handleDisplayNameSave} disabled={savingName}>
-              {savingName ? "保存中..." : "保存"}
+              {savingName ? t("settings.saving") : t("settings.save")}
             </Button>
           </div>
         </CardContent>
@@ -230,9 +232,9 @@ function AccountTab({
       {/* Username */}
       <Card>
         <CardHeader>
-          <CardTitle>ユーザー名</CardTitle>
+          <CardTitle>{t("settings.usernameTitle")}</CardTitle>
           <CardDescription>
-            プロフィールURL: {APP_URL}/{username}
+            {t("settings.usernameProfileUrl", { appUrl: APP_URL, username })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -247,7 +249,7 @@ function AccountTab({
               placeholder="your-username"
             />
             <Button onClick={handleUsernameSave} disabled={savingUsername}>
-              {savingUsername ? "確認中..." : "変更"}
+              {savingUsername ? t("settings.usernameChecking") : t("settings.usernameChange")}
             </Button>
           </div>
           {usernameError && (
@@ -262,8 +264,8 @@ function AccountTab({
       {/* Password */}
       <Card>
         <CardHeader>
-          <CardTitle>パスワード変更</CardTitle>
-          <CardDescription>アカウントのパスワードを変更します</CardDescription>
+          <CardTitle>{t("settings.passwordTitle")}</CardTitle>
+          <CardDescription>{t("settings.passwordDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handlePasswordChange} className="space-y-4">
@@ -274,7 +276,7 @@ function AccountTab({
               <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">{message}</div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="newPassword">新しいパスワード</Label>
+              <Label htmlFor="newPassword">{t("settings.newPasswordLabel")}</Label>
               <Input
                 id="newPassword"
                 type="password"
@@ -286,7 +288,7 @@ function AccountTab({
               />
             </div>
             <Button type="submit" disabled={loading}>
-              {loading ? "変更中..." : "パスワードを変更"}
+              {loading ? t("settings.passwordChanging") : t("settings.passwordChangeButton")}
             </Button>
           </form>
         </CardContent>
@@ -296,14 +298,14 @@ function AccountTab({
 
       <Card className="border-destructive/50">
         <CardHeader>
-          <CardTitle className="text-destructive">アカウント削除</CardTitle>
+          <CardTitle className="text-destructive">{t("settings.deleteAccountTitle")}</CardTitle>
           <CardDescription>
-            アカウントと全てのデータを完全に削除します。この操作は取り消せません。
+            {t("settings.deleteAccountDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="destructive" onClick={handleDeleteAccount}>
-            アカウントを削除する
+            {t("settings.deleteAccountButton")}
           </Button>
         </CardContent>
       </Card>
@@ -313,6 +315,7 @@ function AccountTab({
 
 // --- Notifications Tab ---
 function NotificationsTab() {
+  const { t } = useTranslation();
   const [prefs, setPrefs] = useState<NotificationPrefs>(loadNotifPrefs);
 
   function updatePref(key: keyof NotificationPrefs, value: boolean) {
@@ -325,27 +328,27 @@ function NotificationsTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>メール通知</CardTitle>
-          <CardDescription>各イベントが発生した際のメール通知を設定します</CardDescription>
+          <CardTitle>{t("settings.notificationsTitle")}</CardTitle>
+          <CardDescription>{t("settings.notificationsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="divide-y">
           <Toggle
             checked={prefs.emailOnBooking}
             onToggle={(v) => updatePref("emailOnBooking", v)}
-            label="新しい予約をメールで通知"
-            description="お客様が予約を入れた時にメールでお知らせします"
+            label={t("settings.notifBookingLabel")}
+            description={t("settings.notifBookingDescription")}
           />
           <Toggle
             checked={prefs.emailOnContact}
             onToggle={(v) => updatePref("emailOnContact", v)}
-            label="新しいお問い合わせをメールで通知"
-            description="お問い合わせフォームからメッセージが届いた時にお知らせします"
+            label={t("settings.notifContactLabel")}
+            description={t("settings.notifContactDescription")}
           />
           <Toggle
             checked={prefs.emailOnSubscriber}
             onToggle={(v) => updatePref("emailOnSubscriber", v)}
-            label="新しい購読者をメールで通知"
-            description="メール購読の新規登録があった時にお知らせします"
+            label={t("settings.notifSubscriberLabel")}
+            description={t("settings.notifSubscriberDescription")}
           />
         </CardContent>
       </Card>
@@ -355,6 +358,7 @@ function NotificationsTab() {
 
 // --- Custom Domain Tab ---
 function DomainTab({ profile, onProfileUpdate }: { profile: Profile | null; onProfileUpdate: (p: Profile) => void }) {
+  const { t } = useTranslation();
   const [domain, setDomain] = useState(profile?.custom_domain || "");
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -367,9 +371,9 @@ function DomainTab({ profile, onProfileUpdate }: { profile: Profile | null; onPr
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
           <AlertTriangle className="mb-4 h-12 w-12 text-yellow-500" />
-          <h2 className="mb-2 text-lg font-semibold">Proプランが必要です</h2>
+          <h2 className="mb-2 text-lg font-semibold">{t("settings.domainProRequired")}</h2>
           <p className="mb-4 text-muted-foreground">
-            カスタムドメインの設定はProプランの機能です。アップグレードすることでご利用いただけます。
+            {t("settings.domainProRequiredDescription")}
           </p>
         </CardContent>
       </Card>
@@ -395,7 +399,7 @@ function DomainTab({ profile, onProfileUpdate }: { profile: Profile | null; onPr
 
   async function removeDomain() {
     if (!profile) return;
-    if (!confirm("カスタムドメインを削除しますか？")) return;
+    if (!confirm(t("settings.domainDeleteConfirm"))) return;
     setRemoving(true);
     const supabase = createClient();
     const { data } = await supabase
@@ -416,12 +420,12 @@ function DomainTab({ profile, onProfileUpdate }: { profile: Profile | null; onPr
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>ドメイン設定</CardTitle>
-          <CardDescription>独自ドメインを設定してページをカスタマイズします</CardDescription>
+          <CardTitle>{t("settings.domainSettingsTitle")}</CardTitle>
+          <CardDescription>{t("settings.domainSettingsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="domain">ドメイン名</Label>
+            <Label htmlFor="domain">{t("settings.domainNameLabel")}</Label>
             <div className="flex gap-2">
               <Input
                 id="domain"
@@ -431,7 +435,7 @@ function DomainTab({ profile, onProfileUpdate }: { profile: Profile | null; onPr
                 onChange={(e) => setDomain(e.target.value)}
               />
               <Button onClick={saveDomain} disabled={saving}>
-                {saving ? "保存中..." : "保存"}
+                {saving ? t("settings.saving") : t("settings.save")}
               </Button>
             </div>
           </div>
@@ -443,29 +447,29 @@ function DomainTab({ profile, onProfileUpdate }: { profile: Profile | null; onPr
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <CardTitle>DNS設定</CardTitle>
+                <CardTitle>{t("settings.dnsSettingsTitle")}</CardTitle>
                 {profile.custom_domain_verified ? (
                   <Badge className="bg-green-100 text-green-800">
                     <CheckCircle className="mr-1 h-3 w-3" />
-                    確認済み
+                    {t("settings.dnsVerified")}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="border-yellow-500 text-yellow-600">
                     <Clock className="mr-1 h-3 w-3" />
-                    確認待ち
+                    {t("settings.dnsPending")}
                   </Badge>
                 )}
               </div>
-              <CardDescription>以下のDNSレコードを設定してください：</CardDescription>
+              <CardDescription>{t("settings.dnsInstructions")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="overflow-x-auto rounded-md border">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th className="px-4 py-2 text-left font-medium">タイプ</th>
-                      <th className="px-4 py-2 text-left font-medium">名前</th>
-                      <th className="px-4 py-2 text-left font-medium">値</th>
+                      <th className="px-4 py-2 text-left font-medium">{t("settings.dnsTableType")}</th>
+                      <th className="px-4 py-2 text-left font-medium">{t("settings.dnsTableName")}</th>
+                      <th className="px-4 py-2 text-left font-medium">{t("settings.dnsTableValue")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -487,22 +491,22 @@ function DomainTab({ profile, onProfileUpdate }: { profile: Profile | null; onPr
                 </table>
               </div>
               <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
-                <p>DNSの反映には最大48時間かかることがあります。設定後、しばらくお待ちください。</p>
+                <p>{t("settings.dnsNote")}</p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-destructive/50">
             <CardHeader>
-              <CardTitle className="text-destructive">ドメインを削除</CardTitle>
+              <CardTitle className="text-destructive">{t("settings.domainDeleteTitle")}</CardTitle>
               <CardDescription>
-                カスタムドメインの設定を削除します。削除後はデフォルトのURLに戻ります。
+                {t("settings.domainDeleteDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="destructive" onClick={removeDomain} disabled={removing}>
                 <Trash2 className="mr-2 h-4 w-4" />
-                {removing ? "削除中..." : "ドメインを削除"}
+                {removing ? t("settings.domainDeleting") : t("settings.domainDeleteButton")}
               </Button>
             </CardContent>
           </Card>
@@ -514,6 +518,7 @@ function DomainTab({ profile, onProfileUpdate }: { profile: Profile | null; onPr
 
 // --- Data & Privacy Tab ---
 function DataTab({ profile }: { profile: Profile | null }) {
+  const { t } = useTranslation();
   const [exporting, setExporting] = useState(false);
   const router = useRouter();
 
@@ -532,13 +537,24 @@ function DataTab({ profile }: { profile: Profile | null }) {
         .order("created_at", { ascending: false });
 
       if (!customers || customers.length === 0) {
-        alert("エクスポートするデータがありません");
+        alert(t("settings.dataExportNoData"));
         setExporting(false);
         return;
       }
 
       // Convert to CSV
-      const headers = ["名前", "メール", "電話", "ソース", "タグ", "メモ", "初回アクセス", "最終アクセス", "予約数", "メッセージ数"];
+      const headers = [
+        t("settings.csvName"),
+        t("settings.csvEmail"),
+        t("settings.csvPhone"),
+        t("settings.csvSource"),
+        t("settings.csvTags"),
+        t("settings.csvNotes"),
+        t("settings.csvFirstSeen"),
+        t("settings.csvLastSeen"),
+        t("settings.csvBookings"),
+        t("settings.csvMessages"),
+      ];
       const rows = customers.map((c) => [
         c.name || "",
         c.email || "",
@@ -568,15 +584,15 @@ function DataTab({ profile }: { profile: Profile | null }) {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export error:", err);
-      alert("エクスポートに失敗しました");
+      alert(t("settings.dataExportError"));
     }
 
     setExporting(false);
   }
 
   async function handleDeleteAccount() {
-    if (!confirm("本当にアカウントを削除しますか？この操作は取り消せません。")) return;
-    if (!confirm("全てのデータが削除されます。よろしいですか？")) return;
+    if (!confirm(t("settings.deleteAccountConfirm"))) return;
+    if (!confirm(t("settings.deleteAccountConfirmFinal"))) return;
 
     const supabase = createClient();
     const {
@@ -596,16 +612,16 @@ function DataTab({ profile }: { profile: Profile | null }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Download className="h-5 w-5" />
-            データエクスポート
+            {t("settings.dataExportTitle")}
           </CardTitle>
           <CardDescription>
-            顧客データをCSVファイルとしてダウンロードします
+            {t("settings.dataExportDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" onClick={handleExport} disabled={exporting}>
             <Download className="mr-2 h-4 w-4" />
-            {exporting ? "エクスポート中..." : "データをエクスポート"}
+            {exporting ? t("settings.dataExporting") : t("settings.dataExportButton")}
           </Button>
         </CardContent>
       </Card>
@@ -614,7 +630,7 @@ function DataTab({ profile }: { profile: Profile | null }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            プライバシー
+            {t("settings.privacyTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -624,7 +640,7 @@ function DataTab({ profile }: { profile: Profile | null }) {
             rel="noopener noreferrer"
             className="text-sm text-primary hover:underline"
           >
-            プライバシーポリシーを見る
+            {t("settings.privacyLink")}
           </a>
         </CardContent>
       </Card>
@@ -633,14 +649,14 @@ function DataTab({ profile }: { profile: Profile | null }) {
 
       <Card className="border-destructive/50">
         <CardHeader>
-          <CardTitle className="text-destructive">アカウント削除</CardTitle>
+          <CardTitle className="text-destructive">{t("settings.deleteAccountTitle")}</CardTitle>
           <CardDescription>
-            アカウントと全てのデータを完全に削除します。この操作は取り消せません。
+            {t("settings.deleteAccountDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="destructive" onClick={handleDeleteAccount}>
-            アカウントを削除する
+            {t("settings.deleteAccountButton")}
           </Button>
         </CardContent>
       </Card>
@@ -650,6 +666,7 @@ function DataTab({ profile }: { profile: Profile | null }) {
 
 // --- Main Settings Page ---
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
@@ -683,7 +700,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold">設定</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("settings.pageTitle")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -693,17 +710,17 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">設定</h1>
+      <h1 className="text-2xl font-bold">{t("settings.pageTitle")}</h1>
 
       <Tabs defaultValue="account">
         <TabsList className="w-full">
-          <TabsTrigger value="account">アカウント</TabsTrigger>
-          <TabsTrigger value="notifications">通知</TabsTrigger>
+          <TabsTrigger value="account">{t("settings.tabAccount")}</TabsTrigger>
+          <TabsTrigger value="notifications">{t("settings.tabNotifications")}</TabsTrigger>
           <TabsTrigger value="domain">
             <Globe className="mr-1.5 h-3.5 w-3.5" />
-            ドメイン
+            {t("settings.tabDomain")}
           </TabsTrigger>
-          <TabsTrigger value="data">データ</TabsTrigger>
+          <TabsTrigger value="data">{t("settings.tabData")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="account">

@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, TrendingUp, BarChart3, Target } from "lucide-react";
 import { TimeSeriesChart } from "./time-series-chart";
+import { useTranslation } from "@/lib/i18n/client";
 import type { AnalyticsData } from "./types";
 
 interface OverviewTabProps {
@@ -11,31 +12,33 @@ interface OverviewTabProps {
   onRangeChange: (range: string) => void;
 }
 
-const RANGE_OPTIONS = [
-  { label: "日別", value: "30d" },
-  { label: "週別", value: "12w" },
-  { label: "月別", value: "12m" },
-] as const;
-
 export function OverviewTab({ data, range, onRangeChange }: OverviewTabProps) {
+  const { t } = useTranslation();
+
+  const RANGE_OPTIONS = [
+    { label: t("analytics.rangeDaily"), value: "30d" },
+    { label: t("analytics.rangeWeekly"), value: "12w" },
+    { label: t("analytics.rangeMonthly"), value: "12m" },
+  ] as const;
+
   const stats = [
     {
-      label: "今日",
+      label: t("analytics.today"),
       value: data.todayViews.toLocaleString(),
       icon: Eye,
     },
     {
-      label: "7日間",
+      label: t("analytics.7days"),
       value: data.weekViews.toLocaleString(),
       icon: TrendingUp,
     },
     {
-      label: "合計",
+      label: t("analytics.total"),
       value: data.totalViews.toLocaleString(),
       icon: BarChart3,
     },
     {
-      label: "コンバージョン率",
+      label: t("analytics.conversionRate"),
       value: `${data.conversionRate.toFixed(1)}%`,
       icon: Target,
     },
@@ -65,7 +68,7 @@ export function OverviewTab({ data, range, onRangeChange }: OverviewTabProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">ページビュー</CardTitle>
+            <CardTitle className="text-lg">{t("analytics.pageViews")}</CardTitle>
             <div className="flex rounded-lg bg-muted p-1">
               {RANGE_OPTIONS.map((opt) => (
                 <button

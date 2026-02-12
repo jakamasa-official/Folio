@@ -4,13 +4,23 @@
  * a consistent header and an unsubscribe footer placeholder.
  */
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function layout(businessName: string, content: string): string {
+  const safeName = escapeHtml(businessName);
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${businessName}</title>
+  <title>${safeName}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;">
@@ -20,7 +30,7 @@ function layout(businessName: string, content: string): string {
           <!-- Header -->
           <tr>
             <td style="padding:28px 32px 20px;text-align:center;border-bottom:1px solid #eee;">
-              <h1 style="margin:0;font-size:20px;font-weight:700;color:#111827;">${businessName}</h1>
+              <h1 style="margin:0;font-size:20px;font-weight:700;color:#111827;">${safeName}</h1>
             </td>
           </tr>
           <!-- Content -->
@@ -32,9 +42,9 @@ function layout(businessName: string, content: string): string {
           <!-- Footer -->
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #eee;text-align:center;">
-              <p style="margin:0 0 8px;font-size:12px;color:#9ca3af;">&copy; ${businessName}</p>
+              <p style="margin:0 0 8px;font-size:12px;color:#9ca3af;">&copy; ${safeName}</p>
               <p style="margin:0;font-size:11px;color:#9ca3af;">
-                このメールは${businessName}から送信されました。<br/>
+                このメールは${safeName}から送信されました。<br/>
                 配信停止をご希望の場合は<a href="{{unsubscribe_url}}" style="color:#6b7280;text-decoration:underline;">こちら</a>からお手続きください。
               </p>
             </td>
@@ -62,15 +72,15 @@ export function bookingConfirmationEmail(params: BookingConfirmationParams): str
   const { businessName, bookerName, date, time, service, notes } = params;
 
   const serviceRow = service
-    ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:14px;">サービス</td><td style="padding:6px 0;font-size:14px;font-weight:500;">${service}</td></tr>`
+    ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:14px;">サービス</td><td style="padding:6px 0;font-size:14px;font-weight:500;">${escapeHtml(service)}</td></tr>`
     : "";
   const notesRow = notes
-    ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:14px;">備考</td><td style="padding:6px 0;font-size:14px;">${notes}</td></tr>`
+    ? `<tr><td style="padding:6px 0;color:#6b7280;font-size:14px;">備考</td><td style="padding:6px 0;font-size:14px;">${escapeHtml(notes)}</td></tr>`
     : "";
 
   const content = `
     <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#374151;">
-      ${bookerName}様
+      ${escapeHtml(bookerName)}様
     </p>
     <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#374151;">
       この度は${businessName}をご予約いただき、誠にありがとうございます。<br/>
@@ -124,11 +134,11 @@ export function bookingNotificationEmail(params: BookingNotificationParams): str
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:8px;padding:16px;margin-bottom:20px;">
       <tr>
         <td style="padding:6px 0;color:#6b7280;font-size:14px;width:100px;">お客様名</td>
-        <td style="padding:6px 0;font-size:14px;font-weight:500;">${bookerName}</td>
+        <td style="padding:6px 0;font-size:14px;font-weight:500;">${escapeHtml(bookerName)}</td>
       </tr>
       <tr>
         <td style="padding:6px 0;color:#6b7280;font-size:14px;">メール</td>
-        <td style="padding:6px 0;font-size:14px;">${bookerEmail}</td>
+        <td style="padding:6px 0;font-size:14px;">${escapeHtml(bookerEmail)}</td>
       </tr>
       <tr>
         <td style="padding:6px 0;color:#6b7280;font-size:14px;">日付</td>
@@ -161,10 +171,10 @@ export function reviewRequestEmail(params: ReviewRequestParams): string {
 
   const content = `
     <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#374151;">
-      ${customerName}様
+      ${escapeHtml(customerName)}様
     </p>
     <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#374151;">
-      先日は${businessName}をご利用いただき、誠にありがとうございました。
+      先日は${escapeHtml(businessName)}をご利用いただき、誠にありがとうございました。
     </p>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#374151;">
       お客様のご体験はいかがでしたでしょうか？もしよろしければ、レビューにてご感想をお聞かせいただけますと大変嬉しく思います。
@@ -197,17 +207,17 @@ export function welcomeEmail(params: WelcomeParams): string {
 
   const content = `
     <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#374151;">
-      ${customerName}様
+      ${escapeHtml(customerName)}様
     </p>
     <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#374151;">
-      ${businessName}へのご登録、誠にありがとうございます。
+      ${escapeHtml(businessName)}へのご登録、誠にありがとうございます。
     </p>
     <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#374151;">
       今後、お得な情報やキャンペーンのお知らせをお届けいたします。<br/>
       どうぞよろしくお願いいたします。
     </p>
     <p style="margin:0;font-size:14px;line-height:1.7;color:#6b7280;">
-      ${businessName}スタッフ一同
+      ${escapeHtml(businessName)}スタッフ一同
     </p>`;
 
   return layout(businessName, content);
@@ -226,13 +236,13 @@ export function followUpEmail(params: FollowUpParams): string {
 
   const content = `
     <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#374151;">
-      ${customerName}様
+      ${escapeHtml(customerName)}様
     </p>
     <div style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#374151;">
-      ${message.replace(/\n/g, "<br/>")}
+      ${escapeHtml(message).replace(/\n/g, "<br/>")}
     </div>
     <p style="margin:0;font-size:14px;line-height:1.7;color:#6b7280;">
-      ${businessName}
+      ${escapeHtml(businessName)}
     </p>`;
 
   return layout(businessName, content);
@@ -252,15 +262,15 @@ export function campaignEmail(params: CampaignParams): string {
   const { title, body, ctaText, ctaUrl, businessName } = params;
 
   const content = `
-    <h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827;">${title}</h2>
+    <h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827;">${escapeHtml(title)}</h2>
     <div style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#374151;">
-      ${body.replace(/\n/g, "<br/>")}
+      ${escapeHtml(body).replace(/\n/g, "<br/>")}
     </div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td align="center" style="padding:0 0 24px;">
-          <a href="${ctaUrl}" style="display:inline-block;padding:12px 32px;background-color:#2563eb;color:#ffffff;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600;">
-            ${ctaText}
+          <a href="${escapeHtml(ctaUrl)}" style="display:inline-block;padding:12px 32px;background-color:#2563eb;color:#ffffff;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600;">
+            ${escapeHtml(ctaText)}
           </a>
         </td>
       </tr>
@@ -287,17 +297,17 @@ export function contactNotificationEmail(params: ContactNotificationParams): str
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:8px;padding:16px;margin-bottom:20px;">
       <tr>
         <td style="padding:6px 0;color:#6b7280;font-size:14px;width:100px;">お名前</td>
-        <td style="padding:6px 0;font-size:14px;font-weight:500;">${senderName}</td>
+        <td style="padding:6px 0;font-size:14px;font-weight:500;">${escapeHtml(senderName)}</td>
       </tr>
       <tr>
         <td style="padding:6px 0;color:#6b7280;font-size:14px;">メール</td>
-        <td style="padding:6px 0;font-size:14px;">${senderEmail}</td>
+        <td style="padding:6px 0;font-size:14px;">${escapeHtml(senderEmail)}</td>
       </tr>
     </table>
     <div style="background-color:#f9fafb;border-radius:8px;padding:16px;margin-bottom:20px;">
       <p style="margin:0 0 8px;font-size:12px;color:#6b7280;font-weight:600;">メッセージ</p>
       <p style="margin:0;font-size:14px;line-height:1.7;color:#374151;">
-        ${message.replace(/\n/g, "<br/>")}
+        ${escapeHtml(message).replace(/\n/g, "<br/>")}
       </p>
     </div>
     <p style="margin:0;font-size:14px;line-height:1.7;color:#6b7280;">
@@ -314,7 +324,7 @@ export function contactNotificationEmail(params: ContactNotificationParams): str
  * Used by the bulk-send flow to convert template text into HTML.
  */
 export function templateToHtml(businessName: string, subject: string, body: string): string {
-  const htmlBody = body.replace(/\n/g, "<br/>");
+  const htmlBody = escapeHtml(body).replace(/\n/g, "<br/>");
 
   const content = `
     <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#374151;">

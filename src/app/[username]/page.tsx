@@ -9,6 +9,8 @@ import { ProfilePage } from "@/components/profile/profile-page";
 import { PasswordGateWrapper } from "./password-gate-wrapper";
 import { TrackPageView } from "./track-page-view";
 import { verifyToken } from "@/app/api/profile/verify-password/route";
+import { getServerLocale } from "@/lib/i18n/server";
+import { I18nProvider } from "@/lib/i18n/client";
 
 interface Props {
   params: Promise<{ username: string }>;
@@ -35,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? `${profile.display_name} - ${profile.title}`
       : profile.display_name;
 
-  const description = settings.og_description || profile.bio || `${profile.display_name}のプロフィール`;
+  const description = settings.og_description || profile.bio || `${profile.display_name}`;
 
   const ogImage = settings.og_image_url || profile.avatar_url;
 
@@ -92,6 +94,8 @@ export default async function PublicProfilePage({ params }: Props) {
 
   const typedProfile = profile as Profile;
 
+  const locale = await getServerLocale();
+
   // Check password protection
   if (typedProfile.page_password) {
     const { page_password: _hash, ...safeForGate } = typedProfile;
@@ -99,11 +103,19 @@ export default async function PublicProfilePage({ params }: Props) {
     const cookieStore = await cookies();
     const accessCookie = cookieStore.get(`folio_access_${typedProfile.id}`);
     if (!accessCookie?.value) {
-      return <PasswordGateWrapper profileId={typedProfile.id} profile={gateProfile} />;
+      return (
+        <I18nProvider initialLocale={locale} namespaces={["common", "profile"]}>
+          <PasswordGateWrapper profileId={typedProfile.id} profile={gateProfile} />
+        </I18nProvider>
+      );
     }
     // Validate HMAC-signed token
     if (!verifyToken(accessCookie.value, typedProfile.id)) {
-      return <PasswordGateWrapper profileId={typedProfile.id} profile={gateProfile} />;
+      return (
+        <I18nProvider initialLocale={locale} namespaces={["common", "profile"]}>
+          <PasswordGateWrapper profileId={typedProfile.id} profile={gateProfile} />
+        </I18nProvider>
+      );
     }
   }
 
@@ -133,7 +145,7 @@ export default async function PublicProfilePage({ params }: Props) {
   const showBranding = !clientProfile.is_pro;
 
   return (
-    <>
+    <I18nProvider initialLocale={locale} namespaces={["common", "profile"]}>
       <TrackPageView profileId={clientProfile.id} />
       <ProfilePage
         profile={clientProfile}
@@ -141,6 +153,6 @@ export default async function PublicProfilePage({ params }: Props) {
         viewCount={viewCount ?? undefined}
         stampCards={stampCards}
       />
-    </>
+    </I18nProvider>
   );
 }

@@ -9,6 +9,8 @@ import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
 import type { Profile } from "@/lib/types";
+import { I18nProvider, useTranslation } from "@/lib/i18n/client";
+import { getLocaleFromCookie, type Locale } from "@/lib/i18n";
 
 export default function DashboardLayout({
   children,
@@ -122,6 +124,47 @@ export default function DashboardLayout({
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  const locale = (typeof document !== "undefined" ? getLocaleFromCookie(document.cookie) : "ja") as Locale;
+
+  return (
+    <I18nProvider initialLocale={locale} namespaces={["common", "dashboard", "editor", "settings", "analytics", "marketing", "bookings", "customers", "reviews", "profile", "pricing"]}>
+      <DashboardLayoutInner
+        username={username}
+        profile={profile}
+        showOnboarding={showOnboarding}
+        showTour={showTour}
+        onStartTour={handleStartTour}
+        onOnboardingComplete={handleOnboardingComplete}
+        onTourComplete={handleTourComplete}
+      >
+        {children}
+      </DashboardLayoutInner>
+    </I18nProvider>
+  );
+}
+
+function DashboardLayoutInner({
+  username,
+  profile,
+  showOnboarding,
+  showTour,
+  onStartTour,
+  onOnboardingComplete,
+  onTourComplete,
+  children,
+}: {
+  username?: string;
+  profile: Profile | null;
+  showOnboarding: boolean;
+  showTour: boolean;
+  onStartTour: () => void;
+  onOnboardingComplete: () => void;
+  onTourComplete: () => void;
+  children: React.ReactNode;
+}) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-screen">
       <DashboardNav username={username} isPro={profile?.is_pro} />
@@ -132,8 +175,8 @@ export default function DashboardLayout({
           variant="ghost"
           size="icon"
           className="h-8 w-8 rounded-full"
-          onClick={handleStartTour}
-          title="チュートリアルを見る"
+          onClick={onStartTour}
+          title={t("layout.tutorialTooltip")}
         >
           <HelpCircle className="h-4 w-4 text-muted-foreground" />
         </Button>
@@ -145,8 +188,8 @@ export default function DashboardLayout({
           variant="ghost"
           size="icon"
           className="h-8 w-8 rounded-full"
-          onClick={handleStartTour}
-          title="チュートリアルを見る"
+          onClick={onStartTour}
+          title={t("layout.tutorialTooltip")}
         >
           <HelpCircle className="h-4 w-4 text-muted-foreground" />
         </Button>
@@ -160,13 +203,13 @@ export default function DashboardLayout({
       {showOnboarding && profile && (
         <OnboardingWizard
           profile={profile}
-          onComplete={handleOnboardingComplete}
-          onStartTour={handleStartTour}
+          onComplete={onOnboardingComplete}
+          onStartTour={onStartTour}
         />
       )}
 
       {/* Tutorial Tour */}
-      <TutorialTour active={showTour} onComplete={handleTourComplete} />
+      <TutorialTour active={showTour} onComplete={onTourComplete} />
     </div>
   );
 }

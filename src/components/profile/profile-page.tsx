@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import type { Profile, SocialLinks, TemplateId } from "@/lib/types";
 import { APP_NAME, APP_URL } from "@/lib/constants";
+import { SafeHtml } from "@/components/ui/safe-html";
 import { ContactForm } from "./contact-form";
 import { BookingWidget } from "./booking-widget";
 import { EmailSubscribe } from "./email-subscribe";
@@ -28,6 +31,7 @@ import {
   SiTiktok,
 } from "react-icons/si";
 import { DAYS_OF_WEEK } from "@/lib/types";
+import { useTranslation } from "@/lib/i18n/client";
 import { TrackedLinks } from "./tracked-links";
 
 const socialIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -56,6 +60,7 @@ interface ProfilePageProps {
 }
 
 export function ProfilePage({ profile, showBranding = true, viewCount, stampCards }: ProfilePageProps) {
+  const { t } = useTranslation();
   const templateStyles = getTemplateStyles(profile.template);
   const socialEntries = Object.entries(profile.social_links || {}).filter(
     ([, url]) => url && url.trim() !== ""
@@ -177,7 +182,7 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
           {viewCount != null && viewCount > 0 && (
             <div className={`mt-2 flex items-center justify-center gap-1 text-xs ${templateStyles.subtext} opacity-60`}>
               <Eye className="h-3 w-3" />
-              <span>{viewCount.toLocaleString()} views</span>
+              <span>{t("viewCount", { count: viewCount.toLocaleString() })}</span>
             </div>
           )}
 
@@ -202,9 +207,9 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
 
         {/* Rich Text Content */}
         {profile.rich_content && (
-          <div
+          <SafeHtml
+            html={profile.rich_content}
             className={`mt-6 text-sm leading-relaxed md:text-base ${templateStyles.subtext}`}
-            dangerouslySetInnerHTML={{ __html: profile.rich_content }}
             style={{
               ...(templateStyles.bgImage ? { backgroundColor: "rgba(0,0,0,0.25)", backdropFilter: "blur(4px)", borderRadius: "0.5rem", padding: "1rem" } : {}),
             }}
@@ -248,7 +253,7 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#06C755] px-5 py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
               <SiLine className="h-5 w-5" />
-              LINEで友だち追加
+              {t("lineAddFriend")}
             </a>
           </div>
         )}
@@ -272,7 +277,7 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
               className={`flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-3.5 text-sm font-medium transition-all hover:scale-[1.02] ${templateStyles.card} ${templateStyles.text}`}
             >
               <Star className="h-4 w-4 text-yellow-500" />
-              Google口コミを書く
+              {t("googleReviewWrite")}
             </a>
           </div>
         )}
@@ -281,7 +286,7 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
         {profile.business_hours && Object.keys(profile.business_hours).length > 0 && (
           <div className={`mt-8 rounded-lg p-4 ${templateStyles.card}`}>
             <h3 className={`mb-2 text-sm font-semibold ${templateStyles.text}`}>
-              営業時間
+              {t("businessHoursTitle")}
             </h3>
             <div className="space-y-1">
               {DAYS_OF_WEEK.map(({ key, label }) => {
@@ -291,7 +296,7 @@ export function ProfilePage({ profile, showBranding = true, viewCount, stampCard
                   <div key={key} className={`flex justify-between text-xs ${templateStyles.subtext}`}>
                     <span>{label}</span>
                     <span>
-                      {hours.closed ? "定休日" : `${hours.open} - ${hours.close}`}
+                      {hours.closed ? t("businessHoursClosed") : `${hours.open} - ${hours.close}`}
                     </span>
                   </div>
                 );

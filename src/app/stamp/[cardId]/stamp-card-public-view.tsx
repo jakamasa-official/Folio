@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Gift, Mail, ArrowRight } from "lucide-react";
 import { APP_NAME, APP_URL } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n/client";
 
 const ICON_MAP: Record<string, string> = {
   star: "\u2B50",
@@ -41,6 +42,7 @@ export function StampCardPublicView({
   profileName,
   profileUsername,
 }: StampCardPublicViewProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [customerStamp, setCustomerStamp] = useState<CustomerStamp | null>(null);
   const [loading, setLoading] = useState(false);
@@ -236,7 +238,7 @@ export function StampCardPublicView({
                     className="flex-1"
                   />
                   <Button type="submit" disabled={loading} className="shrink-0">
-                    {loading ? "..." : "確認"}
+                    {loading ? "..." : t("confirm")}
                   </Button>
                 </form>
                 {error && (

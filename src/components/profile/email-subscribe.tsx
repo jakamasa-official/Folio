@@ -4,12 +4,14 @@ import { useState } from "react";
 import { Mail, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface EmailSubscribeProps {
   profileId: string;
 }
 
 export function EmailSubscribe({ profileId }: EmailSubscribeProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -29,13 +31,13 @@ export function EmailSubscribe({ profileId }: EmailSubscribeProps) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "登録に失敗しました");
+        throw new Error(data.error || t("subscribeError"));
       }
 
       setSuccess(true);
       setEmail("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "登録に失敗しました");
+      setError(err instanceof Error ? err.message : t("subscribeError"));
     } finally {
       setLoading(false);
     }
@@ -45,13 +47,13 @@ export function EmailSubscribe({ profileId }: EmailSubscribeProps) {
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <Mail className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-semibold">最新情報を受け取る</h3>
+        <h3 className="text-sm font-semibold">{t("subscribeTitle")}</h3>
       </div>
 
       {success ? (
         <div className="flex items-center gap-2 rounded-md bg-green-50 p-3 text-sm text-green-800">
           <Check className="h-4 w-4 shrink-0" />
-          登録しました！
+          {t("subscribeSuccess")}
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex gap-2">
@@ -59,12 +61,12 @@ export function EmailSubscribe({ profileId }: EmailSubscribeProps) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="メールアドレス"
+            placeholder={t("subscribeEmailPlaceholder")}
             required
             className="flex-1"
           />
           <Button type="submit" size="sm" disabled={loading}>
-            {loading ? "..." : "登録"}
+            {loading ? "..." : t("subscribeButton")}
           </Button>
         </form>
       )}

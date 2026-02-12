@@ -41,22 +41,23 @@ import {
 import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { ProGate } from "@/components/dashboard/pro-gate";
+import { useTranslation } from "@/lib/i18n/client";
 
 // ============================================================
 // Shared constants
 // ============================================================
 
-const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  signed_up: { label: "登録済み", variant: "secondary" },
-  booked: { label: "予約済み", variant: "default" },
-  rewarded: { label: "特典付与", variant: "outline" },
+const STATUS_MAP: Record<string, { labelKey: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  signed_up: { labelKey: "refStatusSignedUp", variant: "secondary" },
+  booked: { labelKey: "refStatusBooked", variant: "default" },
+  rewarded: { labelKey: "refStatusRewarded", variant: "outline" },
 };
 
 const TEMPLATE_OPTIONS = [
-  { value: "default", label: "デフォルト", desc: "白背景、クリーンなレイアウト" },
-  { value: "minimal", label: "ミニマル", desc: "薄グレー、シンプルなスタイル" },
-  { value: "bold", label: "ボールド", desc: "グラデーション背景、大きなCTA" },
-  { value: "festive", label: "フェスティブ", desc: "お祝いムード、暖色系" },
+  { value: "default", labelKey: "templateDefault", descKey: "templateDefaultDesc" },
+  { value: "minimal", labelKey: "templateMinimal", descKey: "templateMinimalDesc" },
+  { value: "bold", labelKey: "templateBold", descKey: "templateBoldDesc" },
+  { value: "festive", labelKey: "templateFestive", descKey: "templateFestiveDesc" },
 ];
 
 function slugify(text: string): string {
@@ -124,6 +125,7 @@ function ReferralsTab({
   referralEnabled: boolean;
   setReferralEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const { t } = useTranslation();
   const [togglingEnabled, setTogglingEnabled] = useState(false);
 
   // Dialog state
@@ -182,10 +184,10 @@ function ReferralsTab({
         setSelectedCustomerId("");
         setSelectedCouponId("");
       } else {
-        toast.error("紹介コードの作成に失敗しました");
+        toast.error(t("referralCodeCreateFailed"));
       }
     } catch {
-      toast.error("紹介コードの作成に失敗しました");
+      toast.error(t("referralCodeCreateFailed"));
     }
 
     setCreating(false);
@@ -198,10 +200,10 @@ function ReferralsTab({
         setReferralCodes((prev) => prev.filter((c) => c.id !== id));
         if (expandedCodeId === id) setExpandedCodeId(null);
       } else {
-        toast.error("紹介コードの削除に失敗しました");
+        toast.error(t("referralCodeDeleteFailed"));
       }
     } catch {
-      toast.error("紹介コードの削除に失敗しました");
+      toast.error(t("referralCodeDeleteFailed"));
     }
   }
 
@@ -221,7 +223,7 @@ function ReferralsTab({
         setReferrals((prev) => ({ ...prev, [codeId]: (data.referrals as Referral[]) || [] }));
       }
     } catch {
-      console.error("紹介データの取得に失敗しました");
+      console.error("referral data load failed");
     }
 
     setLoadingReferrals(null);
@@ -244,19 +246,19 @@ function ReferralsTab({
       {/* Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>紹介設定</CardTitle>
-          <CardDescription>紹介プログラムの有効/無効を切り替えます</CardDescription>
+          <CardTitle>{t("referralSettings")}</CardTitle>
+          <CardDescription>{t("referralSettingsDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <Label>紹介プログラムを有効にする</Label>
+            <Label>{t("enableReferralProgram")}</Label>
             <Button
               variant={referralEnabled ? "default" : "outline"}
               size="sm"
               onClick={toggleReferralEnabled}
               disabled={togglingEnabled}
             >
-              {referralEnabled ? "有効" : "無効"}
+              {referralEnabled ? t("enabled") : t("disabled")}
             </Button>
           </div>
         </CardContent>
@@ -267,19 +269,19 @@ function ReferralsTab({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold">{totalCodes}</p>
-            <p className="text-sm text-muted-foreground">紹介コード数</p>
+            <p className="text-sm text-muted-foreground">{t("referralCodeCount")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold">{totalReferrals}</p>
-            <p className="text-sm text-muted-foreground">紹介数</p>
+            <p className="text-sm text-muted-foreground">{t("referralCount")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold">{conversionRate}%</p>
-            <p className="text-sm text-muted-foreground">コード利用率</p>
+            <p className="text-sm text-muted-foreground">{t("codeUsageRate")}</p>
           </CardContent>
         </Card>
       </div>
@@ -289,10 +291,10 @@ function ReferralsTab({
       {/* Referral Codes */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">紹介コード一覧</h2>
+          <h2 className="text-xl font-semibold">{t("referralCodeList")}</h2>
           <Button onClick={() => setShowCreateDialog(true)} size="sm">
             <Plus className="mr-1 h-4 w-4" />
-            紹介コード発行
+            {t("issueReferralCode")}
           </Button>
         </div>
 
@@ -300,7 +302,7 @@ function ReferralsTab({
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Users className="mb-4 h-12 w-12" />
-              <p>紹介プログラムのコードがまだありません</p>
+              <p>{t("noReferralCodes")}</p>
             </CardContent>
           </Card>
         ) : (
@@ -313,7 +315,7 @@ function ReferralsTab({
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
-                          {rc.customer?.name || "不明"}
+                          {rc.customer?.name || t("unknown")}
                         </span>
                       </div>
 
@@ -334,14 +336,14 @@ function ReferralsTab({
                           )}
                         </Button>
                         <Badge variant="secondary">
-                          紹介 {rc.referral_count}件
+                          {t("referralBadge", { count: String(rc.referral_count) })}
                         </Badge>
                       </div>
 
                       {rc.reward_coupon && (
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Gift className="h-3 w-3" />
-                          特典: {rc.reward_coupon.title}
+                          {t("rewardLabel", { title: rc.reward_coupon.title })}
                         </div>
                       )}
                     </div>
@@ -379,7 +381,7 @@ function ReferralsTab({
                         </div>
                       ) : (referrals[rc.id] || []).length === 0 ? (
                         <p className="text-sm text-muted-foreground text-center py-2">
-                          紹介はまだありません
+                          {t("noReferralsYet")}
                         </p>
                       ) : (
                         <div className="space-y-2">
@@ -392,7 +394,7 @@ function ReferralsTab({
                               >
                                 <div>
                                   <span className="font-medium">
-                                    {ref.referred_customer?.name || "不明"}
+                                    {ref.referred_customer?.name || t("unknown")}
                                   </span>
                                   {ref.referred_customer?.email && (
                                     <span className="ml-2 text-muted-foreground">
@@ -405,7 +407,7 @@ function ReferralsTab({
                                     {new Date(ref.created_at).toLocaleDateString("ja-JP")}
                                   </span>
                                   <Badge variant={statusInfo.variant}>
-                                    {statusInfo.label}
+                                    {t(statusInfo.labelKey)}
                                   </Badge>
                                 </div>
                               </div>
@@ -426,22 +428,22 @@ function ReferralsTab({
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>紹介コード発行</DialogTitle>
+            <DialogTitle>{t("issueReferralDialogTitle")}</DialogTitle>
             <DialogDescription>
-              顧客に紹介コードを発行します。紹介された方が登録するとカウントされます。
+              {t("issueReferralDialogDesc")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="customer">顧客を選択 *</Label>
+              <Label htmlFor="customer">{t("selectCustomer")}</Label>
               <select
                 id="customer"
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                <option value="">選択してください</option>
+                <option value="">{t("selectPlease")}</option>
                 {customers.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name} {c.email ? `(${c.email})` : ""}
@@ -451,14 +453,14 @@ function ReferralsTab({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ref-coupon">紹介特典クーポン（任意）</Label>
+              <Label htmlFor="ref-coupon">{t("referralRewardCoupon")}</Label>
               <select
                 id="ref-coupon"
                 value={selectedCouponId}
                 onChange={(e) => setSelectedCouponId(e.target.value)}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                <option value="">なし</option>
+                <option value="">{t("none")}</option>
                 {coupons.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.title} ({c.code})
@@ -470,7 +472,7 @@ function ReferralsTab({
             <div className="rounded-md bg-muted p-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <LinkIcon className="h-4 w-4" />
-                コードは自動生成されます（例: REF-A3K7P2）
+                {t("codeAutoGenerated")}
               </div>
             </div>
           </div>
@@ -480,13 +482,13 @@ function ReferralsTab({
               variant="outline"
               onClick={() => setShowCreateDialog(false)}
             >
-              キャンセル
+              {t("cancel")}
             </Button>
             <Button
               onClick={createReferralCode}
               disabled={!selectedCustomerId || creating}
             >
-              {creating ? "作成中..." : "コードを発行"}
+              {creating ? t("issuingCode") : t("issueCode")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -510,6 +512,7 @@ function CampaignsTab({
   campaignCoupons: Coupon[];
   username: string;
 }) {
+  const { t } = useTranslation();
   const [showDialog, setShowDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<CampaignFormState>(defaultCampaignForm);
@@ -556,11 +559,11 @@ function CampaignsTab({
     setFormError("");
 
     if (!form.title.trim()) {
-      setFormError("タイトルを入力してください");
+      setFormError(t("campaignTitleRequired"));
       return;
     }
     if (!form.slug.trim()) {
-      setFormError("スラッグを入力してください");
+      setFormError(t("slugRequired"));
       return;
     }
 
@@ -584,7 +587,7 @@ function CampaignsTab({
 
         const data = await res.json();
         if (!res.ok) {
-          setFormError(data.error || "更新に失敗しました");
+          setFormError(data.error || t("updateFailed"));
           setSaving(false);
           return;
         }
@@ -601,7 +604,7 @@ function CampaignsTab({
 
         const data = await res.json();
         if (!res.ok) {
-          setFormError(data.error || "作成に失敗しました");
+          setFormError(data.error || t("createFailed"));
           setSaving(false);
           return;
         }
@@ -611,8 +614,8 @@ function CampaignsTab({
 
       setShowDialog(false);
     } catch {
-      setFormError("ネットワークエラーが発生しました");
-      toast.error("ネットワークエラーが発生しました");
+      setFormError(t("networkError"));
+      toast.error(t("networkError"));
     }
 
     setSaving(false);
@@ -624,10 +627,10 @@ function CampaignsTab({
       if (res.ok) {
         setCampaigns((prev) => prev.filter((c) => c.id !== id));
       } else {
-        toast.error("キャンペーンの削除に失敗しました");
+        toast.error(t("campaignDeleteFailed"));
       }
     } catch {
-      toast.error("キャンペーンの削除に失敗しました");
+      toast.error(t("campaignDeleteFailed"));
     }
   }
 
@@ -648,10 +651,10 @@ function CampaignsTab({
           prev.map((c) => (c.id === campaign.id ? data.campaign : c))
         );
       } else {
-        toast.error("公開状態の変更に失敗しました");
+        toast.error(t("publishToggleFailed"));
       }
     } catch {
-      toast.error("公開状態の変更に失敗しました");
+      toast.error(t("publishToggleFailed"));
     }
   }
 
@@ -663,10 +666,10 @@ function CampaignsTab({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">キャンペーン一覧</h2>
+        <h2 className="text-xl font-semibold">{t("campaignList")}</h2>
         <Button onClick={openCreateDialog} size="sm">
           <Plus className="mr-1 h-4 w-4" />
-          新規キャンペーン
+          {t("newCampaign")}
         </Button>
       </div>
 
@@ -674,7 +677,7 @@ function CampaignsTab({
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <Megaphone className="mb-4 h-12 w-12" />
-            <p>キャンペーンページがまだありません</p>
+            <p>{t("noCampaigns")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -691,15 +694,15 @@ function CampaignsTab({
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-medium">{campaign.title}</h3>
                         {campaign.is_published ? (
-                          <Badge variant="default">公開中</Badge>
+                          <Badge variant="default">{t("published")}</Badge>
                         ) : (
-                          <Badge variant="secondary">下書き</Badge>
+                          <Badge variant="secondary">{t("draft")}</Badge>
                         )}
                         {expired && (
-                          <Badge variant="destructive">期限切れ</Badge>
+                          <Badge variant="destructive">{t("expired")}</Badge>
                         )}
                         <Badge variant="outline">
-                          {TEMPLATE_OPTIONS.find((t) => t.value === campaign.template)?.label || campaign.template}
+                          {(() => { const opt = TEMPLATE_OPTIONS.find((o) => o.value === campaign.template); return opt ? t(opt.labelKey) : campaign.template; })()}
                         </Badge>
                       </div>
 
@@ -714,20 +717,20 @@ function CampaignsTab({
                           className="inline-flex items-center gap-1 hover:text-foreground"
                         >
                           <ExternalLink className="h-3 w-3" />
-                          プレビュー
+                          {t("previewLink")}
                         </a>
                       </div>
 
                       {campaign.expires_at && (
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          期限: {new Date(campaign.expires_at).toLocaleDateString("ja-JP")}
+                          {t("expiresLabel", { date: new Date(campaign.expires_at).toLocaleDateString("ja-JP") })}
                         </div>
                       )}
 
                       {campaign.coupon && (
                         <div className="text-sm text-muted-foreground">
-                          クーポン: {campaign.coupon.title}
+                          {t("couponLabelCampaign", { title: campaign.coupon.title })}
                         </div>
                       )}
                     </div>
@@ -738,7 +741,7 @@ function CampaignsTab({
                         size="sm"
                         onClick={() => togglePublished(campaign)}
                         className="h-8 w-8 p-0"
-                        title={campaign.is_published ? "非公開にする" : "公開する"}
+                        title={campaign.is_published ? t("unpublish") : t("publish")}
                       >
                         {campaign.is_published ? (
                           <Eye className="h-4 w-4" />
@@ -776,31 +779,31 @@ function CampaignsTab({
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {isEditing ? "キャンペーン編集" : "新規キャンペーン"}
+              {isEditing ? t("editCampaign") : t("newCampaignDialogTitle")}
             </DialogTitle>
             <DialogDescription>
               {isEditing
-                ? "キャンペーンページの内容を編集します"
-                : "新しいキャンペーンランディングページを作成します"}
+                ? t("editCampaignDesc")
+                : t("newCampaignDesc")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="cam-title">タイトル *</Label>
+              <Label htmlFor="cam-title">{t("campaignTitleLabel")}</Label>
               <Input
                 id="cam-title"
                 value={form.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="春の特別キャンペーン"
+                placeholder={t("campaignTitlePlaceholder")}
                 maxLength={200}
               />
             </div>
 
             {/* Slug */}
             <div className="space-y-2">
-              <Label htmlFor="cam-slug">スラッグ（URL） *</Label>
+              <Label htmlFor="cam-slug">{t("slugLabel")}</Label>
               <Input
                 id="cam-slug"
                 value={form.slug}
@@ -819,14 +822,14 @@ function CampaignsTab({
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="cam-description">説明</Label>
+              <Label htmlFor="cam-description">{t("descriptionLabel")}</Label>
               <Textarea
                 id="cam-description"
                 value={form.description}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, description: e.target.value }))
                 }
-                placeholder="キャンペーンの詳細を入力..."
+                placeholder={t("descriptionPlaceholder")}
                 rows={4}
                 maxLength={5000}
               />
@@ -834,7 +837,7 @@ function CampaignsTab({
 
             {/* Hero Image URL */}
             <div className="space-y-2">
-              <Label htmlFor="cam-hero-image">ヒーロー画像URL</Label>
+              <Label htmlFor="cam-hero-image">{t("heroImageUrl")}</Label>
               <Input
                 id="cam-hero-image"
                 value={form.hero_image_url}
@@ -847,21 +850,21 @@ function CampaignsTab({
 
             {/* CTA Text */}
             <div className="space-y-2">
-              <Label htmlFor="cam-cta-text">CTAボタンのテキスト</Label>
+              <Label htmlFor="cam-cta-text">{t("ctaButtonText")}</Label>
               <Input
                 id="cam-cta-text"
                 value={form.cta_text}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, cta_text: e.target.value }))
                 }
-                placeholder="予約する"
+                placeholder={t("ctaButtonPlaceholder")}
                 maxLength={100}
               />
             </div>
 
             {/* CTA URL */}
             <div className="space-y-2">
-              <Label htmlFor="cam-cta-url">CTAリンク先URL（空欄でプロフィールページ）</Label>
+              <Label htmlFor="cam-cta-url">{t("ctaLinkUrl")}</Label>
               <Input
                 id="cam-cta-url"
                 value={form.cta_url}
@@ -874,7 +877,7 @@ function CampaignsTab({
 
             {/* Coupon */}
             <div className="space-y-2">
-              <Label htmlFor="cam-coupon">クーポン（任意）</Label>
+              <Label htmlFor="cam-coupon">{t("campaignCouponOptional")}</Label>
               <select
                 id="cam-coupon"
                 value={form.coupon_id}
@@ -883,7 +886,7 @@ function CampaignsTab({
                 }
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                <option value="">なし</option>
+                <option value="">{t("none")}</option>
                 {campaignCoupons.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.title} ({c.code})
@@ -894,7 +897,7 @@ function CampaignsTab({
 
             {/* Expiry */}
             <div className="space-y-2">
-              <Label htmlFor="cam-expires">期限日（任意）</Label>
+              <Label htmlFor="cam-expires">{t("expiryDate")}</Label>
               <Input
                 id="cam-expires"
                 type="date"
@@ -907,23 +910,23 @@ function CampaignsTab({
 
             {/* Template */}
             <div className="space-y-2">
-              <Label>テンプレート</Label>
+              <Label>{t("campaignTemplate")}</Label>
               <div className="grid grid-cols-2 gap-2">
-                {TEMPLATE_OPTIONS.map((t) => (
+                {TEMPLATE_OPTIONS.map((opt) => (
                   <button
-                    key={t.value}
+                    key={opt.value}
                     type="button"
                     onClick={() =>
-                      setForm((prev) => ({ ...prev, template: t.value }))
+                      setForm((prev) => ({ ...prev, template: opt.value }))
                     }
                     className={`rounded-md border p-3 text-left text-sm transition-colors ${
-                      form.template === t.value
+                      form.template === opt.value
                         ? "border-primary bg-primary/5 ring-1 ring-primary"
                         : "border-border hover:border-primary/50"
                     }`}
                   >
-                    <p className="font-medium">{t.label}</p>
-                    <p className="text-xs text-muted-foreground">{t.desc}</p>
+                    <p className="font-medium">{t(opt.labelKey)}</p>
+                    <p className="text-xs text-muted-foreground">{t(opt.descKey)}</p>
                   </button>
                 ))}
               </div>
@@ -931,7 +934,7 @@ function CampaignsTab({
 
             {/* Published toggle */}
             <div className="flex items-center justify-between">
-              <Label>公開する</Label>
+              <Label>{t("publishToggle")}</Label>
               <Button
                 type="button"
                 variant={form.is_published ? "default" : "outline"}
@@ -940,7 +943,7 @@ function CampaignsTab({
                   setForm((prev) => ({ ...prev, is_published: !prev.is_published }))
                 }
               >
-                {form.is_published ? "公開" : "下書き"}
+                {form.is_published ? t("publishedStatus") : t("draftStatus")}
               </Button>
             </div>
 
@@ -951,14 +954,14 @@ function CampaignsTab({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>
-              キャンセル
+              {t("cancel")}
             </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving
-                ? "保存中..."
+                ? t("saving")
                 : isEditing
-                  ? "更新する"
-                  : "作成する"}
+                  ? t("updateAction")
+                  : t("createAction")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -976,6 +979,7 @@ export default function ReferralsAndCampaignsPage() {
   const tabParam = searchParams.get("tab");
   const defaultTab = tabParam === "campaigns" ? "campaigns" : "referrals";
 
+  const { t } = useTranslation();
   const { isPro } = useProStatus();
 
   // Shared loading state
@@ -1057,7 +1061,7 @@ export default function ReferralsAndCampaignsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold">紹介・キャンペーン</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("referralsAndCampaigns")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -1067,20 +1071,20 @@ export default function ReferralsAndCampaignsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">紹介・キャンペーン</h1>
+      <h1 className="text-2xl font-bold">{t("referralsAndCampaigns")}</h1>
 
       <Tabs defaultValue={defaultTab}>
         <TabsList className="w-full">
           <TabsTrigger value="referrals" className="flex-1">
-            紹介プログラム
+            {t("referralProgramTab")}
           </TabsTrigger>
           <TabsTrigger value="campaigns" className="flex-1">
-            キャンペーン
+            {t("campaignTab")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="referrals">
-          <ProGate isPro={isPro} feature="紹介プログラム">
+          <ProGate isPro={isPro} feature={t("referralProgramFeature")}>
             <ReferralsTab
               referralCodes={referralCodes}
               setReferralCodes={setReferralCodes}
@@ -1093,7 +1097,7 @@ export default function ReferralsAndCampaignsPage() {
         </TabsContent>
 
         <TabsContent value="campaigns">
-          <ProGate isPro={isPro} feature="キャンペーンページ">
+          <ProGate isPro={isPro} feature={t("campaignPageFeature")}>
             <CampaignsTab
               campaigns={campaigns}
               setCampaigns={setCampaigns}

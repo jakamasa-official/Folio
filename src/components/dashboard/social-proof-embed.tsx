@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { APP_URL } from "@/lib/constants";
 import { Copy, Check, Code2 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 
 // ─── Types ──────────────────────────────────────────────
 
@@ -12,8 +13,8 @@ type WidgetMode = "badge" | "reviews" | "stats" | "full";
 
 interface ModeConfig {
   key: WidgetMode;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
   width: number;
   height: number;
 }
@@ -21,29 +22,29 @@ interface ModeConfig {
 const MODES: ModeConfig[] = [
   {
     key: "badge",
-    label: "バッジ",
-    description: "コンパクトなフローティングバッジ。評価・予約数・閲覧数をローテーション表示",
+    labelKey: "embed.badgeLabel",
+    descriptionKey: "embed.badgeDesc",
     width: 300,
     height: 60,
   },
   {
     key: "reviews",
-    label: "レビュー",
-    description: "レビューカルーセル。承認済みレビューを自動スクロール",
+    labelKey: "embed.reviewsLabel",
+    descriptionKey: "embed.reviewsDesc",
     width: 350,
     height: 200,
   },
   {
     key: "stats",
-    label: "統計バー",
-    description: "横一列の統計バー。評価・レビュー数・予約数を表示",
+    labelKey: "embed.statsLabel",
+    descriptionKey: "embed.statsDesc",
     width: 500,
     height: 50,
   },
   {
     key: "full",
-    label: "フル",
-    description: "総合表示。評価・最新レビュー・閲覧数を縦に配置",
+    labelKey: "embed.fullLabel",
+    descriptionKey: "embed.fullDesc",
     width: 350,
     height: 280,
   },
@@ -52,6 +53,7 @@ const MODES: ModeConfig[] = [
 // ─── Component ──────────────────────────────────────────
 
 export function SocialProofEmbed({ profileId }: { profileId: string }) {
+  const { t } = useTranslation();
   const [selectedMode, setSelectedMode] = useState<WidgetMode>("badge");
   const [copied, setCopied] = useState(false);
 
@@ -71,14 +73,14 @@ export function SocialProofEmbed({ profileId }: { profileId: string }) {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Code2 className="h-4 w-4" />
-          埋め込みウィジェット
+          {t("embed.widgetTitle")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Mode selector */}
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">
-            表示モード
+            {t("embed.displayMode")}
           </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {MODES.map((mode) => (
@@ -92,9 +94,9 @@ export function SocialProofEmbed({ profileId }: { profileId: string }) {
                     : "border-border bg-background hover:bg-muted/50"
                 }`}
               >
-                <p className="text-sm font-medium">{mode.label}</p>
+                <p className="text-sm font-medium">{t(mode.labelKey)}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                  {mode.description}
+                  {t(mode.descriptionKey)}
                 </p>
               </button>
             ))}
@@ -104,7 +106,7 @@ export function SocialProofEmbed({ profileId }: { profileId: string }) {
         {/* Live preview */}
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">
-            プレビュー
+            {t("embed.preview")}
           </p>
           <div className="overflow-hidden rounded-lg border bg-gray-50 p-4">
             <div
@@ -120,7 +122,7 @@ export function SocialProofEmbed({ profileId }: { profileId: string }) {
                 height={modeConfig.height}
                 frameBorder="0"
                 style={{ border: "none", overflow: "hidden" }}
-                title="ウィジェットプレビュー"
+                title={t("embed.widgetPreview")}
               />
             </div>
           </div>
@@ -129,7 +131,7 @@ export function SocialProofEmbed({ profileId }: { profileId: string }) {
         {/* Embed code */}
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">
-            埋め込みコード
+            {t("embed.embedCode")}
           </p>
           <div className="relative">
             <pre className="overflow-x-auto rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
@@ -146,11 +148,11 @@ export function SocialProofEmbed({ profileId }: { profileId: string }) {
               ) : (
                 <Copy className="h-3.5 w-3.5" />
               )}
-              {copied ? "コピー済み" : "コピー"}
+              {copied ? t("embed.copied") : t("embed.copy")}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            このコードをあなたのウェブサイトやブログのHTMLに貼り付けてください。
+            {t("embed.embedHelp")}
           </p>
         </div>
       </CardContent>

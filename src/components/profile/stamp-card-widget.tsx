@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { APP_URL } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n/client";
 
 const ICON_MAP: Record<string, string> = {
   star: "\u2B50",
@@ -31,6 +32,8 @@ interface StampCardWidgetProps {
 }
 
 export function StampCardWidget({ cards }: StampCardWidgetProps) {
+  const { t } = useTranslation();
+
   if (cards.length === 0) return null;
 
   return (
@@ -53,12 +56,12 @@ export function StampCardWidget({ cards }: StampCardWidgetProps) {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{card.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {card.total_stamps_required}スタンプで特典
+                  {t("stampCardReward", { count: String(card.total_stamps_required) })}
                   {card.reward_description ? ` - ${card.reward_description}` : ""}
                 </p>
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                スタンプカードを見る
+                {t("stampCardView")}
                 <ArrowRight className="h-3.5 w-3.5" />
               </div>
             </Link>

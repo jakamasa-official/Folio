@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslation } from "@/lib/i18n/client";
 import type { Profile, ContactSubmission } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -18,6 +18,7 @@ import {
 import { Mail, Trash2, Inbox, Reply, CheckCircle2 } from "lucide-react";
 
 export default function InboxPage() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +52,7 @@ export default function InboxPage() {
   }
 
   function handleReply(submission: ContactSubmission) {
-    const subject = encodeURIComponent("Re: お問い合わせの返信");
+    const subject = encodeURIComponent(t("inbox.replySubject"));
     const mailtoUrl = `mailto:${encodeURIComponent(submission.sender_email)}?subject=${subject}`;
     window.open(mailtoUrl, "_blank");
     markAsReplied(submission.id);
@@ -122,7 +123,7 @@ export default function InboxPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold">受信トレイ</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("inbox.pageTitle")}</h1>
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -133,9 +134,9 @@ export default function InboxPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold">受信トレイ</h1>
+        <h1 className="text-2xl font-bold">{t("inbox.pageTitle")}</h1>
         {unreadCount > 0 && (
-          <Badge variant="destructive">{unreadCount} 件未読</Badge>
+          <Badge variant="destructive">{t("inbox.unreadCount", { count: String(unreadCount) })}</Badge>
         )}
       </div>
 
@@ -143,7 +144,7 @@ export default function InboxPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <Inbox className="mb-4 h-12 w-12" />
-            <p>お問い合わせはまだありません</p>
+            <p>{t("inbox.empty")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -167,13 +168,13 @@ export default function InboxPage() {
                     </span>
                     {!submission.is_read && (
                       <Badge variant="secondary" className="text-xs">
-                        未読
+                        {t("inbox.unread")}
                       </Badge>
                     )}
                     {repliedIds.has(submission.id) && (
                       <Badge variant="outline" className="text-xs gap-1 text-green-600 border-green-300">
                         <CheckCircle2 className="h-3 w-3" />
-                        返信済み
+                        {t("inbox.replied")}
                       </Badge>
                     )}
                   </div>
@@ -196,7 +197,7 @@ export default function InboxPage() {
                       e.stopPropagation();
                       handleReply(submission);
                     }}
-                    title="返信"
+                    title={t("inbox.replyTitle")}
                   >
                     <Reply className="h-4 w-4" />
                   </Button>
@@ -242,7 +243,7 @@ export default function InboxPage() {
               variant="outline"
               onClick={() => setSelectedSubmission(null)}
             >
-              閉じる
+              {t("inbox.close")}
             </Button>
             <Button
               onClick={() => {
@@ -252,7 +253,7 @@ export default function InboxPage() {
               }}
             >
               <Reply className="mr-2 h-4 w-4" />
-              返信
+              {t("inbox.reply")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -267,21 +268,20 @@ export default function InboxPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>メッセージを削除</DialogTitle>
+            <DialogTitle>{t("inbox.deleteTitle")}</DialogTitle>
             <DialogDescription>
-              {deleteTarget?.sender_name}
-              からのメッセージを削除しますか？この操作は取り消せません。
+              {t("inbox.deleteConfirm", { name: deleteTarget?.sender_name || "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              キャンセル
+              {t("inbox.cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={() => deleteTarget && handleDelete(deleteTarget)}
             >
-              削除する
+              {t("inbox.deleteButton")}
             </Button>
           </DialogFooter>
         </DialogContent>

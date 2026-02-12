@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api-client";
+import { useTranslation } from "@/lib/i18n/client";
 
 // ──────────────────────────────────────────────────────────────
 // Types
@@ -29,6 +30,7 @@ export default function SegmentFilter({
   selectedSegmentId,
   onSegmentSelect,
 }: SegmentFilterProps) {
+  const { t } = useTranslation();
   const [segments, setSegments] = useState<SegmentInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,7 +44,7 @@ export default function SegmentFilter({
         );
       }
     } catch (err) {
-      console.error("セグメント取得エラー:", err);
+      console.error("Segment fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -79,7 +81,7 @@ export default function SegmentFilter({
             : "border-border bg-background text-muted-foreground hover:bg-muted"
         }`}
       >
-        全て
+        {t("segmentFilter.all")}
       </button>
 
       {/* Segment badges */}

@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_NAME } from "@/lib/constants";
 import { USERNAME_REGEX } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n/client";
+import { LanguageToggle } from "@/components/ui/language-toggle";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -18,6 +20,7 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState(false);
+  const { t } = useTranslation();
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -25,7 +28,7 @@ export default function SignupPage() {
     setLoading(true);
 
     if (!USERNAME_REGEX.test(username)) {
-      setError("ユーザー名は3〜30文字の英数字、ハイフン、アンダースコアのみ使用できます");
+      setError(t("usernameValidationError"));
       setLoading(false);
       return;
     }
@@ -40,7 +43,7 @@ export default function SignupPage() {
       .maybeSingle();
 
     if (existing) {
-      setError("このユーザー名は既に使用されています");
+      setError(t("usernameTakenError"));
       setLoading(false);
       return;
     }
@@ -74,7 +77,7 @@ export default function SignupPage() {
       });
 
       if (profileError) {
-        setError("プロフィールの作成に失敗しました。もう一度お試しください。");
+        setError(t("profileCreateError"));
         setLoading(false);
         return;
       }
@@ -95,19 +98,18 @@ export default function SignupPage() {
             <Link href="/" className="text-2xl font-bold tracking-tight">
               {APP_NAME}
             </Link>
-            <CardTitle className="mt-4 text-xl">メールを確認してください</CardTitle>
+            <CardTitle className="mt-4 text-xl">{t("confirmEmailTitle")}</CardTitle>
             <CardDescription>
-              <span className="font-medium text-foreground">{email}</span> に確認メールを送信しました。
-              メール内のリンクをクリックして、登録を完了してください。
+              {t("confirmEmailDescription", { email })}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-sm text-muted-foreground">
-              メールが届かない場合は、迷惑メールフォルダをご確認ください。
+              {t("confirmEmailSpamNote")}
             </p>
             <Link href="/login">
               <Button variant="outline" className="mt-6">
-                ログインページに戻る
+                {t("backToLogin")}
               </Button>
             </Link>
           </CardContent>
@@ -120,12 +122,15 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <div className="flex justify-end">
+            <LanguageToggle />
+          </div>
           <Link href="/" className="text-2xl font-bold tracking-tight">
             {APP_NAME}
           </Link>
-          <CardTitle className="mt-4 text-xl">新規登録</CardTitle>
+          <CardTitle className="mt-4 text-xl">{t("signupTitle")}</CardTitle>
           <CardDescription>
-            無料でプロフィールページを作成しましょう
+            {t("signupDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -136,13 +141,13 @@ export default function SignupPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="username">ユーザー名</Label>
+              <Label htmlFor="username">{t("usernameLabel")}</Label>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <span>folio.jp/</span>
+                <span>{t("usernamePrefix")}</span>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="your-name"
+                  placeholder={t("usernamePlaceholder")}
                   value={username}
                   onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
                   required
@@ -154,11 +159,11 @@ export default function SignupPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="displayName">表示名</Label>
+              <Label htmlFor="displayName">{t("displayNameLabel")}</Label>
               <Input
                 id="displayName"
                 type="text"
-                placeholder="山田 太郎"
+                placeholder={t("displayNamePlaceholder")}
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 required
@@ -166,11 +171,11 @@ export default function SignupPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">メールアドレス</Label>
+              <Label htmlFor="email">{t("emailLabel")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -178,11 +183,11 @@ export default function SignupPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">パスワード</Label>
+              <Label htmlFor="password">{t("passwordLabel")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="6文字以上"
+                placeholder={t("passwordMinLength")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -191,13 +196,13 @@ export default function SignupPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "登録中..." : "無料で始める"}
+              {loading ? t("signupLoading") : t("signupButton")}
             </Button>
           </form>
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            既にアカウントをお持ちですか？{" "}
+            {t("hasAccountPrompt")}{" "}
             <Link href="/login" className="text-primary underline">
-              ログイン
+              {t("loginLink")}
             </Link>
           </div>
         </CardContent>

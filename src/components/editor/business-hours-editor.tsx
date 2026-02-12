@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "@/lib/i18n/client";
 import { DAYS_OF_WEEK, type BusinessHours } from "@/lib/types";
 
 interface BusinessHoursEditorProps {
@@ -19,6 +20,7 @@ function getDefaultHours(): BusinessHours {
 }
 
 export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProps) {
+  const { t } = useTranslation();
   const hours = value || getDefaultHours();
 
   const updateDay = useCallback(
@@ -63,7 +65,7 @@ export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProp
 
             {/* Time inputs */}
             {isClosed ? (
-              <span className="text-sm text-muted-foreground">定休日</span>
+              <span className="text-sm text-muted-foreground">{t("businessHoursClosed")}</span>
             ) : (
               <div className="flex items-center gap-1">
                 <Input

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Calendar, AtSign, ArrowRight, Target } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 import type { AnalyticsData } from "./types";
 
 interface ConversionsTabProps {
@@ -9,6 +10,8 @@ interface ConversionsTabProps {
 }
 
 export function ConversionsTab({ data }: ConversionsTabProps) {
+  const { t } = useTranslation();
+
   const clickRate = data.totalViews > 0
     ? ((data.totalClicks / data.totalViews) * 100).toFixed(1)
     : "0.0";
@@ -19,17 +22,17 @@ export function ConversionsTab({ data }: ConversionsTabProps) {
 
   const conversionTypes = [
     {
-      label: "お問い合わせ",
+      label: t("analytics.contactSubmit"),
       count: data.conversions.contact_submit,
       icon: Mail,
     },
     {
-      label: "予約",
+      label: t("analytics.bookingSubmit"),
       count: data.conversions.booking_submit,
       icon: Calendar,
     },
     {
-      label: "メール購読",
+      label: t("analytics.emailSubscribe"),
       count: data.conversions.email_subscribe,
       icon: AtSign,
     },
@@ -40,14 +43,14 @@ export function ConversionsTab({ data }: ConversionsTabProps) {
       {/* Funnel overview */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">コンバージョンファネル</CardTitle>
+          <CardTitle className="text-base">{t("analytics.conversionFunnel")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between gap-2">
             {/* Page views */}
             <div className="flex-1 rounded-lg bg-muted p-4 text-center">
               <p className="text-2xl font-bold">{data.totalViews.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-muted-foreground">ページビュー</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("analytics.pageViewsLabel")}</p>
             </div>
 
             {/* Arrow + percentage */}
@@ -59,7 +62,7 @@ export function ConversionsTab({ data }: ConversionsTabProps) {
             {/* Clicks */}
             <div className="flex-1 rounded-lg bg-muted p-4 text-center">
               <p className="text-2xl font-bold">{data.totalClicks.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-muted-foreground">クリック</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("analytics.clicksLabel")}</p>
             </div>
 
             {/* Arrow + percentage */}
@@ -71,7 +74,7 @@ export function ConversionsTab({ data }: ConversionsTabProps) {
             {/* Conversions */}
             <div className="flex-1 rounded-lg bg-muted p-4 text-center">
               <p className="text-2xl font-bold">{data.conversions.total.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-muted-foreground">コンバージョン</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("analytics.conversionsLabel")}</p>
             </div>
           </div>
         </CardContent>
@@ -80,7 +83,7 @@ export function ConversionsTab({ data }: ConversionsTabProps) {
       {/* Breakdown by type */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">コンバージョン内訳</CardTitle>
+          <CardTitle className="text-base">{t("analytics.conversionBreakdown")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {conversionTypes.map((type) => {
@@ -113,8 +116,8 @@ export function ConversionsTab({ data }: ConversionsTabProps) {
               <Target className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-medium">全体コンバージョン率</p>
-              <p className="text-xs text-muted-foreground">ページビューからコンバージョンへの割合</p>
+              <p className="text-sm font-medium">{t("analytics.overallConversionRate")}</p>
+              <p className="text-xs text-muted-foreground">{t("analytics.conversionRateDescription")}</p>
             </div>
           </div>
           <p className="text-3xl font-bold tabular-nums">{data.conversionRate.toFixed(1)}%</p>

@@ -5,6 +5,7 @@ const UAParser = require("ua-parser-js");
 
 // Rate limit: 1 click per profile+link+IP per 5 minutes
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
+let lastCleanup = Date.now();
 
 function checkRateLimit(
   key: string,
@@ -12,6 +13,13 @@ function checkRateLimit(
   windowMs: number
 ): boolean {
   const now = Date.now();
+  // Periodically purge expired entries to prevent unbounded growth
+  if (now - lastCleanup > 10 * 60 * 1000) {
+    for (const [k, v] of rateLimit) {
+      if (now > v.resetAt) rateLimit.delete(k);
+    }
+    lastCleanup = now;
+  }
   const entry = rateLimit.get(key);
   if (!entry || now > entry.resetAt) {
     rateLimit.set(key, { count: 1, resetAt: now + windowMs });
@@ -36,9 +44,17 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!profile_id || !link_id || !link_url) {
-      // Always return success to avoid leaking info
       return NextResponse.json({ success: true }, { status: 200 });
     }
+
+    // Truncate string fields to prevent storage bloat
+    const safeStr = (v: unknown, max: number) =>
+      typeof v === "string" ? v.slice(0, max) : undefined;
+    const safeLinkUrl = safeStr(link_url, 2000) as string;
+    const safeLinkLabel = safeStr(link_label, 200);
+    const safeUtmSource = safeStr(utm_source, 200);
+    const safeUtmMedium = safeStr(utm_medium, 200);
+    const safeUtmCampaign = safeStr(utm_campaign, 200);
 
     // Get request metadata from headers
     const headersList = request.headers;
@@ -63,17 +79,17 @@ export async function POST(request: NextRequest) {
     await supabaseAdmin.from("link_clicks").insert({
       profile_id,
       link_id,
-      link_url,
-      link_label: link_label || null,
+      link_url: safeLinkUrl,
+      link_label: safeLinkLabel || null,
       clicked_at: new Date().toISOString(),
       referrer,
       device_type,
       browser,
       os,
       country,
-      utm_source: utm_source || null,
-      utm_medium: utm_medium || null,
-      utm_campaign: utm_campaign || null,
+      utm_source: safeUtmSource || null,
+      utm_medium: safeUtmMedium || null,
+      utm_campaign: safeUtmCampaign || null,
     });
 
     return NextResponse.json({ success: true }, { status: 200 });

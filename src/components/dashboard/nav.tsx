@@ -29,6 +29,8 @@ import {
   Zap,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "@/lib/i18n/client";
+import { LanguageToggle } from "@/components/ui/language-toggle";
 
 // --- Badge hook: fetches unread inbox + pending bookings counts ---
 function useNavBadges() {
@@ -143,6 +145,7 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
 const MARKETING_STORAGE_KEY = "folio-marketing-nav-open";
 
 function MarketingSection({ pathname }: { pathname: string }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -162,11 +165,11 @@ function MarketingSection({ pathname }: { pathname: string }) {
   }, []);
 
   const items: NavItem[] = [
-    { href: "/dashboard/stamps", label: "スタンプ・クーポン", icon: Stamp },
-    { href: "/dashboard/messages", label: "メッセージ配信", icon: MessageSquare },
-    { href: "/dashboard/automations", label: "自動化", icon: Zap, tourId: "automations" },
-    { href: "/dashboard/referrals", label: "紹介・キャンペーン", icon: Megaphone },
-    { href: "/dashboard/line", label: "LINE連携", icon: MessageCircle },
+    { href: "/dashboard/stamps", label: t("nav.stamps"), icon: Stamp },
+    { href: "/dashboard/messages", label: t("nav.messages"), icon: MessageSquare },
+    { href: "/dashboard/automations", label: t("nav.automations"), icon: Zap, tourId: "automations" },
+    { href: "/dashboard/referrals", label: t("nav.referrals"), icon: Megaphone },
+    { href: "/dashboard/line", label: t("nav.line"), icon: MessageCircle },
   ];
 
   return (
@@ -181,7 +184,7 @@ function MarketingSection({ pathname }: { pathname: string }) {
             !isOpen && "-rotate-90"
           )}
         />
-        マーケティング
+        {t("nav.marketing")}
       </button>
       <div
         className={cn(
@@ -211,14 +214,15 @@ function NavContent({
 }) {
   const pathname = usePathname();
   const { inboxCount, bookingsCount } = useNavBadges();
+  const { t } = useTranslation();
 
   const coreItems: NavItem[] = [
-    { href: "/dashboard", label: "マイページ", icon: Home, tourId: "nav-mypage" },
-    { href: "/dashboard/analytics", label: "アナリティクス", icon: BarChart3, tourId: "nav-analytics" },
-    { href: "/dashboard/inbox", label: "受信トレイ", icon: Inbox, tourId: "nav-inbox", badge: inboxCount },
-    { href: "/dashboard/bookings", label: "予約管理", icon: Calendar, tourId: "nav-bookings", badge: bookingsCount },
-    { href: "/dashboard/customers", label: "顧客管理", icon: Users, tourId: "nav-customers" },
-    { href: "/dashboard/reviews", label: "レビュー", icon: Star, tourId: "reviews" },
+    { href: "/dashboard", label: t("nav.mypage"), icon: Home, tourId: "nav-mypage" },
+    { href: "/dashboard/analytics", label: t("nav.analytics"), icon: BarChart3, tourId: "nav-analytics" },
+    { href: "/dashboard/inbox", label: t("nav.inbox"), icon: Inbox, tourId: "nav-inbox", badge: inboxCount },
+    { href: "/dashboard/bookings", label: t("nav.bookings"), icon: Calendar, tourId: "nav-bookings", badge: bookingsCount },
+    { href: "/dashboard/customers", label: t("nav.customers"), icon: Users, tourId: "nav-customers" },
+    { href: "/dashboard/reviews", label: t("nav.reviews"), icon: Star, tourId: "reviews" },
   ];
 
   return (
@@ -243,12 +247,12 @@ function NavContent({
         {/* Settings + Billing */}
         <div className="mt-4 space-y-1">
           <NavLink
-            item={{ href: "/dashboard/settings", label: "設定", icon: Settings, tourId: "nav-settings" }}
+            item={{ href: "/dashboard/settings", label: t("nav.settings"), icon: Settings, tourId: "nav-settings" }}
             pathname={pathname}
           />
           {isPro ? (
             <NavLink
-              item={{ href: "/dashboard/billing", label: "プランと請求", icon: CreditCard }}
+              item={{ href: "/dashboard/billing", label: t("nav.planAndBilling"), icon: CreditCard }}
               pathname={pathname}
             />
           ) : (
@@ -262,7 +266,7 @@ function NavContent({
               )}
             >
               <Crown className="h-4 w-4" />
-              <span className="flex-1">アップグレード</span>
+              <span className="flex-1">{t("nav.upgrade")}</span>
               <Sparkles className="h-3.5 w-3.5" />
             </Link>
           )}
@@ -270,6 +274,9 @@ function NavContent({
       </nav>
 
       <div className="border-t p-3 space-y-1">
+        <div className="px-3 py-1">
+          <LanguageToggle variant="ghost" size="sm" />
+        </div>
         {username && (
           <Link
             href={`/${username}`}
@@ -278,7 +285,7 @@ function NavContent({
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ExternalLink className="h-4 w-4" />
-            ページを見る
+            {t("nav.viewPage")}
           </Link>
         )}
         <button
@@ -286,7 +293,7 @@ function NavContent({
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <LogOut className="h-4 w-4" />
-          ログアウト
+          {t("nav.logout")}
         </button>
       </div>
     </div>

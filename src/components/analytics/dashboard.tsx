@@ -12,6 +12,7 @@ import { VisitorsTab } from "./visitors-tab";
 import { LinksTab } from "./links-tab";
 import { ConversionsTab } from "./conversions-tab";
 import { RealtimeBadge } from "./realtime-badge";
+import { useTranslation } from "@/lib/i18n/client";
 import type { AnalyticsData } from "./types";
 
 interface Props {
@@ -22,9 +23,11 @@ interface Props {
 }
 
 export function AnalyticsDashboard({ data, username, range, onRangeChange }: Props) {
+  const { t } = useTranslation();
+
   function copyUrl() {
     navigator.clipboard.writeText(`${APP_URL}/${username}`);
-    toast.success("URLをコピーしました");
+    toast.success(t("analytics.copiedUrl"));
   }
 
   return (
@@ -33,7 +36,7 @@ export function AnalyticsDashboard({ data, username, range, onRangeChange }: Pro
       <Card>
         <CardContent className="flex items-center justify-between pt-6">
           <div>
-            <p className="text-sm text-muted-foreground">あなたのページURL</p>
+            <p className="text-sm text-muted-foreground">{t("analytics.yourPageUrl")}</p>
             <p className="font-mono text-sm">
               {APP_URL.replace(/https?:\/\//, "")}/{username}
             </p>
@@ -42,7 +45,7 @@ export function AnalyticsDashboard({ data, username, range, onRangeChange }: Pro
             <RealtimeBadge count={data.realtimeViewers} />
             <Button variant="outline" size="sm" onClick={copyUrl}>
               <Copy className="mr-1 h-4 w-4" />
-              コピー
+              {t("analytics.copy")}
             </Button>
           </div>
         </CardContent>
@@ -51,11 +54,11 @@ export function AnalyticsDashboard({ data, username, range, onRangeChange }: Pro
       {/* Tabbed layout */}
       <Tabs defaultValue="overview">
         <TabsList className="w-full">
-          <TabsTrigger value="overview">概要</TabsTrigger>
-          <TabsTrigger value="traffic">流入元</TabsTrigger>
-          <TabsTrigger value="visitors">訪問者</TabsTrigger>
-          <TabsTrigger value="links">リンク</TabsTrigger>
-          <TabsTrigger value="conversions">コンバージョン</TabsTrigger>
+          <TabsTrigger value="overview">{t("analytics.tabOverview")}</TabsTrigger>
+          <TabsTrigger value="traffic">{t("analytics.tabTraffic")}</TabsTrigger>
+          <TabsTrigger value="visitors">{t("analytics.tabVisitors")}</TabsTrigger>
+          <TabsTrigger value="links">{t("analytics.tabLinks")}</TabsTrigger>
+          <TabsTrigger value="conversions">{t("analytics.tabConversions")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">

@@ -19,7 +19,8 @@ function checkRateLimit(key: string, maxRequests: number, windowMs: number): boo
 }
 
 function signToken(profileId: string, timestamp: number): string {
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "fallback-secret";
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for token signing");
   const payload = `${profileId}:${timestamp}`;
   const signature = crypto
     .createHmac("sha256", secret)
@@ -39,7 +40,8 @@ export function verifyToken(token: string, profileId: string): boolean {
     if (tokenProfileId !== profileId) return false;
     if (Date.now() - timestamp > 24 * 60 * 60 * 1000) return false;
 
-    const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "fallback-secret";
+    const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!secret) return false;
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(`${tokenProfileId}:${timestampStr}`)

@@ -23,6 +23,7 @@ import type { Profile, ProfileLink, TemplateId } from "@/lib/types";
 import { FREE_TEMPLATES } from "@/lib/types";
 import { APP_URL, ALLOWED_IMAGE_TYPES, MAX_AVATAR_SIZE, APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n/client";
 
 const WIZARD_PROGRESS_KEY = "folio-onboarding-step";
 
@@ -71,18 +72,18 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
 
 // --- Step 1: Welcome ---
 function WelcomeStep({ onNext }: { onNext: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center text-center px-4">
       <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
         <Sparkles className="h-8 w-8 text-primary" />
       </div>
-      <h2 className="text-2xl font-bold mb-2">{APP_NAME}へようこそ！</h2>
+      <h2 className="text-2xl font-bold mb-2">{t("wizard.welcomeTitle", { appName: APP_NAME })}</h2>
       <p className="text-muted-foreground mb-8 max-w-sm">
-        あなたのプロフィールページを数分で作成しましょう。
-        基本情報の設定、リンクの追加、テンプレートの選択を行います。
+        {t("wizard.welcomeDescription")}
       </p>
       <Button size="lg" onClick={onNext} className="gap-2">
-        始めましょう
+        {t("wizard.letsStart")}
         <ChevronRight className="h-4 w-4" />
       </Button>
     </div>
@@ -106,16 +107,18 @@ function AvatarInfoStep({
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const { t } = useTranslation();
+
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      alert("JPEG、PNG、WebP、GIF形式の画像を選択してください");
+      alert(t("wizard.imageFormatError"));
       return;
     }
     if (file.size > MAX_AVATAR_SIZE) {
-      alert("ファイルサイズは5MB以下にしてください");
+      alert(t("wizard.fileSizeError"));
       return;
     }
 
@@ -134,7 +137,7 @@ function AvatarInfoStep({
       onUpdate({ avatar_url: publicUrl });
     } catch (err) {
       console.error("Avatar upload error:", err);
-      alert("アバターのアップロードに失敗しました");
+      alert(t("wizard.uploadFailed"));
     }
     setUploading(false);
   }
@@ -166,8 +169,8 @@ function AvatarInfoStep({
         <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
           <Upload className="h-6 w-6 text-primary" />
         </div>
-        <h2 className="text-xl font-bold mb-1">プロフィール情報</h2>
-        <p className="text-sm text-muted-foreground">アバターと基本情報を設定しましょう</p>
+        <h2 className="text-xl font-bold mb-1">{t("wizard.profileInfo")}</h2>
+        <p className="text-sm text-muted-foreground">{t("wizard.profileInfoDesc")}</p>
       </div>
 
       <div className="space-y-4">
@@ -184,7 +187,7 @@ function AvatarInfoStep({
           </div>
           <label className="cursor-pointer">
             <span className="text-sm text-primary hover:underline">
-              {uploading ? "アップロード中..." : "画像を選択"}
+              {uploading ? t("wizard.uploading") : t("wizard.selectImage")}
             </span>
             <input
               type="file"
@@ -198,34 +201,34 @@ function AvatarInfoStep({
 
         {/* Display name */}
         <div className="space-y-2">
-          <Label htmlFor="wiz-name">表示名</Label>
+          <Label htmlFor="wiz-name">{t("wizard.displayName")}</Label>
           <Input
             id="wiz-name"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="山田 太郎"
+            placeholder={t("wizard.displayNamePlaceholder")}
           />
         </div>
 
         {/* Title */}
         <div className="space-y-2">
-          <Label htmlFor="wiz-title">肩書き（任意）</Label>
+          <Label htmlFor="wiz-title">{t("wizard.title")}</Label>
           <Input
             id="wiz-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="デザイナー / カフェオーナー"
+            placeholder={t("wizard.titlePlaceholder")}
           />
         </div>
 
         {/* Bio */}
         <div className="space-y-2">
-          <Label htmlFor="wiz-bio">自己紹介（任意）</Label>
+          <Label htmlFor="wiz-bio">{t("wizard.bio")}</Label>
           <textarea
             id="wiz-bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="簡単な自己紹介を書きましょう"
+            placeholder={t("wizard.bioPlaceholder")}
             className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             maxLength={500}
           />
@@ -244,14 +247,14 @@ function AvatarInfoStep({
               )}
             </div>
             <div className="min-w-0">
-              <p className="font-medium text-sm truncate">{displayName || "表示名"}</p>
+              <p className="font-medium text-sm truncate">{displayName || t("wizard.displayName")}</p>
               {title && <p className="text-xs text-muted-foreground truncate">{title}</p>}
             </div>
           </CardContent>
         </Card>
 
         <Button className="w-full" onClick={handleSave} disabled={saving || !displayName.trim()}>
-          {saving ? "保存中..." : "次へ"}
+          {saving ? t("wizard.saving") : t("wizard.next")}
         </Button>
       </div>
     </div>
@@ -268,6 +271,7 @@ function AddLinkStep({
   onUpdate: (p: Partial<Profile>) => void;
   onNext: () => void;
 }) {
+  const { t } = useTranslation();
   const [links, setLinks] = useState<{ label: string; url: string }[]>(
     profile.links?.length
       ? profile.links.map((l) => ({ label: l.label, url: l.url }))
@@ -318,9 +322,9 @@ function AddLinkStep({
         <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
           <LinkIcon className="h-6 w-6 text-primary" />
         </div>
-        <h2 className="text-xl font-bold mb-1">リンクを追加</h2>
+        <h2 className="text-xl font-bold mb-1">{t("wizard.addLinks")}</h2>
         <p className="text-sm text-muted-foreground">
-          訪問者に見せたいリンクを追加しましょう。SNS、ウェブサイト、ポートフォリオなど。
+          {t("wizard.addLinksDesc")}
         </p>
       </div>
 
@@ -328,7 +332,7 @@ function AddLinkStep({
         {links.map((link, i) => (
           <div key={i} className="space-y-2 rounded-lg border p-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">リンク {i + 1}</span>
+              <span className="text-xs font-medium text-muted-foreground">{t("wizard.linkNumber", { n: String(i + 1) })}</span>
               {links.length > 1 && (
                 <button
                   onClick={() => removeLink(i)}
@@ -339,7 +343,7 @@ function AddLinkStep({
               )}
             </div>
             <Input
-              placeholder="タイトル（例：Instagram）"
+              placeholder={t("wizard.linkTitlePlaceholder")}
               value={link.label}
               onChange={(e) => updateLink(i, "label", e.target.value)}
             />
@@ -355,11 +359,11 @@ function AddLinkStep({
 
       <Button variant="outline" size="sm" onClick={addLink} className="mb-4 gap-1.5 w-full">
         <Plus className="h-4 w-4" />
-        リンクを追加
+        {t("wizard.addAnotherLink")}
       </Button>
 
       <Button className="w-full" onClick={handleSave} disabled={saving || !hasValidLink}>
-        {saving ? "保存中..." : "次へ"}
+        {saving ? t("wizard.saving") : t("wizard.next")}
       </Button>
     </div>
   );
@@ -375,6 +379,7 @@ function TemplateStep({
   onUpdate: (p: Partial<Profile>) => void;
   onNext: () => void;
 }) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<TemplateId>(profile.template || "professional");
   const [saving, setSaving] = useState(false);
 
@@ -393,8 +398,8 @@ function TemplateStep({
         <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
           <Palette className="h-6 w-6 text-primary" />
         </div>
-        <h2 className="text-xl font-bold mb-1">テンプレートを選択</h2>
-        <p className="text-sm text-muted-foreground">プロフィールページのデザインを選びましょう</p>
+        <h2 className="text-xl font-bold mb-1">{t("wizard.chooseTemplate")}</h2>
+        <p className="text-sm text-muted-foreground">{t("wizard.chooseTemplateDesc")}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-6">
@@ -439,7 +444,7 @@ function TemplateStep({
       </div>
 
       <Button className="w-full" onClick={handleSave} disabled={saving}>
-        {saving ? "保存中..." : "次へ"}
+        {saving ? t("wizard.saving") : t("wizard.next")}
       </Button>
     </div>
   );
@@ -455,6 +460,7 @@ function PreviewStep({
   onUpdate: (p: Partial<Profile>) => void;
   onNext: () => void;
 }) {
+  const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
   const profileUrl = `${APP_URL}/${profile.username}`;
 
@@ -473,8 +479,8 @@ function PreviewStep({
         <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
           <Eye className="h-6 w-6 text-primary" />
         </div>
-        <h2 className="text-xl font-bold mb-1">プレビュー＆公開</h2>
-        <p className="text-sm text-muted-foreground">内容を確認して公開しましょう</p>
+        <h2 className="text-xl font-bold mb-1">{t("wizard.previewAndPublish")}</h2>
+        <p className="text-sm text-muted-foreground">{t("wizard.previewAndPublishDesc")}</p>
       </div>
 
       {/* Mini profile preview */}
@@ -511,7 +517,7 @@ function PreviewStep({
                 ))}
                 {profile.links.length > 3 && (
                   <p className="text-xs text-muted-foreground">
-                    +{profile.links.length - 3} 件のリンク
+                    {t("wizard.moreLinks", { count: String(profile.links.length - 3) })}
                   </p>
                 )}
               </div>
@@ -521,11 +527,11 @@ function PreviewStep({
       </Card>
 
       <p className="text-xs text-muted-foreground text-center mb-4">
-        公開URL: <span className="font-mono">{profileUrl}</span>
+        {t("wizard.publishUrl")} <span className="font-mono">{profileUrl}</span>
       </p>
 
       <Button className="w-full" size="lg" onClick={handlePublish} disabled={saving}>
-        {saving ? "公開中..." : "公開する"}
+        {saving ? t("wizard.publishing") : t("wizard.publish")}
       </Button>
     </div>
   );
@@ -541,6 +547,7 @@ function DoneStep({
   onDashboard: () => void;
   onTutorial: () => void;
 }) {
+  const { t } = useTranslation();
   const profileUrl = `${APP_URL}/${profile.username}`;
   const [copied, setCopied] = useState(false);
 
@@ -556,10 +563,9 @@ function DoneStep({
       <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
         <PartyPopper className="h-8 w-8 text-green-600" />
       </div>
-      <h2 className="text-2xl font-bold mb-2">プロフィールが公開されました！</h2>
+      <h2 className="text-2xl font-bold mb-2">{t("wizard.publishedTitle")}</h2>
       <p className="text-muted-foreground mb-6 max-w-sm">
-        おめでとうございます！あなたのプロフィールページが公開されました。
-        リンクをシェアしましょう。
+        {t("wizard.publishedDescription")}
       </p>
 
       {/* Share URL */}
@@ -569,7 +575,7 @@ function DoneStep({
             {profileUrl}
           </span>
           <Button variant="outline" size="sm" onClick={handleCopy}>
-            {copied ? "コピー済み" : "コピー"}
+            {copied ? t("dashboard.copied") : t("dashboard.copy")}
           </Button>
         </div>
       </div>
@@ -592,10 +598,10 @@ function DoneStep({
 
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
         <Button className="flex-1" onClick={onDashboard}>
-          ダッシュボードへ
+          {t("wizard.goToDashboard")}
         </Button>
         <Button variant="outline" className="flex-1" onClick={onTutorial}>
-          チュートリアルを見る
+          {t("wizard.viewTutorial")}
         </Button>
       </div>
     </div>
@@ -637,8 +643,10 @@ export function OnboardingWizard({
     setStep((prev) => prev + 1);
   }, []);
 
+  const { t } = useTranslation();
+
   function handleSkip() {
-    if (confirm("セットアップをスキップしますか？後からダッシュボードで設定できます。")) {
+    if (confirm(t("wizard.skipConfirm"))) {
       handleDone();
     }
   }
@@ -666,7 +674,7 @@ export function OnboardingWizard({
             onClick={handleSkip}
             className="absolute top-2 right-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            後でやる
+            {t("wizard.skipLater")}
             <X className="h-3.5 w-3.5" />
           </button>
         )}

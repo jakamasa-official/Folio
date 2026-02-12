@@ -7,12 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface ContactFormProps {
   profileId: string;
 }
 
 export function ContactForm({ profileId }: ContactFormProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -40,7 +42,7 @@ export function ContactForm({ profileId }: ContactFormProps) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "送信に失敗しました");
+        throw new Error(data.error || t("contactSendError"));
       }
 
       setSuccess(true);
@@ -48,7 +50,7 @@ export function ContactForm({ profileId }: ContactFormProps) {
       setEmail("");
       setMessage("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "送信に失敗しました");
+      setError(err instanceof Error ? err.message : t("contactSendError"));
     } finally {
       setLoading(false);
     }
@@ -57,13 +59,13 @@ export function ContactForm({ profileId }: ContactFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">お問い合わせ</CardTitle>
+        <CardTitle className="text-lg">{t("contactTitle")}</CardTitle>
       </CardHeader>
       <CardContent>
         {success ? (
           <div className="flex items-center gap-2 rounded-md bg-green-50 p-4 text-sm text-green-800">
             <Check className="h-4 w-4 shrink-0" />
-            お問い合わせを送信しました
+            {t("contactSuccessMessage")}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,18 +76,18 @@ export function ContactForm({ profileId }: ContactFormProps) {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="contact-name">お名前 *</Label>
+              <Label htmlFor="contact-name">{t("contactNameLabel")}</Label>
               <Input
                 id="contact-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="山田 太郎"
+                placeholder={t("contactNamePlaceholder")}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contact-email">メールアドレス *</Label>
+              <Label htmlFor="contact-email">{t("contactEmailLabel")}</Label>
               <Input
                 id="contact-email"
                 type="email"
@@ -97,12 +99,12 @@ export function ContactForm({ profileId }: ContactFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contact-message">メッセージ *</Label>
+              <Label htmlFor="contact-message">{t("contactMessageLabel")}</Label>
               <Textarea
                 id="contact-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="お問い合わせ内容をご記入ください..."
+                placeholder={t("contactMessagePlaceholder")}
                 rows={4}
                 required
               />
@@ -110,11 +112,11 @@ export function ContactForm({ profileId }: ContactFormProps) {
 
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? (
-                "送信中..."
+                t("contactSending")
               ) : (
                 <>
                   <Send className="mr-1 h-4 w-4" />
-                  送信する
+                  {t("contactSendButton")}
                 </>
               )}
             </Button>

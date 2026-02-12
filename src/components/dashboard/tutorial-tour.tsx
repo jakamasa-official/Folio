@@ -4,55 +4,56 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/client";
 
 const TOUR_COMPLETED_KEY = "folio-tour-completed";
 
 export interface TourStep {
   targetSelector: string; // data-tour-id value
-  title: string;
-  body: string;
+  titleKey: string;
+  bodyKey: string;
 }
 
 const TOUR_STEPS: TourStep[] = [
   {
     targetSelector: "nav-mypage",
-    title: "マイページ",
-    body: "ここでプロフィールの編集、リンクの追加、テンプレートの変更ができます",
+    titleKey: "tour.mypageTitle",
+    bodyKey: "tour.mypageBody",
   },
   {
     targetSelector: "nav-analytics",
-    title: "アナリティクス",
-    body: "プロフィールの閲覧数やアクセス元を確認できます",
+    titleKey: "tour.analyticsTitle",
+    bodyKey: "tour.analyticsBody",
   },
   {
     targetSelector: "nav-inbox",
-    title: "受信トレイ",
-    body: "お問い合わせフォームから届いたメッセージを確認できます",
+    titleKey: "tour.inboxTitle",
+    bodyKey: "tour.inboxBody",
   },
   {
     targetSelector: "nav-bookings",
-    title: "予約管理",
-    body: "お客様からの予約を管理・確認できます",
+    titleKey: "tour.bookingsTitle",
+    bodyKey: "tour.bookingsBody",
   },
   {
     targetSelector: "nav-customers",
-    title: "顧客管理",
-    body: "お客様の情報を一元管理。予約やお問い合わせから自動で追加されます",
+    titleKey: "tour.customersTitle",
+    bodyKey: "tour.customersBody",
   },
   {
     targetSelector: "marketing-section",
-    title: "マーケティングツール",
-    body: "スタンプカード、クーポン、メッセージ配信、紹介プログラムなどの集客ツールです",
+    titleKey: "tour.marketingTitle",
+    bodyKey: "tour.marketingBody",
   },
   {
     targetSelector: "nav-settings",
-    title: "設定",
-    body: "アカウント設定、カスタムドメイン、通知設定などはこちらから",
+    titleKey: "tour.settingsTitle",
+    bodyKey: "tour.settingsBody",
   },
   {
     targetSelector: "nav-view-page",
-    title: "プロフィールを確認",
-    body: "公開中のプロフィールページをプレビューできます",
+    titleKey: "tour.viewPageTitle",
+    bodyKey: "tour.viewPageBody",
   },
 ];
 
@@ -110,6 +111,8 @@ function TourOverlay({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [tooltipPos, setTooltipPos] = useState<TooltipPosition>({ top: 0, left: 0, arrowSide: "left" });
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     const el = document.querySelector(`[data-tour-id="${step.targetSelector}"]`);
@@ -193,7 +196,7 @@ function TourOverlay({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-sm">{step.title}</h3>
+          <h3 className="font-semibold text-sm">{t(step.titleKey)}</h3>
           <button
             onClick={onSkip}
             className="shrink-0 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
@@ -201,17 +204,17 @@ function TourOverlay({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">{step.body}</p>
+        <p className="text-sm text-muted-foreground mb-4">{t(step.bodyKey)}</p>
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
             {currentIndex + 1} / {totalSteps}
           </span>
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" onClick={onSkip}>
-              スキップ
+              {t("tour.skip")}
             </Button>
             <Button size="sm" onClick={onNext}>
-              {isLast ? "完了" : "次へ"}
+              {isLast ? t("tour.done") : t("tour.next")}
             </Button>
           </div>
         </div>

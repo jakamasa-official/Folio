@@ -37,6 +37,7 @@ import { SocialProofEmbed } from "@/components/dashboard/social-proof-embed";
 import { apiFetch } from "@/lib/api-client";
 import { useProStatus } from "@/hooks/use-pro-status";
 import { ProGate } from "@/components/dashboard/pro-gate";
+import { useTranslation } from "@/lib/i18n/client";
 
 // ─── Types ─────────────────────────────────────────────
 
@@ -107,15 +108,16 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
 }
 
 function SourceBadge({ source }: { source: string }) {
-  const labels: Record<string, string> = {
-    direct: "直接",
-    request: "依頼",
-    manual: "手動",
-    qr_code: "QR",
+  const { t } = useTranslation();
+  const labelKeys: Record<string, string> = {
+    direct: "reviews.sourceDirect",
+    request: "reviews.sourceRequest",
+    manual: "reviews.sourceManual",
+    qr_code: "reviews.sourceQr",
   };
   return (
     <Badge variant="secondary" className="text-xs">
-      {labels[source] || source}
+      {labelKeys[source] ? t(labelKeys[source]) : source}
     </Badge>
   );
 }
@@ -131,6 +133,7 @@ function formatDate(dateStr: string) {
 // ─── Main Page ─────────────────────────────────────────
 
 export default function ReviewsPage() {
+  const { t } = useTranslation();
   const { isPro } = useProStatus();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<ReviewStats>({
@@ -159,7 +162,7 @@ export default function ReviewsPage() {
         }
       }
     } catch {
-      toast.error("レビューの取得に失敗しました");
+      toast.error(t("reviews.fetchError"));
     } finally {
       setLoading(false);
     }
@@ -188,7 +191,7 @@ export default function ReviewsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl">
-        <h1 className="mb-6 text-2xl font-bold">レビュー</h1>
+        <h1 className="mb-6 text-2xl font-bold">{t("reviews.title")}</h1>
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -198,14 +201,14 @@ export default function ReviewsPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <h1 className="text-2xl font-bold">レビュー</h1>
+      <h1 className="text-2xl font-bold">{t("reviews.title")}</h1>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">概要</TabsTrigger>
-          <TabsTrigger value="manage">レビュー管理</TabsTrigger>
-          <TabsTrigger value="request">レビュー依頼</TabsTrigger>
-          <TabsTrigger value="settings">設定</TabsTrigger>
+          <TabsTrigger value="overview">{t("reviews.tabOverview")}</TabsTrigger>
+          <TabsTrigger value="manage">{t("reviews.tabManage")}</TabsTrigger>
+          <TabsTrigger value="request">{t("reviews.tabRequest")}</TabsTrigger>
+          <TabsTrigger value="settings">{t("reviews.tabSettings")}</TabsTrigger>
         </TabsList>
 
         {/* ─── Tab 1: Overview ─── */}
@@ -223,7 +226,7 @@ export default function ReviewsPage() {
 
         {/* ─── Tab 3: Request ─── */}
         <TabsContent value="request">
-          <ProGate isPro={isPro} feature="レビュー収集">
+          <ProGate isPro={isPro} feature={t("reviews.proFeature")}>
             <RequestTab profileId={profileId} reviews={reviews} />
           </ProGate>
         </TabsContent>
@@ -246,6 +249,7 @@ function OverviewTab({
   reviews: Review[];
   stats: ReviewStats;
 }) {
+  const { t } = useTranslation();
   const maxDistribution = Math.max(...Object.values(stats.distribution), 1);
 
   return (
@@ -259,7 +263,7 @@ function OverviewTab({
             </p>
             <StarRating rating={Math.round(stats.averageRating)} size="md" />
             <p className="mt-1 text-sm text-muted-foreground">
-              平均評価
+              {t("reviews.averageRating")}
             </p>
           </CardContent>
         </Card>
@@ -267,7 +271,7 @@ function OverviewTab({
           <CardContent className="flex flex-col items-center justify-center py-6">
             <p className="text-4xl font-bold">{stats.approvedCount}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              公開レビュー
+              {t("reviews.publicReviews")}
             </p>
           </CardContent>
         </Card>
@@ -275,7 +279,7 @@ function OverviewTab({
           <CardContent className="flex flex-col items-center justify-center py-6">
             <p className="text-4xl font-bold">{stats.totalCount}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              全レビュー
+              {t("reviews.totalReviews")}
             </p>
           </CardContent>
         </Card>
@@ -284,7 +288,7 @@ function OverviewTab({
       {/* Rating distribution */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">評価分布</CardTitle>
+          <CardTitle className="text-base">{t("reviews.ratingDistribution")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -316,12 +320,12 @@ function OverviewTab({
       {/* Recent reviews */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">最近のレビュー</CardTitle>
+          <CardTitle className="text-base">{t("reviews.recentReviews")}</CardTitle>
         </CardHeader>
         <CardContent>
           {reviews.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">
-              まだレビューはありません
+              {t("reviews.noReviews")}
             </p>
           ) : (
             <div className="space-y-4">
@@ -349,10 +353,10 @@ function OverviewTab({
                       className="text-xs"
                     >
                       {review.status === "approved"
-                        ? "承認済み"
+                        ? t("reviews.statusApproved")
                         : review.status === "pending"
-                        ? "承認待ち"
-                        : "非公開"}
+                        ? t("reviews.statusPending")
+                        : t("reviews.statusRejected")}
                     </Badge>
                   </div>
                   {review.title && (
@@ -380,6 +384,7 @@ function ManageTab({
   reviews: Review[];
   onUpdate: () => void;
 }) {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState("all");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
@@ -405,13 +410,13 @@ function ManageTab({
       });
       if (res.ok) {
         onUpdate();
-        toast.success("レビューを更新しました");
+        toast.success(t("reviews.updateSuccess"));
       } else {
         const data = await res.json();
-        toast.error(data.error || "更新に失敗しました");
+        toast.error(data.error || t("reviews.updateError"));
       }
     } catch {
-      toast.error("更新に失敗しました");
+      toast.error(t("reviews.updateError"));
     } finally {
       setSaving(false);
     }
@@ -433,21 +438,21 @@ function ManageTab({
       });
       if (res.ok) {
         onUpdate();
-        toast.success("レビューを削除しました");
+        toast.success(t("reviews.deleteSuccess"));
         setDeleteTarget(null);
       }
     } catch {
-      toast.error("削除に失敗しました");
+      toast.error(t("reviews.deleteError"));
     } finally {
       setDeleting(false);
     }
   }
 
   const filterOptions = [
-    { key: "all", label: "全て" },
-    { key: "pending", label: "承認待ち" },
-    { key: "approved", label: "承認済み" },
-    { key: "rejected", label: "非公開" },
+    { key: "all", label: t("reviews.filterAll") },
+    { key: "pending", label: t("reviews.filterPending") },
+    { key: "approved", label: t("reviews.filterApproved") },
+    { key: "rejected", label: t("reviews.filterRejected") },
   ];
 
   return (
@@ -480,7 +485,7 @@ function ManageTab({
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <MessageSquare className="mb-4 h-12 w-12" />
-            <p>該当するレビューはありません</p>
+            <p>{t("reviews.emptyState")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -503,7 +508,7 @@ function ManageTab({
                       {review.verified && (
                         <Badge variant="secondary" className="gap-1 text-xs">
                           <ShieldCheck className="h-3 w-3" />
-                          確認済み
+                          {t("reviews.verified")}
                         </Badge>
                       )}
                     </div>
@@ -535,7 +540,7 @@ function ManageTab({
                     {review.response && (
                       <div className="mt-3 rounded-md bg-muted/50 p-3">
                         <p className="text-xs font-medium text-muted-foreground">
-                          オーナーからの返信
+                          {t("reviews.ownerReply")}
                         </p>
                         <p className="mt-1 text-sm">{review.response}</p>
                         {review.response_at && (
@@ -552,7 +557,7 @@ function ManageTab({
                         <Textarea
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
-                          placeholder="返信を入力..."
+                          placeholder={t("reviews.replyPlaceholder")}
                           rows={3}
                         />
                         <div className="flex gap-2">
@@ -561,7 +566,7 @@ function ManageTab({
                             onClick={() => handleReply(review.id)}
                             disabled={saving || !replyText.trim()}
                           >
-                            {saving ? "送信中..." : "返信する"}
+                            {saving ? t("reviews.replySending") : t("reviews.replyButton")}
                           </Button>
                           <Button
                             size="sm"
@@ -571,7 +576,7 @@ function ManageTab({
                               setReplyText("");
                             }}
                           >
-                            キャンセル
+                            {t("reviews.cancelButton")}
                           </Button>
                         </div>
                       </div>
@@ -592,7 +597,7 @@ function ManageTab({
                             }
                           >
                             <CheckCircle2 className="mr-1 h-3 w-3" />
-                            承認
+                            {t("reviews.approve")}
                           </Button>
                           <Button
                             size="sm"
@@ -605,7 +610,7 @@ function ManageTab({
                             }
                           >
                             <XCircle className="mr-1 h-3 w-3" />
-                            非公開
+                            {t("reviews.reject")}
                           </Button>
                         </>
                       )}
@@ -621,7 +626,7 @@ function ManageTab({
                           }
                         >
                           <XCircle className="mr-1 h-3 w-3" />
-                          非公開にする
+                          {t("reviews.makePrivate")}
                         </Button>
                       )}
                       {review.status === "rejected" && (
@@ -636,7 +641,7 @@ function ManageTab({
                           }
                         >
                           <CheckCircle2 className="mr-1 h-3 w-3" />
-                          承認する
+                          {t("reviews.makePublic")}
                         </Button>
                       )}
                       <Button
@@ -657,8 +662,8 @@ function ManageTab({
                           }`}
                         />
                         {review.is_featured
-                          ? "注目解除"
-                          : "注目に設定"}
+                          ? t("reviews.unfeature")
+                          : t("reviews.feature")}
                       </Button>
                       {replyingTo !== review.id && (
                         <Button
@@ -670,7 +675,7 @@ function ManageTab({
                           }}
                         >
                           <MessageSquare className="mr-1 h-3 w-3" />
-                          返信する
+                          {t("reviews.reply")}
                         </Button>
                       )}
                     </div>
@@ -701,22 +706,22 @@ function ManageTab({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>レビューを削除</DialogTitle>
+            <DialogTitle>{t("reviews.deleteTitle")}</DialogTitle>
             <DialogDescription>
               {deleteTarget?.reviewer_name}
-              のレビューを削除しますか？この操作は取り消せません。
+              {t("reviews.deleteConfirm")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              キャンセル
+              {t("reviews.cancelButton")}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={deleting}
             >
-              {deleting ? "削除中..." : "削除する"}
+              {deleting ? t("reviews.deleting") : t("reviews.deleteButton")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -734,6 +739,7 @@ function RequestTab({
   profileId: string;
   reviews: Review[];
 }) {
+  const { t } = useTranslation();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sending, setSending] = useState<string | null>(null);
@@ -775,7 +781,7 @@ function RequestTab({
 
   async function handleSendRequest(customer: Customer) {
     if (!customer.email) {
-      toast.error("この顧客にはメールアドレスが設定されていません");
+      toast.error(t("reviews.noEmailError"));
       return;
     }
     setSending(customer.id);
@@ -787,12 +793,12 @@ function RequestTab({
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(data.message || "レビュー依頼を送信しました");
+        toast.success(data.message || t("reviews.requestSent"));
       } else {
-        toast.error(data.error || "送信に失敗しました");
+        toast.error(data.error || t("reviews.sendError"));
       }
     } catch {
-      toast.error("送信に失敗しました");
+      toast.error(t("reviews.sendError"));
     } finally {
       setSending(null);
     }
@@ -808,13 +814,13 @@ function RequestTab({
       {/* Send request */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">顧客にレビューを依頼</CardTitle>
+          <CardTitle className="text-base">{t("reviews.requestTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="顧客名またはメールで検索..."
+              placeholder={t("reviews.searchCustomerPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -823,7 +829,7 @@ function RequestTab({
 
           {filteredCustomers.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">
-              顧客が見つかりません
+              {t("reviews.noCustomersFound")}
             </p>
           ) : (
             <div className="max-h-[300px] space-y-2 overflow-y-auto">
@@ -852,7 +858,7 @@ function RequestTab({
                     ) : (
                       <Send className="mr-1 h-3 w-3" />
                     )}
-                    メールで依頼
+                    {t("reviews.sendEmail")}
                   </Button>
                 </div>
               ))}
@@ -867,7 +873,7 @@ function RequestTab({
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <QrCode className="h-4 w-4" />
-              QRコードでレビュー収集
+              {t("reviews.qrTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -876,7 +882,7 @@ function RequestTab({
                 <div className="overflow-hidden rounded-lg border bg-white p-2">
                   <img
                     src={qrSrc}
-                    alt="レビューQRコード"
+                    alt={t("reviews.qrAlt")}
                     width={200}
                     height={200}
                   />
@@ -886,7 +892,7 @@ function RequestTab({
               )}
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  このQRコードを印刷して店頭に設置すると、お客様がスマートフォンで直接レビューを投稿できます。
+                  {t("reviews.qrDescription")}
                 </p>
                 <p className="break-all text-xs text-muted-foreground">
                   {APP_URL}/review/{profileId}
@@ -904,7 +910,7 @@ function RequestTab({
                     }}
                   >
                     <Download className="h-4 w-4" />
-                    ダウンロード
+                    {t("reviews.download")}
                   </Button>
                 )}
               </div>
@@ -917,7 +923,7 @@ function RequestTab({
       {sentRequests.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">送信済みリクエスト</CardTitle>
+            <CardTitle className="text-base">{t("reviews.sentRequests")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -935,7 +941,7 @@ function RequestTab({
                     </p>
                   </div>
                   <Badge variant="secondary" className="text-xs">
-                    回答待ち
+                    {t("reviews.awaitingResponse")}
                   </Badge>
                 </div>
               ))}
@@ -958,6 +964,7 @@ function SettingsTab({
   onUpdate: () => void;
   profileId: string;
 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState<ReviewSettings>({
     profile_id: "",
     reviews_enabled: true,
@@ -988,13 +995,13 @@ function SettingsTab({
       });
       if (res.ok) {
         onUpdate();
-        toast.success("設定を保存しました");
+        toast.success(t("reviews.settingsSaved"));
       } else {
         const data = await res.json();
-        toast.error(data.error || "保存に失敗しました");
+        toast.error(data.error || t("reviews.settingsSaveError"));
       }
     } catch {
-      toast.error("保存に失敗しました");
+      toast.error(t("reviews.settingsSaveError"));
     } finally {
       setSaving(false);
     }
@@ -1045,35 +1052,35 @@ function SettingsTab({
       <Toggle
         checked={form.reviews_enabled}
         onChange={(v) => setForm({ ...form, reviews_enabled: v })}
-        label="レビュー機能を有効にする"
-        description="オフにするとレビューセクションが非表示になります"
+        label={t("reviews.enableReviews")}
+        description={t("reviews.enableReviewsDesc")}
       />
 
       <Toggle
         checked={form.auto_approve}
         onChange={(v) => setForm({ ...form, auto_approve: v })}
-        label="自動承認"
-        description="新しいレビューを自動的に承認します"
+        label={t("reviews.autoApprove")}
+        description={t("reviews.autoApproveDesc")}
       />
 
       <Toggle
         checked={form.show_aggregate_rating}
         onChange={(v) => setForm({ ...form, show_aggregate_rating: v })}
-        label="平均評価を表示"
-        description="公開ページに平均評価を表示します"
+        label={t("reviews.showAggregateRating")}
+        description={t("reviews.showAggregateRatingDesc")}
       />
 
       <Toggle
         checked={form.request_after_booking}
         onChange={(v) => setForm({ ...form, request_after_booking: v })}
-        label="予約後に自動依頼"
-        description="予約完了後にレビュー依頼を自動送信します"
+        label={t("reviews.autoRequestAfterBooking")}
+        description={t("reviews.autoRequestAfterBookingDesc")}
       />
 
       <div className="rounded-lg border p-4">
-        <Label className="text-sm font-medium">表示する最低評価</Label>
+        <Label className="text-sm font-medium">{t("reviews.minRatingToShow")}</Label>
         <p className="mb-2 text-xs text-muted-foreground">
-          この評価以上のレビューのみ公開ページに表示されます
+          {t("reviews.minRatingToShowDesc")}
         </p>
         <Input
           type="number"
@@ -1091,15 +1098,15 @@ function SettingsTab({
       </div>
 
       <div className="rounded-lg border p-4">
-        <Label className="text-sm font-medium">表示スタイル</Label>
+        <Label className="text-sm font-medium">{t("reviews.displayStyle")}</Label>
         <p className="mb-2 text-xs text-muted-foreground">
-          公開ページでのレビューの表示方法を選択します
+          {t("reviews.displayStyleDesc")}
         </p>
         <div className="flex gap-2">
           {[
-            { value: "carousel", label: "カルーセル" },
-            { value: "grid", label: "グリッド" },
-            { value: "list", label: "リスト" },
+            { value: "carousel", label: t("reviews.styleCarousel") },
+            { value: "grid", label: t("reviews.styleGrid") },
+            { value: "list", label: t("reviews.styleList") },
           ].map((option) => (
             <button
               key={option.value}
@@ -1120,9 +1127,9 @@ function SettingsTab({
       </div>
 
       <div className="rounded-lg border p-4">
-        <Label className="text-sm font-medium">レビュー依頼メッセージ</Label>
+        <Label className="text-sm font-medium">{t("reviews.promptMessage")}</Label>
         <p className="mb-2 text-xs text-muted-foreground">
-          メール依頼時に使用されるメッセージです
+          {t("reviews.promptMessageDesc")}
         </p>
         <Textarea
           value={form.review_prompt_text}
@@ -1135,9 +1142,9 @@ function SettingsTab({
       </div>
 
       <div className="rounded-lg border p-4">
-        <Label className="text-sm font-medium">依頼までの待機時間（時間）</Label>
+        <Label className="text-sm font-medium">{t("reviews.delayHours")}</Label>
         <p className="mb-2 text-xs text-muted-foreground">
-          予約完了後からレビュー依頼メールを送信するまでの時間
+          {t("reviews.delayHoursDesc")}
         </p>
         <Input
           type="number"
@@ -1158,7 +1165,7 @@ function SettingsTab({
       </div>
 
       <Button onClick={handleSave} disabled={saving} className="w-full">
-        {saving ? "保存中..." : "設定を保存"}
+        {saving ? t("customers.saving") : t("reviews.saveSettings")}
       </Button>
 
       {/* Embed widget section */}

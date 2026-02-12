@@ -2,6 +2,7 @@
 
 import type { Profile } from "@/lib/types";
 import Image from "next/image";
+import { useTranslation } from "@/lib/i18n/client";
 
 interface SeoPreviewProps {
   profile: Profile;
@@ -9,6 +10,7 @@ interface SeoPreviewProps {
 }
 
 export function SeoPreview({ profile, appUrl }: SeoPreviewProps) {
+  const { t } = useTranslation();
   const url = `${appUrl}/${profile.username}`;
   const displayUrl = url.replace(/^https?:\/\//, "");
 
@@ -17,7 +19,7 @@ export function SeoPreview({ profile, appUrl }: SeoPreviewProps) {
     : profile.display_name;
 
   const description =
-    profile.bio || `${profile.display_name}のプロフィール`;
+    profile.bio || t("seoPreview.defaultDescription", { name: profile.display_name });
 
   // Truncate description for preview (approx 2 lines worth)
   const truncatedDescription =

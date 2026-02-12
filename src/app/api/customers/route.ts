@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       // Sanitize search input to prevent PostgREST filter injection
-      const sanitized = search.replace(/[%_.,()]/g, "");
+      const sanitized = search.replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\u3000-\u303F@\s-]/g, "").slice(0, 100);
       if (sanitized) {
         query = query.or(`name.ilike.%${sanitized}%,email.ilike.%${sanitized}%`);
       }

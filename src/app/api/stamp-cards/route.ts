@@ -95,9 +95,22 @@ export async function POST(request: NextRequest) {
       milestones,
     } = body;
 
-    if (!name || !total_stamps_required) {
+    if (!name || typeof name !== "string" || name.length > 200) {
       return NextResponse.json(
-        { error: "カード名とスタンプ数は必須です" },
+        { error: "カード名を入力してください（200文字以内）" },
+        { status: 400 }
+      );
+    }
+
+    if (
+      !total_stamps_required ||
+      typeof total_stamps_required !== "number" ||
+      !Number.isInteger(total_stamps_required) ||
+      total_stamps_required < 1 ||
+      total_stamps_required > 100
+    ) {
+      return NextResponse.json(
+        { error: "スタンプ数は1〜100の整数で指定してください" },
         { status: 400 }
       );
     }
