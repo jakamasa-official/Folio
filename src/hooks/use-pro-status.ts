@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api-client";
 
 export interface ProStatus {
   isPro: boolean;
@@ -22,7 +23,7 @@ export function useProStatus(): ProStatus {
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/profile/status")
+    apiFetch("/api/profile/status")
       .then((res) => res.json())
       .then((data) => {
         if (cancelled) return;
