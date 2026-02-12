@@ -27,6 +27,7 @@ import {
   CreditCard,
   Sparkles,
   Zap,
+  Code2,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "@/lib/i18n/client";
@@ -223,6 +224,7 @@ function NavContent({
     { href: "/dashboard/bookings", label: t("nav.bookings"), icon: Calendar, tourId: "nav-bookings", badge: bookingsCount },
     { href: "/dashboard/customers", label: t("nav.customers"), icon: Users, tourId: "nav-customers" },
     { href: "/dashboard/reviews", label: t("nav.reviews"), icon: Star, tourId: "reviews" },
+    { href: "/dashboard/embed", label: t("nav.embed"), icon: Code2, tourId: "nav-embed" },
   ];
 
   return (

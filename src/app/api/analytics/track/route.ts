@@ -4,6 +4,19 @@ import { getLocaleFromCookie, createTranslator } from "@/lib/i18n";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const UAParser = require("ua-parser-js");
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 // Rate limit: max 1 view per profile per IP per 10 minutes
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 
@@ -35,7 +48,7 @@ export async function POST(request: NextRequest) {
     if (!profile_id) {
       return NextResponse.json(
         { error: t("profileIdRequired") },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
@@ -58,7 +71,7 @@ export async function POST(request: NextRequest) {
     if (!checkRateLimit(rateLimitKey, 1, 10 * 60 * 1000)) {
       return NextResponse.json(
         { error: t("tooManyRequests") },
-        { status: 429 }
+        { status: 429, headers: CORS_HEADERS }
       );
     }
 
@@ -72,7 +85,7 @@ export async function POST(request: NextRequest) {
     if (!profileExists) {
       return NextResponse.json(
         { error: t("profileNotFound") },
-        { status: 404 }
+        { status: 404, headers: CORS_HEADERS }
       );
     }
 
@@ -93,15 +106,15 @@ export async function POST(request: NextRequest) {
       console.error("Page view record error:", error);
       return NextResponse.json(
         { error: t("pageViewRecordFailed") },
-        { status: 500 }
+        { status: 500, headers: CORS_HEADERS }
       );
     }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({ success: true }, { status: 200, headers: CORS_HEADERS });
   } catch {
     return NextResponse.json(
       { error: t("requestFailed") },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }
