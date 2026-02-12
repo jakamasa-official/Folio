@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_NAME, USERNAME_REGEX, APP_URL } from "@/lib/constants";
-import { Sparkles, Copy, Check, ExternalLink, QrCode, Download, Users, UserPlus, ArrowRight } from "lucide-react";
+import { Sparkles, Copy, Check, ExternalLink, QrCode, Download, Users, UserPlus, ArrowRight, Code2 } from "lucide-react";
 import Link from "next/link";
 import { SeoPreview } from "@/components/dashboard/seo-preview";
 import QRCode from "qrcode";
@@ -348,6 +348,7 @@ function OnboardingForm({ userId, defaultUsername, defaultDisplayName, onComplet
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
@@ -436,6 +437,21 @@ export default function DashboardPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-6 text-2xl font-bold">マイページ編集</h1>
       <ShareBar url={profileUrl} />
+
+      {/* Embed tip for Pro users */}
+      {profile.is_pro && (
+        <Link href="/dashboard/embed" className="block">
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 transition-colors hover:bg-primary/10">
+            <Code2 className="h-5 w-5 shrink-0 text-primary" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">{t("dashboard.embedTipTitle")}</p>
+              <p className="text-xs text-muted-foreground">{t("dashboard.embedTipDescription")}</p>
+            </div>
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+          </div>
+        </Link>
+      )}
+
       <QRCodeCard url={profileUrl} />
       <CustomerStatsBar />
       <Card className="mb-6">

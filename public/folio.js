@@ -95,10 +95,14 @@
   // --- MODULE 3: FLOATING BUTTON + POPUP ---
   var activePopup = null;
 
+  var fabCount = 0;
+
   function createFloatingButton(config) {
+    var bottomOffset = 20 + fabCount * 66;
+    fabCount++;
     var host = document.createElement("div");
-    host.id = "folio-fab-host";
-    host.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:999999;";
+    host.id = "folio-fab-host-" + fabCount;
+    host.style.cssText = "position:fixed;bottom:" + bottomOffset + "px;right:20px;z-index:999999;";
     var shadow = host.attachShadow({ mode: "open" });
 
     var styles = document.createElement("style");
@@ -213,15 +217,16 @@
   if (widgets["tracking"]) trackPageView();
   if (widgets["badge"]) renderBadge();
 
-  // Floating button (only one -- contact takes priority)
+  // Floating buttons (stacked vertically, bottom-up)
   if (widgets["contact-float"]) {
     createFloatingButton({
       icon: ICON_ENVELOPE, label: "Contact", color: "#2563eb",
       onClick: function() { createPopup(baseUrl + "/embed/contact/" + profileId + "?lang=" + encodeURIComponent(lang)); }
     });
-  } else if (widgets["review-float"]) {
+  }
+  if (widgets["review-float"]) {
     createFloatingButton({
-      icon: ICON_STAR, label: "Review", color: "#2563eb",
+      icon: ICON_STAR, label: "Review", color: "#f59e0b",
       onClick: function() { createPopup(baseUrl + "/embed/review/" + profileId + "?lang=" + encodeURIComponent(lang)); }
     });
   }

@@ -204,7 +204,7 @@ export default function SubscribeEmbed() {
       {/* Powered by */}
       <div style={{ marginTop: 10, textAlign: "center" }}>
         <a
-          href="https://and-folio.com"
+          href="https://folio-for-everyone.vercel.app"
           target="_blank"
           rel="noopener noreferrer"
           style={{

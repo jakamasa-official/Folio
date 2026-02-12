@@ -31,6 +31,8 @@ export const dashboard: Record<string, string> = {
   "dashboard.copied": "Copied",
   "dashboard.copy": "Copy",
   "dashboard.preview": "Preview",
+  "dashboard.embedTipTitle": "Have your own website?",
+  "dashboard.embedTipDescription": "Add Folio features like contact forms, reviews, and tracking with a single script tag.",
 
   // ─── QR Code card ─────────────────────────────────────
   "dashboard.qrCode": "QR Code",

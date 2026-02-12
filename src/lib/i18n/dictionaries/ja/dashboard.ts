@@ -31,6 +31,8 @@ export const dashboard: Record<string, string> = {
   "dashboard.copied": "コピー済み",
   "dashboard.copy": "コピー",
   "dashboard.preview": "プレビュー",
+  "dashboard.embedTipTitle": "自分のウェブサイトをお持ちですか？",
+  "dashboard.embedTipDescription": "スクリプトタグ1つで、お問い合わせフォーム・レビュー・アクセス解析などのFolio機能を追加できます。",
 
   // ─── QR Code card ─────────────────────────────────────
   "dashboard.qrCode": "QRコード",
