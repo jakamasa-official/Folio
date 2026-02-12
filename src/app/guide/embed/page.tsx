@@ -550,7 +550,7 @@ export default function RootLayout({ children }) {
       </section>
 
       {/* ── Click Tracking ─────────────────────────────────── */}
-      <section className="border-t py-16">
+      <section id="click-tracking" className="border-t py-16 scroll-mt-16">
         <div className="mx-auto max-w-3xl px-4">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">

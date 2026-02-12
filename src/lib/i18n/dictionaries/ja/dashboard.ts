@@ -194,6 +194,9 @@ export const dashboard: Record<string, string> = {
   "embed.step1": "上のスクリプトコードをコピー",
   "embed.step2": "ウェブサイトの</body>タグの前にペースト",
   "embed.step3": "インラインウィジェットの場合、コンテナdivを配置",
+  "embed.clickTrackingTitle": "ボタンのクリックも計測したいですか？",
+  "embed.clickTrackingDesc": "「電話する」「メニューを見る」「予約する」など、訪問者がウェブサイト上でどのボタンやリンクを最もクリックしているか確認できます。プログラミング経験は不要です。",
+  "embed.clickTrackingLink": "設定方法を見る",
 
   // ─── Layout ───────────────────────────────────────────
   "layout.tutorialTooltip": "チュートリアルを見る",

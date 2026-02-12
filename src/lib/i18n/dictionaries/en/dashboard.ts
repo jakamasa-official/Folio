@@ -194,6 +194,9 @@ export const dashboard: Record<string, string> = {
   "embed.step1": "Copy the script code above",
   "embed.step2": "Paste it before the </body> tag on your website",
   "embed.step3": "For inline widgets, add the container divs where you want them",
+  "embed.clickTrackingTitle": "Want to track button clicks too?",
+  "embed.clickTrackingDesc": "You can see which buttons and links visitors click the most on your website — like \"Call Us\", \"View Menu\", or \"Book Now\". No coding experience needed.",
+  "embed.clickTrackingLink": "See how to set it up",
 
   // ─── Layout ───────────────────────────────────────────
   "layout.tutorialTooltip": "View Tutorial",

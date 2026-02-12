@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ProGate } from "@/components/dashboard/pro-gate";
 import { APP_URL } from "@/lib/constants";
-import { Copy, Check, Code2, Info } from "lucide-react";
+import { Copy, Check, Code2, Info, MousePointerClick, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 // ─── Types ──────────────────────────────────────────────
 
@@ -344,6 +345,28 @@ export default function EmbedPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Click tracking guide link */}
+      <div className="rounded-xl border bg-card p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <MousePointerClick className="h-4.5 w-4.5 text-primary" />
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium">{t("embed.clickTrackingTitle")}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t("embed.clickTrackingDesc")}
+            </p>
+            <Link
+              href="/guide/embed#click-tracking"
+              className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            >
+              {t("embed.clickTrackingLink")}
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
