@@ -7,6 +7,7 @@ import { customers } from "./customers";
 import { dashboard } from "./dashboard";
 import { editor } from "./editor";
 import { emails } from "./emails";
+import { guideEmbed } from "./guide-embed";
 import { landing } from "./landing";
 import { legal } from "./legal";
 import { marketing } from "./marketing";
@@ -25,6 +26,7 @@ export const en: Record<string, Record<string, string>> = {
   dashboard,
   editor,
   emails,
+  "guide-embed": guideEmbed,
   landing,
   legal,
   marketing,
