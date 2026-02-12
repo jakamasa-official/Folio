@@ -20,7 +20,7 @@ import {
   Download,
   Shield,
 } from "lucide-react";
-import type { Profile } from "@/lib/types";
+import { type Profile, isProUser } from "@/lib/types";
 import { USERNAME_REGEX, APP_URL } from "@/lib/constants";
 
 // --- Notification preferences stored in localStorage ---
@@ -366,7 +366,7 @@ function DomainTab({ profile, onProfileUpdate }: { profile: Profile | null; onPr
   if (!profile) return null;
 
   // Pro-only gate
-  if (!profile.is_pro) {
+  if (!isProUser(profile)) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">

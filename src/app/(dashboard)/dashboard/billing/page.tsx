@@ -20,7 +20,7 @@ import {
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { Profile } from "@/lib/types";
+import { type Profile, isProUser } from "@/lib/types";
 
 function BillingToggle({
   isYearly,
@@ -447,7 +447,7 @@ export default function BillingPage() {
   if (!stripeConfigured) return <StripeNotConfiguredView />;
   if (!profile) return null;
 
-  if (profile.is_pro) {
+  if (isProUser(profile)) {
     return <ActivePlanView profile={profile} loading={actionLoading} onManage={handleManage} />;
   }
 

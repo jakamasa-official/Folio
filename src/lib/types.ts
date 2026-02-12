@@ -66,6 +66,11 @@ export interface Profile {
   updated_at: string;
 }
 
+/** Returns true for both Pro and Pro+ users */
+export function isProUser(profile: Pick<Profile, "is_pro" | "plan_tier">): boolean {
+  return profile.is_pro || profile.plan_tier === "pro" || profile.plan_tier === "pro_plus";
+}
+
 export interface ProfileSlide {
   id: string;
   type: "image" | "content";

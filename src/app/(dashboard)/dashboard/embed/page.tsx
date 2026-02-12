@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTranslation } from "@/lib/i18n/client";
-import type { Profile } from "@/lib/types";
+import { type Profile, isProUser } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -375,7 +375,7 @@ export default function EmbedPage() {
       <h1 className="text-2xl font-bold">{t("embed.pageTitle")}</h1>
       <p className="text-muted-foreground">{t("embed.pageDescription")}</p>
 
-      <ProGate isPro={profile.is_pro} feature={t("embed.proFeature")}>
+      <ProGate isPro={isProUser(profile)} feature={t("embed.proFeature")}>
         {content}
       </ProGate>
     </div>

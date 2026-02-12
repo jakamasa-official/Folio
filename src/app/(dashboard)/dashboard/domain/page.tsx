@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTranslation } from "@/lib/i18n/client";
-import type { Profile } from "@/lib/types";
+import { type Profile, isProUser } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,7 +102,7 @@ export default function DomainPage() {
   if (!profile) return null;
 
   // Pro-only gate
-  if (!profile.is_pro) {
+  if (!isProUser(profile)) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <h1 className="text-2xl font-bold">{t("domain.pageTitle")}</h1>

@@ -16,7 +16,7 @@ export async function GET() {
 
     const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
-      .select("id, is_pro")
+      .select("id, is_pro, plan_tier")
       .eq("user_id", user.id)
       .single();
 
@@ -43,8 +43,10 @@ export async function GET() {
         .eq("profile_id", profile.id),
     ]);
 
+    const isPro = profile.is_pro || (profile.plan_tier && profile.plan_tier !== "free");
+
     return NextResponse.json({
-      is_pro: profile.is_pro ?? false,
+      is_pro: isPro ?? false,
       customer_count: customerResult.count ?? 0,
       stamp_card_count: stampCardResult.count ?? 0,
       coupon_count: couponResult.count ?? 0,

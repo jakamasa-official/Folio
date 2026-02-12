@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { apiFetch } from "@/lib/api-client";
 import { ProfileEditor } from "@/components/editor/profile-editor";
-import type { Profile } from "@/lib/types";
+import { type Profile, isProUser } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -439,7 +439,7 @@ export default function DashboardPage() {
       <ShareBar url={profileUrl} />
 
       {/* Embed tip for Pro users */}
-      {profile.is_pro && (
+      {isProUser(profile) && (
         <Link href="/dashboard/embed" className="block">
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 transition-colors hover:bg-primary/10">
             <Code2 className="h-5 w-5 shrink-0 text-primary" />
