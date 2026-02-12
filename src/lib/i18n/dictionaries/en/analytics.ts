@@ -54,6 +54,8 @@ export const analytics: Record<string, string> = {
   "analytics.clickCount": "Clicks",
   "analytics.ctr": "CTR",
   "analytics.totalClicks": "Total Clicks",
+  "analytics.filterByType": "Filter:",
+  "analytics.noMatchingClicks": "No clicks match the selected filters",
 
   // ─── Conversions tab ────────────────────────────────
   "analytics.conversionFunnel": "Conversion Funnel",

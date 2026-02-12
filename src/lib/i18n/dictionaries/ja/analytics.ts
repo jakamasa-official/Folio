@@ -54,6 +54,8 @@ export const analytics: Record<string, string> = {
   "analytics.clickCount": "クリック数",
   "analytics.ctr": "CTR",
   "analytics.totalClicks": "合計クリック数",
+  "analytics.filterByType": "フィルター：",
+  "analytics.noMatchingClicks": "選択したフィルターに一致するクリックがありません",
 
   // ─── Conversions tab ────────────────────────────────
   "analytics.conversionFunnel": "コンバージョンファネル",
