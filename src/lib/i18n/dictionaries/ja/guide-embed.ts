@@ -144,16 +144,52 @@ export const guideEmbed = {
   // --- Click Tracking Section ---
   clickTrackingTitle: "クリック計測",
   clickTrackingDesc:
-    "ウェブサイト上でどのリンクやボタンが訪問者にクリックされているか知りたいですか？任意の要素にシンプルな属性を追加するだけで、Folioが自動的に計測します。結果はアナリティクスダッシュボードの「リンク」タブで確認できます。",
-  clickTrackingHowTitle: "クリック計測の追加方法",
-  clickTrackingHowDesc:
-    "計測したいリンクやボタンに data-folio-track=\"ラベル\" を追加します。設定したラベル名がアナリティクスダッシュボードに表示されます。",
-  clickTrackingFullTitle: "完全な例",
-  clickTrackingFullDesc:
-    "複数の計測要素を含む完全な例です。同じページにFolioスクリプト（tracking有効）が含まれている必要があります。",
-  clickTrackingTipTitle: "ヒント：分かりやすいラベルを使いましょう",
+    "訪問者がどのボタンやリンクをよくクリックしているか確認できます。プログラミングの経験は不要です。リンクやボタンに短いラベルを追加するだけで、Folioが自動的にクリック数をカウントします。",
+
+  clickWhatTitle: "クリック計測とは？",
+  clickWhatDesc:
+    "訪問者がウェブサイト上のリンクやボタンをクリックするたびに、Folioがカウントします。例えば「電話する」を何人がタップしたか、「メニューを見る」を何人がクリックしたか、「予約する」を何人が押したかなどがわかります。訪問者が何に興味を持っているかを理解するのに役立ちます。",
+
+  clickHowTitle: "仕組み — ひとつ追加するだけ",
+  clickHowDesc:
+    "計測したいリンクやボタンに data-folio-track という短いテキストを追加します。引用符の中に、そのボタンの名前（ラベル）を書きます。この名前がダッシュボードに表示されます。",
+  clickBefore: "変更前（計測なし）：",
+  clickAfter: "変更後（計測あり！）：",
+  clickLabelExplain:
+    "「Phone Call」の部分は自由に決められるラベル名です。ボタンの役割がわかる名前を選んでください。ダッシュボードにそのまま表示されます。",
+
+  clickRecipesTitle: "コピペで使えるサンプル",
+  clickRecipesDesc:
+    "よく計測されるボタンの例です。必要なものをコピーして、テキストをあなたのウェブサイトに合わせて変更してください。",
+
+  clickPlatformTitle: "プラットフォーム別の追加方法",
+  clickPlatformWpTitle: "WordPress",
+  clickPlatformWpStep1: "WordPressエディターで、計測したいボタンまたはリンクをクリックします。",
+  clickPlatformWpStep2: "ブロックツールバーの三点メニュー（⋮）をクリックし、「HTMLとして編集」を選択します。",
+  clickPlatformWpStep3: "<a>または<button>タグを見つけて、タグ名のすぐ後に data-folio-track=\"ラベル名\" を追加します。",
+  clickPlatformWpStep4: "再度三点メニューをクリックして「ビジュアルで編集」に戻ります。ページを保存します。",
+
+  clickPlatformWixTitle: "Wix",
+  clickPlatformWixStep1: "計測したいリンクまたはボタンをクリックし、「リンクを編集」を選択します。",
+  clickPlatformWixStep2: "リンク設定で「追加属性」または「カスタム属性」を探し、data-folio-track=\"ラベル名\" を追加します。",
+  clickPlatformWixStep3: "カスタム属性が見つからない場合は、WixのHTML埋め込みブロックを使用して、トラッキングラベル付きのリンクをHTMLで直接記述してください。",
+
+  clickPlatformSqTitle: "Squarespace",
+  clickPlatformSqStep1: "Squarespaceのビジュアルエディターではボタンにカスタム属性を追加できません。",
+  clickPlatformSqStep2: "代わりに「コードブロック」（挿入 > コード）を使って、data-folio-track属性付きのリンクをHTMLで直接記述してください。",
+  clickPlatformSqStep3: "保存してプレビューし、リンクが正しく表示されることを確認してください。",
+
+  clickPlatformHtmlTitle: "カスタムHTMLウェブサイト",
+  clickPlatformHtmlDesc:
+    "自分でHTMLを書いている場合は、任意の<a>や<button>タグに data-folio-track=\"ラベル\" を追加するだけです。以下はページ全体の例です：",
+
+  clickResultsTitle: "結果の確認方法",
+  clickResultsDesc:
+    "ダッシュボード > アナリティクス > リンクタブで確認できます。計測中のすべてのボタンとクリック数が表示されます。チェックボックスフィルターでボタンの種類ごとに表示・非表示を切り替えられます。外部ウェブサイトからのクリックだけを見たい場合（Folioプロフィールからのクリックを除く）は、アナリティクスページ上部の「外部サイト」トグルを使用してください。",
+
+  clickTrackingTipTitle: "ヒント：短くわかりやすいラベルを使いましょう",
   clickTrackingTipDesc:
-    "「電話」「メニューを見る」「予約する」など、アナリティクスで見分けやすいラベルを選びましょう。クリックデータはダッシュボード > アナリティクス > リンクタブで確認でき、「外部サイト」でフィルターするとウェブサイトからのクリックのみ表示されます。",
+    "良い例：「Phone Call」「View Menu」「Book Now」「Instagram」。長い文章は避けて、2〜3語のラベルにするとダッシュボードで読みやすくなります。",
 
   // --- Inline Widgets ---
   inlineTitle: "インラインウィジェット（上級者向け）",

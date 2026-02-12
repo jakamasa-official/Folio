@@ -105,16 +105,24 @@ export default async function GuideEmbedPage() {
   data-lang="ja"
   defer></script>`;
 
-  const clickTrackingExample = `<!-- Basic: track a button click -->
-<a href="/shop" data-folio-track="Shop Now">Shop Now</a>
+  const clickTrackingBefore = `<a href="tel:090-1234-5678">Call Us</a>`;
 
-<!-- Track a CTA button -->
-<button data-folio-track="Get Quote">Get a Quote</button>
+  const clickTrackingAfter = `<a href="tel:090-1234-5678" data-folio-track="Phone Call">Call Us</a>`;
 
-<!-- Track a phone number link -->
-<a href="tel:090-1234-5678" data-folio-track="Phone Call">
-  Call Us
-</a>`;
+  const clickTrackingRecipes = `<!-- Phone number -->
+<a href="tel:090-1234-5678" data-folio-track="Phone Call">Call Us</a>
+
+<!-- Email -->
+<a href="mailto:info@example.com" data-folio-track="Email">Email Us</a>
+
+<!-- Menu / Price list -->
+<a href="/menu" data-folio-track="View Menu">View Menu</a>
+
+<!-- Reservation / Booking -->
+<a href="/reserve" data-folio-track="Book Now">Book Now</a>
+
+<!-- Social media -->
+<a href="https://instagram.com/you" data-folio-track="Instagram">Instagram</a>`;
 
   const clickTrackingHtmlExample = `<body>
   <h1>My Business</h1>
@@ -554,29 +562,105 @@ export default function RootLayout({ children }) {
             {t("clickTrackingDesc")}
           </p>
 
-          <div className="space-y-6">
-            <div>
-              <h3 className="mb-2 text-lg font-semibold">{t("clickTrackingHowTitle")}</h3>
-              <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
-                {t("clickTrackingHowDesc")}
-              </p>
-              <CodeBlock code={clickTrackingExample} />
+          {/* What is it — plain language */}
+          <div className="mb-8 rounded-xl border bg-card p-6">
+            <h3 className="mb-3 text-lg font-semibold">{t("clickWhatTitle")}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t("clickWhatDesc")}
+            </p>
+          </div>
+
+          {/* The one thing you add */}
+          <div className="mb-8 space-y-4">
+            <h3 className="text-lg font-semibold">{t("clickHowTitle")}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t("clickHowDesc")}
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-red-500">{t("clickBefore")}</p>
+                <div className="rounded-lg border border-red-200 bg-red-50/50 p-4">
+                  <code className="text-xs text-muted-foreground break-all">{clickTrackingBefore}</code>
+                </div>
+              </div>
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-green-600">{t("clickAfter")}</p>
+                <div className="rounded-lg border border-green-200 bg-green-50/50 p-4">
+                  <code className="text-xs text-muted-foreground break-all">{clickTrackingAfter}</code>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <h3 className="mb-2 text-lg font-semibold">{t("clickTrackingFullTitle")}</h3>
-              <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
-                {t("clickTrackingFullDesc")}
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t("clickLabelExplain")}
+            </p>
+          </div>
+
+          {/* Copy-paste recipes */}
+          <div className="mb-8 space-y-4">
+            <h3 className="text-lg font-semibold">{t("clickRecipesTitle")}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t("clickRecipesDesc")}
+            </p>
+            <CodeBlock code={clickTrackingRecipes} />
+          </div>
+
+          {/* Platform instructions */}
+          <div className="mb-8 space-y-6">
+            <h3 className="text-lg font-semibold">{t("clickPlatformTitle")}</h3>
+
+            {/* WordPress */}
+            <PlatformSection title={t("clickPlatformWpTitle")}>
+              <ol className="list-decimal pl-5 space-y-2 text-sm text-muted-foreground">
+                <li>{t("clickPlatformWpStep1")}</li>
+                <li>{t("clickPlatformWpStep2")}</li>
+                <li>{t("clickPlatformWpStep3")}</li>
+                <li>{t("clickPlatformWpStep4")}</li>
+              </ol>
+            </PlatformSection>
+
+            {/* Wix */}
+            <PlatformSection title={t("clickPlatformWixTitle")}>
+              <ol className="list-decimal pl-5 space-y-2 text-sm text-muted-foreground">
+                <li>{t("clickPlatformWixStep1")}</li>
+                <li>{t("clickPlatformWixStep2")}</li>
+                <li>{t("clickPlatformWixStep3")}</li>
+              </ol>
+            </PlatformSection>
+
+            {/* Squarespace */}
+            <PlatformSection title={t("clickPlatformSqTitle")}>
+              <ol className="list-decimal pl-5 space-y-2 text-sm text-muted-foreground">
+                <li>{t("clickPlatformSqStep1")}</li>
+                <li>{t("clickPlatformSqStep2")}</li>
+                <li>{t("clickPlatformSqStep3")}</li>
+              </ol>
+            </PlatformSection>
+
+            {/* HTML */}
+            <PlatformSection title={t("clickPlatformHtmlTitle")}>
+              <p className="mb-4 text-sm text-muted-foreground">
+                {t("clickPlatformHtmlDesc")}
               </p>
               <CodeBlock code={clickTrackingHtmlExample} />
-            </div>
+            </PlatformSection>
+          </div>
 
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-              <h4 className="mb-1 text-sm font-semibold">{t("clickTrackingTipTitle")}</h4>
-              <p className="text-sm text-muted-foreground">
-                {t("clickTrackingTipDesc")}
-              </p>
-            </div>
+          {/* Where to see results */}
+          <div className="mb-8 rounded-xl border bg-card p-6">
+            <h3 className="mb-3 text-lg font-semibold">{t("clickResultsTitle")}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t("clickResultsDesc")}
+            </p>
+          </div>
+
+          {/* Tips */}
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <h4 className="mb-1 text-sm font-semibold">{t("clickTrackingTipTitle")}</h4>
+            <p className="text-sm text-muted-foreground">
+              {t("clickTrackingTipDesc")}
+            </p>
           </div>
         </div>
       </section>

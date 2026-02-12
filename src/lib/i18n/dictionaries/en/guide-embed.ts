@@ -139,16 +139,52 @@ export const guideEmbed = {
   // --- Click Tracking Section ---
   clickTrackingTitle: "Click Tracking",
   clickTrackingDesc:
-    "Want to know which links and buttons visitors are clicking on your website? Add a simple attribute to any element and Folio will track it automatically. Results appear in your Analytics dashboard under the Links tab.",
-  clickTrackingHowTitle: "How to Add Click Tracking",
-  clickTrackingHowDesc:
-    "Add data-folio-track=\"Label\" to any link or button you want to track. The label you choose will appear in your analytics dashboard.",
-  clickTrackingFullTitle: "Full Example",
-  clickTrackingFullDesc:
-    "Here is a complete example with multiple tracked elements. Note that the Folio script (with tracking enabled) must be included on the same page.",
-  clickTrackingTipTitle: "Tip: Use descriptive labels",
+    "Find out which buttons and links your visitors click the most. No coding experience needed — just add a small label to any link or button, and Folio counts the clicks for you.",
+
+  clickWhatTitle: "What is click tracking?",
+  clickWhatDesc:
+    "Every time a visitor clicks a link or button on your website, Folio can count it. For example, you can see how many people tapped \"Call Us\", clicked \"View Menu\", or pressed \"Book Now\". This helps you understand what your visitors are most interested in.",
+
+  clickHowTitle: "How it works — one small addition",
+  clickHowDesc:
+    "You add a short piece of text called data-folio-track to any link or button you want to track. Inside the quotes, you write a name (label) for that button — this is what appears in your dashboard.",
+  clickBefore: "Before (no tracking):",
+  clickAfter: "After (tracked!):",
+  clickLabelExplain:
+    "The label \"Phone Call\" is whatever name you choose. Pick something that helps you remember what the button does. It will show up exactly like that in your analytics.",
+
+  clickRecipesTitle: "Ready-to-use examples",
+  clickRecipesDesc:
+    "Here are common buttons you might want to track. Copy the one you need and change the text to match your website.",
+
+  clickPlatformTitle: "How to add it on your platform",
+  clickPlatformWpTitle: "WordPress",
+  clickPlatformWpStep1: "In the WordPress editor, click on the button or link you want to track.",
+  clickPlatformWpStep2: "Click the three-dot menu (⋮) on the block toolbar and choose \"Edit as HTML\".",
+  clickPlatformWpStep3: "Find the <a> or <button> tag and add data-folio-track=\"Your Label\" inside it, right after the opening tag name.",
+  clickPlatformWpStep4: "Click the three-dot menu again and choose \"Edit visually\" to go back. Save the page.",
+
+  clickPlatformWixTitle: "Wix",
+  clickPlatformWixStep1: "Click the link or button you want to track, then click \"Edit Link\".",
+  clickPlatformWixStep2: "In the link settings, look for \"Additional attributes\" or \"Custom attributes\" and add: data-folio-track=\"Your Label\".",
+  clickPlatformWixStep3: "If you cannot find custom attributes, use a Wix HTML embed block: add the link as raw HTML with the tracking label included.",
+
+  clickPlatformSqTitle: "Squarespace",
+  clickPlatformSqStep1: "Squarespace buttons do not support custom attributes in the visual editor.",
+  clickPlatformSqStep2: "Instead, add your tracked link inside a \"Code Block\" (Insert > Code). Write the HTML link directly with the data-folio-track attribute.",
+  clickPlatformSqStep3: "Save and preview your page to confirm the link appears correctly.",
+
+  clickPlatformHtmlTitle: "Custom HTML Website",
+  clickPlatformHtmlDesc:
+    "If you write your own HTML, just add data-folio-track=\"Label\" to any <a> or <button> tag. Here is a full page example:",
+
+  clickResultsTitle: "Where to see your results",
+  clickResultsDesc:
+    "Go to Dashboard > Analytics > Links tab. You will see every tracked button with its click count. Use the checkbox filters to show or hide different button types. To see only clicks from your external website (not from your Folio profile), use the \"External Sites\" toggle at the top of the analytics page.",
+
+  clickTrackingTipTitle: "Tip: Use clear, short labels",
   clickTrackingTipDesc:
-    "Choose labels that are easy to recognize in your analytics, like \"Phone Call\", \"View Menu\", or \"Book Now\". You can view all click data in Dashboard > Analytics > Links tab, and filter by \"External Sites\" to see only clicks from your website.",
+    "Good labels: \"Phone Call\", \"View Menu\", \"Book Now\", \"Instagram\". Avoid long sentences — keep labels to 2-3 words so they are easy to read in your dashboard.",
 
   // --- Inline Widgets ---
   inlineTitle: "Inline Widgets (Advanced)",
